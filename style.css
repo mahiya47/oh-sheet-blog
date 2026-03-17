@@ -1,0 +1,50 @@
+/* FONTS--------------------------------------------------------------------------------------------------------------------------------- */
+
+.im-fell-dw-pica-sc-regular {
+    font-family: "IM Fell DW Pica SC", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* FONTS--------------------------------------------------------------------------------------------------------------------------------- */
+
+body{
+    width: auto;
+    height: auto;
+    background-color: aqua;
+}
+
+a{
+    text-decoration: none;
+}
+
+/* NAVIGATION BAR------------------------------------------------------------------------------------------------------------------------- */
+
+.nav-bar{
+    background-color: blue;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5%;
+}
+
+.nav-bar .nav-section-left{
+    background-color: aquamarine;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.nav-bar .nav-section-left img{
+    width: 30%;
+    height: 30%;
+}
+
+.nav-bar .nav-section-right{
+    background-color: aquamarine;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* NAVIGATION BAR------------------------------------------------------------------------------------------------------------------------- */
