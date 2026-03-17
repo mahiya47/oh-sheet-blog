@@ -4,37 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- FONTS--------------------------------------------------------------------------------------------------------------------------------- -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IM+Fell+DW+Pica+SC&display=swap" rel="stylesheet">
-    <!-- FONTS--------------------------------------------------------------------------------------------------------------------------------- -->
     
-    <!-- STYLE SHEET ----------------------------------------------------------------------------------------------------------------------------->
-        <link rel="stylesheet" href="/style.css">
-    <!-- STYLE SHEET ----------------------------------------------------------------------------------------------------------------------------->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
 
-    <!-- TITLE--------------------------------------------------------------------------------------------------------------------------------- -->
     <title>Oh sheet!</title>
     <link rel="icon" type="image/png" href="img/logo.png">
-    <!-- TITLE--------------------------------------------------------------------------------------------------------------------------------- -->
 </head>
 <body>
-    <!-- NAVIGATION BAR----------------------------------------------------------------------------------------------------------NAVIGATION BAR -->
 
     <nav class="nav-bar">
-
-        <div class="nav-section-left">
+        <div class="nav-section nav-section-left">
             <img src="/img/full-logo.png" alt="logo">
         </div>
-        
-        <div class="nav-section-right">
-            <a href="">Home</a>
-            <a href="">Posts</a>
-            <a href="">Account</a>
+
+        <div class="nav-section nav-section-center">
+            <div class="icon-wrapper">
+                <a href="#"><i class="fa-solid fa-house"></i></a>
+                <span class="icon-name">Home</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="#"><i class="fa-solid fa-pen-nib"></i></a>
+                <span class="icon-name">Write</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="#"><i class="fa-solid fa-book-open"></i></a>
+                <span class="icon-name">Read</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="#"><i class="fa-solid fa-bolt"></i></a>
+                <span class="icon-name">Trending</span>
+            </div>
+        </div>
+
+        <div class="nav-section nav-section-right">
+            <div class="search-container">
+                <input type="text" placeholder="Search or jump to..." class="search-input">
+                <span class="search-slash">/</span>
+            </div>
+            <a href="#" class="login-btn">Sign in</a>
         </div>
     </nav>
 
-    <!-- NAVIGATION BAR----------------------------------------------------------------------------------------------------------NAVIGATION BAR -->
 </body>
 </html>

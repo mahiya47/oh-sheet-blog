@@ -1,50 +1,153 @@
-/* FONTS--------------------------------------------------------------------------------------------------------------------------------- */
-
 .im-fell-dw-pica-sc-regular {
     font-family: "IM Fell DW Pica SC", serif;
     font-weight: 400;
     font-style: normal;
 }
 
-/* FONTS--------------------------------------------------------------------------------------------------------------------------------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-body{
-    width: auto;
+body {
+    width: 100%;
     height: auto;
-    background-color: aqua;
+    background-color: rgb(187, 187, 187);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
-a{
+a {
     text-decoration: none;
+    color: white;
 }
 
-/* NAVIGATION BAR------------------------------------------------------------------------------------------------------------------------- */
-
-.nav-bar{
-    background-color: blue;
+.nav-bar {
+    width: 100%;
+    background-color: #0d1117;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5%;
+    padding: 10px 1%;
+    border-bottom: 1px solid #30363d;
 }
 
-.nav-bar .nav-section-left{
-    background-color: aquamarine;
+.nav-section {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
 }
 
-.nav-bar .nav-section-left img{
-    width: 30%;
-    height: 30%;
+.nav-section-left {
+    flex: 1;
 }
 
-.nav-bar .nav-section-right{
-    background-color: aquamarine;
+.nav-section-left img {
+    width: 40%;
+    height: 40%;
+}
+
+.nav-section-center {
+    flex: 2;
+    justify-content: center;
+    gap: 15px;
+}
+
+.icon-wrapper {
+    position: relative;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* NAVIGATION BAR------------------------------------------------------------------------------------------------------------------------- */
+.icon-wrapper a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    background-color: #161b22;
+    transition: 0.2s;
+}
+
+.icon-wrapper a:hover {
+    background-color: #21262d;
+    border-color: #8b949e;
+}
+
+.icon-wrapper i {
+    font-size: 1rem;
+    color: #adbac7;
+}
+
+.icon-name {
+    position: absolute;
+    top: 45px;
+    background-color: #6e7681;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.2s ease-in-out;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.icon-wrapper:hover .icon-name {
+    opacity: 1;
+    visibility: visible;
+    top: 40px;
+}
+
+.nav-section-right {
+    flex: 1;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 0 8px;
+    width: 240px;
+}
+
+.search-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #adbac7;
+    padding: 5px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.search-slash {
+    border: 1px solid #30363d;
+    border-radius: 3px;
+    padding: 0 4px;
+    color: #8b949e;
+    font-size: 12px;
+}
+
+.login-btn {
+    border: 1px solid #30363d;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background-color: #21262d;
+    font-size: 14px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.login-btn:hover {
+    background-color: #30363d;
+    border-color: #8b949e;
+}
