@@ -1,5 +1,5 @@
-.im-fell-dw-pica-sc-regular {
-    font-family: "IM Fell DW Pica SC", serif;
+.ubuntu-mono-regular {
+    font-family: "Ubuntu Mono", monospace;
     font-weight: 400;
     font-style: normal;
 }
@@ -13,23 +13,24 @@
 body {
     width: 100%;
     height: auto;
-    background-color: rgb(187, 187, 187);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background-color: rgb(165, 165, 165);
+    font-family: "Ubuntu Mono", monospace;
+
 }
 
 a {
     text-decoration: none;
-    color: white;
+    color: rgb(255, 255, 255);
 }
 
 .nav-bar {
     width: 100%;
-    background-color: #0d1117;
+    background-color: black;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 1%;
-    border-bottom: 1px solid #30363d;
+    padding: 10px 2%;
+    border-bottom: 1px solid rgb(255, 255, 255);
 }
 
 .nav-section {
@@ -63,38 +64,43 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 35px;
-    height: 35px;
-    border: 1px solid #30363d;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgb(255, 255, 255);
     border-radius: 6px;
-    background-color: #161b22;
+    background-color: black;
     transition: 0.2s;
 }
 
-.icon-wrapper a:hover {
-    background-color: #21262d;
-    border-color: #8b949e;
+.nav-bar .nav-section .icon-wrapper a:hover{
+    background-color: rgb(255, 255, 255);
+    border-color: black;
+}
+
+.nav-bar .nav-section .icon-wrapper a:hover i{
+    color: black;
 }
 
 .icon-wrapper i {
     font-size: 1rem;
-    color: #adbac7;
+    color: rgb(255, 255, 255);
 }
 
 .icon-name {
     position: absolute;
     top: 45px;
-    background-color: #6e7681;
-    color: white;
+    background-color: rgb(255, 255, 255);
+    color: black;
     padding: 4px 8px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: 15px;
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
     transition: 0.2s ease-in-out;
     pointer-events: none;
-    z-index: 10;
+    z-index: 101;
+    font-weight: bold;
 }
 
 .icon-wrapper:hover .icon-name {
@@ -106,48 +112,897 @@ a {
 .nav-section-right {
     flex: 1;
     justify-content: flex-end;
-    gap: 12px;
+    gap: 30px;
 }
 
 .search-container {
     display: flex;
     align-items: center;
-    background-color: #0d1117;
-    border: 1px solid #30363d;
+    background-color: black;
+    border: 1px solid rgb(255, 255, 255);
     border-radius: 6px;
     padding: 0 8px;
     width: 240px;
+    
 }
 
 .search-input {
     background: transparent;
     border: none;
     outline: none;
-    color: #adbac7;
+    color: rgb(255, 255, 255);
     padding: 5px;
     font-size: 14px;
     width: 100%;
 }
 
 .search-slash {
-    border: 1px solid #30363d;
+    border: 1px solid rgb(255, 255, 255);
     border-radius: 3px;
     padding: 0 4px;
-    color: #8b949e;
+    color: rgb(255, 255, 255);
     font-size: 12px;
 }
 
 .login-btn {
-    border: 1px solid #30363d;
+    border: 1px solid rgb(255, 255, 255);
     padding: 5px 12px;
     border-radius: 6px;
-    background-color: #21262d;
+    background-color: black;
     font-size: 14px;
     font-weight: 500;
     transition: 0.2s;
+    font-weight: bold;
 }
 
 .login-btn:hover {
-    background-color: #30363d;
-    border-color: #8b949e;
+    background-color: rgb(255, 255, 255);
+    border-color: black;
+    color: black;
 }
+
+.profile-link{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    padding: 5px;
+    border: 1px solid white;
+    border-radius: 10px;
+}
+
+.nav-bar .nav-section-right .profile-link img {
+    height: 20px;
+    width: 20px;
+    border-radius: 100%;
+    object-fit: cover;
+    border: 1px solid white;
+}
+
+.sidebar-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    position: fixed;
+    top: 7.5%;
+    left: 0.5%;
+    bottom: 1%;
+    width: 5%;
+    background-color: black;
+    border: 2px solid white;
+    z-index: 100;
+}
+
+.sidebar-top, .sidebar-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    width: 100%;
+}
+
+.separator {
+    width: 60%;
+    height: 1px;
+    background-color: white;
+    margin: 5px 0;
+}
+
+.sidebar-left .icon-name {
+    left: 50px;
+    top: 5px;
+}
+
+.sidebar-left .icon-wrapper:hover .icon-name {
+    left: 55px;
+    top: 5px;
+}
+
+.sidebar-middle {
+    display: flex;
+    position: fixed;
+    top: 7.5%;
+    left: 6%;
+    bottom: 0;
+    width:72%;
+    background-color: black;
+    border: 2px solid white;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 10%;
+}
+
+.content-card {
+    background-color: black;
+    border: 1px solid white;
+    border-radius: 12px;
+    padding: 40px;
+    color: white;
+}
+
+.content-card h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    border-bottom: 2px solid white;
+    padding-bottom: 10px;
+}
+
+.content-card h2 {
+    margin-top: 25px;
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+    color: #ddd;
+}
+
+.content-card p {
+    line-height: 1.6;
+    margin-bottom: 15px;
+    color: #bbb;
+}
+
+.content-card ul {
+    margin-bottom: 20px;
+    padding-left: 20px;
+}
+
+.content-card li {
+    margin-bottom: 10px;
+    color: #bbb;
+}
+
+/* Editor Specific Styles */
+.editor-container {
+    background-color: black;
+    border: 1px solid white;
+    border-radius: 12px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+}
+
+.editor-header h1 {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.close-editor {
+    font-size: 1.5rem;
+    color: #888;
+    transition: 0.2s;
+}
+
+.close-editor:hover {
+    color: white;
+}
+
+.editor-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.editor-input-group label {
+    color: #888;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.editor-title, .editor-tags, .editor-textarea {
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: white;
+    padding: 12px;
+    font-family: "Ubuntu Mono", monospace;
+    outline: none;
+}
+
+.editor-title:focus, .editor-tags:focus, .editor-textarea:focus {
+    border-color: white;
+}
+
+.editor-textarea {
+    min-height: 200px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.editor-toolbar {
+    display: flex;
+    gap: 10px;
+    background: #1a1a1a;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.tool-btn {
+    background: transparent;
+    border: 1px solid #444;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.tool-btn:hover {
+    background: white;
+    color: black;
+}
+
+.editor-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    border-top: 1px solid #333;
+    padding-top: 20px;
+}
+
+.publish-btn {
+    background: white;
+    color: black;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.publish-btn:hover {
+    background: #ddd;
+    transform: scale(1.02);
+}
+
+.cancel-btn {
+    background: transparent;
+    color: #888;
+    border: 1px solid #444;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    color: white;
+    border-color: white;
+}
+
+.login-prompt-card {
+    background-color: white; /* Inverse of your usual black cards */
+    color: black;
+    border: 3px solid black;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 8px 8px 0px rgba(0, 0, 0, 1); /* Neobrutalist shadow */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.login-prompt-content {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.prompt-icon i {
+    font-size: 3rem;
+    color: black;
+}
+
+.prompt-text h2 {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    font-weight: 800;
+}
+
+.prompt-text p {
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.prompt-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.prompt-login-btn {
+    flex: 1;
+    background-color: black;
+    color: white !important;
+    text-align: center;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    border: 2px solid black;
+    transition: 0.2s;
+}
+
+.prompt-login-btn:hover {
+    background-color: #333;
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0px #888;
+}
+
+.prompt-signup-btn {
+    flex: 1;
+    background-color: transparent;
+    color: black !important;
+    text-align: center;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    border: 2px solid black;
+    transition: 0.2s;
+}
+
+.prompt-signup-btn:hover {
+    background-color: #eee;
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0px black;
+}
+
+/* Post Creator */
+.create-sheet-card {
+    background: black;
+    border: 1px solid white;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 30px;
+}
+
+.create-header {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+}
+
+.mini-pfp {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid white;
+}
+
+.create-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 1.1rem;
+    width: 100%;
+    font-family: inherit;
+}
+
+.create-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.action-items {
+    display: flex;
+    gap: 15px;
+    color: white;
+    cursor: pointer;
+}
+
+.sheet-btn {
+    background: white;
+    color: black;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Individual Sheet Cards */
+.sheet-card {
+    background: black;
+    border: 1px solid white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: 0.2s;
+}
+
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.user-meta {
+    display: flex;
+    gap: 10px;
+}
+
+.sheet-pfp {
+    width: 45px;
+    height: 45px;
+    border-radius: 8px;
+    border: 1px solid white;
+}
+
+.user-names {
+    display: flex;
+    flex-direction: column;
+}
+
+.display-name {
+    color: white;
+    font-weight: bold;
+}
+
+.username {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.sheet-content {
+    color: #eee;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.code-block {
+    background: #1a1a1a;
+    border: 1px solid #444;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-family: "Ubuntu Mono", monospace;
+    color: #00ff00; /* Classic terminal green */
+}
+
+.sheet-footer {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #222;
+    padding-top: 15px;
+    color: #888;
+}
+
+.footer-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.footer-stat:hover {
+    color: white;
+}
+
+.sidebar-right {
+    display: flex;
+    position: fixed;
+    flex-direction: column;
+    padding: 15px;
+    top: 7.5%;
+    right: 0.5%;
+    bottom: 1%;
+    width: 21%;
+    background-color: black;
+    border: 2px solid white;
+    gap: 15px;
+    overflow-y: auto;
+}
+
+.trending-card {
+    background-color: black;
+    border: 1px solid white;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.trending-header {
+    font-size: 20px;
+    color: white;
+    padding: 12px 16px;
+    margin: 0;
+}
+
+.trending-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid white;
+}
+
+.trending-row:hover {
+    background-color: black;
+}
+
+.trending-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.trending-meta {
+    color: rgb(165, 165, 165);
+    font-size: 13px;
+}
+
+.trending-tag {
+    color: white;
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.trending-row i {
+    color: rgb(165, 165, 165);
+    font-size: 14px;
+}
+
+.show-more-link {
+    display: block;
+    padding: 10px;
+    color: black;
+    font-size: 15px;
+    font-weight: bold;
+    text-decoration: none;
+    background-color: white;
+    transition: background-color 0.2s;
+}
+
+.show-more-link:hover {
+    background-color: black;
+    color: white;
+}
+
+.sort-container {
+    width: 100%;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sort-label {
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: large;
+}
+
+.sort-select {
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+    padding: 5px;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: large; 
+}
+
+.sort-select:hover {
+    background-color: white;
+    color: black;
+}
+
+.sort-select:focus {
+    border-color: white;
+}
+
+
+.login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: rgb(165, 165, 165);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.login-box {
+    background-color: black;
+    padding: 40px;
+    border: 2px solid white;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+}
+
+.login-logo {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.login-subtitle {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 30px;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: white;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-color: white;
+}
+
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 25px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: #ddd;
+}
+
+.login-footer {
+    margin-top: 25px;
+    font-size: 14px;
+}
+
+.login-footer p {
+    margin-bottom: 15px;
+}
+
+.login-footer a {
+    color: #aaa;
+    transition: 0.2s;
+}
+
+.login-footer a:hover {
+    color: white;
+}
+
+.back-home {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+/* Settings Page Layout */
+.settings-body {
+    background-color: #1a1a1a;
+    color: white;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.settings-container {
+    display: flex;
+    width: 100%;
+    max-width: 1000px;
+    background-color: black;
+    border: 1px solid white;
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 80vh;
+}
+
+/* Sidebar */
+.settings-sidebar {
+    width: 250px;
+    border-right: 1px solid #333;
+    padding: 30px 20px;
+}
+
+.settings-title {
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+.settings-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.settings-nav a {
+    padding: 10px 15px;
+    border-radius: 6px;
+    color: #888;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.settings-nav a:hover, .settings-nav a.active {
+    background-color: #222;
+    color: white;
+}
+
+.exit-settings {
+    margin-top: 40px;
+    border-top: 1px solid #333;
+    padding-top: 20px !important;
+}
+
+/* Main Content */
+.settings-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.settings-section {
+    margin-bottom: 40px;
+}
+
+.settings-section h3 {
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.settings-group label {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.settings-group input, .settings-group textarea {
+    background: #111;
+    border: 1px solid #444;
+    padding: 10px;
+    border-radius: 6px;
+    color: white;
+    outline: none;
+}
+
+/* Toggle Switch */
+.settings-group-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #444;
+    transition: .4s;
+    border-radius: 20px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px; width: 14px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider { background-color: white; }
+input:checked + .slider:before { 
+    transform: translateX(20px); 
+    background-color: black;
+}
+
+/* Buttons */
+.save-btn {
+    background-color: white;
+    color: black;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.delete-btn {
+    background-color: transparent;
+    color: #ff4d4d;
+    border: 1px solid #ff4d4d;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
