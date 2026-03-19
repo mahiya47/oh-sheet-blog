@@ -32,12 +32,12 @@
                 <span class="icon-name">Write</span>
             </div>
             <div class="icon-wrapper">
-                <a href="news.html"><i class="fa-solid fa-newspaper"></i></a>
-                <span class="icon-name">News</span>
+                <a href="/explore.html"><i class="fa-solid fa-compass"></i></a>
+                <span class="icon-name">Explore</span>
             </div>
             <div class="icon-wrapper">
-                <a href="support.html"><i class="fa-solid fa-headset"></i></a>
-                <span class="icon-name">Support</span>
+                <a href="/trending.html"><i class="fa-solid fa-bolt"></i></a>
+                <span class="icon-name">Trending</span>
             </div>
         </div>
 
@@ -61,7 +61,7 @@
                 <span class="icon-name">Explore</span>
             </div>
             <div class="icon-wrapper">
-                <a href="/trending-posts.html"><i class="fa-solid fa-fire"></i></a>
+                <a href="/trending.html"><i class="fa-solid fa-fire"></i></a>
                 <span class="icon-name">Trending</span>
             </div>
 
@@ -103,7 +103,7 @@
                 </div>
                 <div class="prompt-text">
                     <h2>Join the Sheet-storm!</h2>
-                    <p>Log in to save code snippets, upvote your favorite sheets, and join the conversation.</p>
+                    <p>Log in to join any community or to create your own community!</p>
                 </div>
             </div>
             <div class="prompt-buttons">
@@ -112,50 +112,58 @@
             </div>
         </div>
 
-        <div class="sheet-card">
-            <div class="sheet-header">
-                <div class="user-meta">
-                    <img src="https://ui-avatars.com/api/?name=Python+Dev&background=3776ab&color=fff" alt="PFP" class="sheet-pfp">
-                    <div class="user-names">
-                        <span class="display-name">Python Pro</span>
-                        <span class="username">@py_master · 2h</span>
-                    </div>
-                </div>
-                <i class="fa-solid fa-ellipsis"></i>
-            </div>
-            <div class="sheet-content">
-                <p>Quick way to merge two dictionaries in Python 3.9+ using the union operator:</p>
-                <div class="code-block">
-                    <code>dict_a = {"a": 1}<br>dict_b = {"b": 2}<br>merged = dict_a | dict_b</code>
-                </div>
-            </div>
-            <div class="sheet-footer">
-                <div class="footer-stat"><i class="fa-solid fa-fire"></i> 432</div>
-                <div class="footer-stat"><i class="fa-solid fa-comment"></i> 12</div>
-                <div class="footer-stat"><i class="fa-solid fa-retweet"></i> 5</div>
-                <div class="footer-stat"><i class="fa-solid fa-share-nodes"></i></div>
-            </div>
+        <div class="communities-header">
+            <h1>Browse Communities</h1>
+            <p>Find your tribe and start sharing snippets.</p>
         </div>
 
-        <div class="sheet-card">
-            <div class="sheet-header">
-                <div class="user-meta">
-                    <img src="https://ui-avatars.com/api/?name=Design+Daily&background=ff4500&color=fff" alt="PFP" class="sheet-pfp">
-                    <div class="user-names">
-                        <span class="display-name">Design Daily</span>
-                        <span class="username">@ui_ux · 5h</span>
-                    </div>
+        <div class="communities-grid">
+            <div class="community-card">
+                <div class="community-banner" style="background-color: #3776ab;">
+                    <i class="fa-brands fa-python"></i>
                 </div>
-                <i class="fa-solid fa-ellipsis"></i>
+                <div class="community-info">
+                    <h3>Pythonistas</h3>
+                    <p>Everything Python, from Django to Data Science.</p>
+                    <span class="member-count">12.4k Members</span>
+                    <a href="/sign-in.html"><button class="join-btn">Join</button></a>
+                </div>
             </div>
-            <div class="sheet-content">
-                <p>Neobrutalism is all about high contrast, bold shadows, and breaking the "soft" UI rules of the last decade. It fits perfectly with the <strong>Oh Sheet!</strong> aesthetic. ⚡</p>
+
+            <div class="community-card">
+                <div class="community-banner" style="background-color: #f7df1e;">
+                    <i class="fa-brands fa-js"></i>
+                </div>
+                <div class="community-info">
+                    <h3>JS Junkies</h3>
+                    <p>React, Vue, and the wild world of JavaScript.</p>
+                    <span class="member-count">8.1k Members</span>
+                    <a href="/sign-in.html"><button class="join-btn">Join</button></a>
+                </div>
             </div>
-            <div class="sheet-footer">
-                <div class="footer-stat"><i class="fa-solid fa-fire"></i> 1.2k</div>
-                <div class="footer-stat"><i class="fa-solid fa-comment"></i> 89</div>
-                <div class="footer-stat"><i class="fa-solid fa-retweet"></i> 45</div>
-                <div class="footer-stat"><i class="fa-solid fa-share-nodes"></i></div>
+
+            <div class="community-card">
+                <div class="community-banner" style="background-color: #ff4500;">
+                    <i class="fa-solid fa-dumbbell"></i>
+                </div>
+                <div class="community-info">
+                    <h3>Gym Sheets</h3>
+                    <p>Share your PRs, routines, and diet plans.</p>
+                    <span class="member-count">5.2k Members</span>
+                    <a href="/sign-in.html"><button class="join-btn">Join</button></a>
+                </div>
+            </div>
+
+            <div class="community-card">
+                <div class="community-banner" style="background-color: #61dbfb;">
+                    <i class="fa-solid fa-code"></i>
+                </div>
+                <div class="community-info">
+                    <h3>Dev Ops</h3>
+                    <p>Docker, K8s, and keeping things running.</p>
+                    <span class="member-count">3.9k Members</span>
+                    <a href="/sign-in.html"><button class="join-btn">Join</button></a>
+                </div>
             </div>
         </div>
     </div>
@@ -192,7 +200,7 @@
                 <i class="fa-solid fa-ellipsis"></i>
             </a>
 
-            <a href="trending-topics.html" class="show-more-link">Show more</a>
+            <a href="#" class="show-more-link">Show more</a>
         </div>
 
         <div class="trending-card">
@@ -214,7 +222,7 @@
                 </div>
             </a>
 
-            <a href="trending-posts.html" class="show-more-link">View all posts</a>
+            <a href="#" class="show-more-link">View all posts</a>
         </div>
     </div>
 

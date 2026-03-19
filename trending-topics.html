@@ -61,7 +61,7 @@
                 <span class="icon-name">Explore</span>
             </div>
             <div class="icon-wrapper">
-                <a href="/trending-posts.html"><i class="fa-solid fa-fire"></i></a>
+                <a href="/trending.html"><i class="fa-solid fa-fire"></i></a>
                 <span class="icon-name">Trending</span>
             </div>
 
@@ -95,67 +95,71 @@
     </div>
 
     <div class="sidebar-middle">
+        <div class="communities-header">
+            <h1>Trending Now ⚡</h1>
+            <p>See what the world is coding, building, and discussing right now.</p>
+        </div>
 
-        <div class="login-prompt-card">
+        <div class="login-prompt-card" style="background-color: white; border-color: black;">
             <div class="login-prompt-content">
-                <div class="prompt-icon">
-                    <i class="fa-solid fa-bolt-lightning"></i>
-                </div>
+                <div class="prompt-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
                 <div class="prompt-text">
-                    <h2>Join the Sheet-storm!</h2>
-                    <p>Log in to save code snippets, upvote your favorite sheets, and join the conversation.</p>
+                    <h2 style="color: black;">Top Sheet: Python 3.12 Optimization</h2>
+                    <p style="color: black;">A deep dive into the new CPython improvements and how they affect your data structures.</p>
                 </div>
             </div>
             <div class="prompt-buttons">
-                <a href="sign-in.html" class="prompt-login-btn">Log In</a>
-                <a href="create.html" class="prompt-signup-btn">Create Account</a>
+                <a href="#" class="prompt-login-btn">Read Full Sheet</a>
             </div>
         </div>
 
-        <div class="sheet-card">
-            <div class="sheet-header">
-                <div class="user-meta">
-                    <img src="https://ui-avatars.com/api/?name=Python+Dev&background=3776ab&color=fff" alt="PFP" class="sheet-pfp">
-                    <div class="user-names">
-                        <span class="display-name">Python Pro</span>
-                        <span class="username">@py_master · 2h</span>
-                    </div>
+        <div class="communities-grid">
+            <div class="community-card">
+                <div class="community-banner" style="background-color: #3776ab;">
+                    <i class="fa-brands fa-python"></i>
                 </div>
-                <i class="fa-solid fa-ellipsis"></i>
-            </div>
-            <div class="sheet-content">
-                <p>Quick way to merge two dictionaries in Python 3.9+ using the union operator:</p>
-                <div class="code-block">
-                    <code>dict_a = {"a": 1}<br>dict_b = {"b": 2}<br>merged = dict_a | dict_b</code>
+                <div class="community-info">
+                    <h3>#Python312</h3>
+                    <p>New features, performance boosts, and syntax changes in the latest release.</p>
+                    <span class="member-count">1,240 Sheets today</span>
+                    <a href="#" class="join-btn">Explore Tag</a>
                 </div>
             </div>
-            <div class="sheet-footer">
-                <div class="footer-stat"><i class="fa-solid fa-fire"></i> 432</div>
-                <div class="footer-stat"><i class="fa-solid fa-comment"></i> 12</div>
-                <div class="footer-stat"><i class="fa-solid fa-retweet"></i> 5</div>
-                <div class="footer-stat"><i class="fa-solid fa-share-nodes"></i></div>
-            </div>
-        </div>
 
-        <div class="sheet-card">
-            <div class="sheet-header">
-                <div class="user-meta">
-                    <img src="https://ui-avatars.com/api/?name=Design+Daily&background=ff4500&color=fff" alt="PFP" class="sheet-pfp">
-                    <div class="user-names">
-                        <span class="display-name">Design Daily</span>
-                        <span class="username">@ui_ux · 5h</span>
-                    </div>
+            <div class="community-card">
+                <div class="community-banner" style="background-color: #ff4500;">
+                    <i class="fa-solid fa-dumbbell"></i>
                 </div>
-                <i class="fa-solid fa-ellipsis"></i>
+                <div class="community-info">
+                    <h3>Push Pull Legs</h3>
+                    <p>The most efficient split for hypertrophy. Post your routines!</p>
+                    <span class="member-count">850 Sheets today</span>
+                    <a href="#" class="join-btn">Explore Tag</a>
+                </div>
             </div>
-            <div class="sheet-content">
-                <p>Neobrutalism is all about high contrast, bold shadows, and breaking the "soft" UI rules of the last decade. It fits perfectly with the <strong>Oh Sheet!</strong> aesthetic. ⚡</p>
+
+            <div class="community-card">
+                <div class="community-banner" style="background-color: #e10600;">
+                    <i class="fa-solid fa-flag-checkered"></i>
+                </div>
+                <div class="community-info">
+                    <h3>Formula 1 2026</h3>
+                    <p>Discussing the new engine regulations and driver lineups.</p>
+                    <span class="member-count">2.1k Sheets today</span>
+                    <a href="#" class="join-btn">Explore Tag</a>
+                </div>
             </div>
-            <div class="sheet-footer">
-                <div class="footer-stat"><i class="fa-solid fa-fire"></i> 1.2k</div>
-                <div class="footer-stat"><i class="fa-solid fa-comment"></i> 89</div>
-                <div class="footer-stat"><i class="fa-solid fa-retweet"></i> 45</div>
-                <div class="footer-stat"><i class="fa-solid fa-share-nodes"></i></div>
+
+            <div class="community-card">
+                <div class="community-banner" style="background-color: #ffffff;">
+                    <i class="fa-solid fa-palette" style="color: black;"></i>
+                </div>
+                <div class="community-info">
+                    <h3>Neobrutalism</h3>
+                    <p>Why raw, high-contrast UI is making a massive comeback in 2026.</p>
+                    <span class="member-count">560 Sheets today</span>
+                    <a href="#" class="join-btn">Explore Tag</a>
+                </div>
             </div>
         </div>
     </div>
@@ -192,7 +196,7 @@
                 <i class="fa-solid fa-ellipsis"></i>
             </a>
 
-            <a href="trending-topics.html" class="show-more-link">Show more</a>
+            <a href="#" class="show-more-link">Show more</a>
         </div>
 
         <div class="trending-card">
@@ -214,7 +218,7 @@
                 </div>
             </a>
 
-            <a href="trending-posts.html" class="show-more-link">View all posts</a>
+            <a href="#" class="show-more-link">View all posts</a>
         </div>
     </div>
 

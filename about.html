@@ -3,16 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <link rel="stylesheet" href="style.css">
-
-    <title>Oh sheet!</title>
+    <title>About | Oh sheet!</title>
     <link rel="icon" type="image/png" href="img/logo.png">
 </head>
 <body>
@@ -21,52 +17,46 @@
         <div class="nav-section nav-section-left">
             <img src="/img/full-logo.png" alt="logo">
         </div>
-
         <div class="nav-section nav-section-center">
             <div class="icon-wrapper">
                 <a href="/index.html"><i class="fa-solid fa-house"></i></a>
                 <span class="icon-name">Home</span>
             </div>
             <div class="icon-wrapper">
-                <a href="post-it.html"><i class="fa-solid fa-pen-nib"></i></a>
+                <a href="sign-in.html"><i class="fa-solid fa-pen-nib"></i></a>
                 <span class="icon-name">Write</span>
             </div>
             <div class="icon-wrapper">
-                <a href="explore.html"><i class="fa-solid fa-compass"></i></a>
+                <a href="/explore.html"><i class="fa-solid fa-compass"></i></a>
                 <span class="icon-name">Explore</span>
             </div>
             <div class="icon-wrapper">
-                <a href="trending.html"><i class="fa-solid fa-bolt"></i></a>
+                <a href="/trending.html"><i class="fa-solid fa-bolt"></i></a>
                 <span class="icon-name">Trending</span>
             </div>
         </div>
-
         <div class="nav-section nav-section-right">
             <div class="search-container">
                 <input type="text" placeholder="Search or jump to..." class="search-input">
                 <span class="search-slash"><i class="fa-solid fa-magnifying-glass"></i></span>
             </div>
-            <a href="" class="profile-link"><img src="img/dp.jpg" alt=""><span>mahiya47</span></a>
-        </div>  
+            <a href="sign-in.html" class="login-btn">Sign in</a>
+        </div>
     </nav>
 
     <div class="sidebar-left">
         <div class="sidebar-top">
             <div class="icon-wrapper">
-                <a href="communities.html"><i class="fa-solid fa-users"></i></a>
+                <a href="/communities.html"><i class="fa-solid fa-users"></i></a>
                 <span class="icon-name">Communities</span>
             </div>
             <div class="icon-wrapper">
-                <a href="explore.html"><i class="fa-solid fa-compass"></i></a>
+                <a href="/explore.html"><i class="fa-solid fa-compass"></i></a>
                 <span class="icon-name">Explore</span>
             </div>
             <div class="icon-wrapper">
-                <a href="trending.html"><i class="fa-solid fa-fire"></i></a>
+                <a href="/trending.html"><i class="fa-solid fa-fire"></i></a>
                 <span class="icon-name">Trending</span>
-            </div>
-            <div class="icon-wrapper">
-                <a href="saved.html"><i class="fa-solid fa-bookmark"></i></a>
-                <span class="icon-name">Saved</span>
             </div>
             <div class="separator"></div>
             <div class="icon-wrapper">
@@ -78,92 +68,59 @@
                 <span class="icon-name">Advertise</span>
             </div>
         </div>
-
         <div class="sidebar-bottom">
             <div class="separator"></div>
             <div class="icon-wrapper">
-                <a href="privacy-policy.html"><i class="fa-solid fa-shield-halved"></i></a>
+                <a href="/privacy-policy.html"><i class="fa-solid fa-shield-halved"></i></a>
                 <span class="icon-name">Privacy Policy</span>
             </div>
             <div class="icon-wrapper">
-                <a href="rules.html"><i class="fa-solid fa-scale-balanced"></i></a>
+                <a href="/rules.html"><i class="fa-solid fa-scale-balanced"></i></a>
                 <span class="icon-name">Rules</span>
             </div>
             <div class="icon-wrapper">
-                <a href="agreement.html"><i class="fa-solid fa-file-contract"></i></a>
+                <a href="/agreement.html"><i class="fa-solid fa-file-contract"></i></a>
                 <span class="icon-name">Agreement</span>
-            </div>
-            <div class="separator"></div>
-            <div class="icon-wrapper">
-                <a href="setting.html"><i class="fa-solid fa-gear"></i></a>
-                <span class="icon-name">Settings</span>
             </div>
         </div>
     </div>
 
     <div class="sidebar-middle">
-        <div class="create-sheet-card">
-            <div class="create-header">
-                <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile" class="mini-pfp">
-                <input type="text" placeholder="Share a new sheet or code snippet..." class="create-input">
-            </div>
-            <div class="create-actions">
-                <div class="action-items">
-                    <i class="fa-solid fa-image"></i>
-                    <i class="fa-solid fa-code"></i>
-                    <i class="fa-solid fa-link"></i>
-                </div>
-                <button class="sheet-btn">Sheet it!</button>
-            </div>
-        </div>
-
-        <div class="sheet-card">
-            <div class="sheet-header">
-                <div class="user-meta">
-                    <img src="https://ui-avatars.com/api/?name=Python+Dev&background=3776ab&color=fff" alt="PFP" class="sheet-pfp">
-                    <div class="user-names">
-                        <span class="display-name">Python Pro</span>
-                        <span class="username">@py_master · 2h</span>
+        <div class="content-card">
+            <h1>What is Oh Sheet!?</h1>
+            <p>Welcome to the ultimate repository for code snippets, design logic, and technical "sheets." <strong>Oh Sheet!</strong> was born out of the frustration of losing that one perfect line of code you wrote three months ago.</p>
+            
+            <h2>The Mission</h2>
+            <p>We aim to provide a high-contrast, distraction-free environment where developers and designers can share "Sheets"—compact, high-value posts that get straight to the point. No fluff, just the good stuff.</p>
+            
+            <div class="login-prompt-card" style="margin-top: 20px;">
+                <div class="login-prompt-content">
+                    <div class="prompt-icon">
+                        <i class="fa-solid fa-code-branch"></i>
+                    </div>
+                    <div class="prompt-text">
+                        <h2>Build the knowledge base</h2>
+                        <p>Our community relies on users like you to document the web. Whether it's a CSS trick or a Python optimization, every sheet helps.</p>
                     </div>
                 </div>
-                <i class="fa-solid fa-ellipsis"></i>
             </div>
-            <div class="sheet-content">
-                <p>Quick way to merge two dictionaries in Python 3.9+ using the union operator:</p>
-                <div class="code-block">
-                    <code>dict_a = {"a": 1}<br>dict_b = {"b": 2}<br>merged = dict_a | dict_b</code>
-                </div>
-            </div>
-            <div class="sheet-footer">
-                <div class="footer-stat"><i class="fa-solid fa-fire"></i> 432</div>
-                <div class="footer-stat"><i class="fa-solid fa-comment"></i> 12</div>
-                <div class="footer-stat"><i class="fa-solid fa-retweet"></i> 5</div>
-                <div class="footer-stat"><i class="fa-solid fa-share-nodes"></i></div>
-            </div>
-        </div>
 
-        <div class="sheet-card">
-            <div class="sheet-header">
-                <div class="user-meta">
-                    <img src="https://ui-avatars.com/api/?name=Design+Daily&background=ff4500&color=fff" alt="PFP" class="sheet-pfp">
-                    <div class="user-names">
-                        <span class="display-name">Design Daily</span>
-                        <span class="username">@ui_ux · 5h</span>
-                    </div>
-                </div>
-                <i class="fa-solid fa-ellipsis"></i>
-            </div>
-            <div class="sheet-content">
-                <p>Neobrutalism is all about high contrast, bold shadows, and breaking the "soft" UI rules of the last decade. It fits perfectly with the <strong>Oh Sheet!</strong> aesthetic. ⚡</p>
-            </div>
-            <div class="sheet-footer">
-                <div class="footer-stat"><i class="fa-solid fa-fire"></i> 1.2k</div>
-                <div class="footer-stat"><i class="fa-solid fa-comment"></i> 89</div>
-                <div class="footer-stat"><i class="fa-solid fa-retweet"></i> 45</div>
-                <div class="footer-stat"><i class="fa-solid fa-share-nodes"></i></div>
+            <h2>Core Features</h2>
+            <ul>
+                <li><strong>Snippet Persistence:</strong> Save your favorite sheets to your personal profile.</li>
+                <li><strong>Neobrutalist UI:</strong> A bold, accessible interface designed for readability.</li>
+                <li><strong>Community Focused:</strong> Join specific language or design communities to tailor your feed.</li>
+                <li><strong>Sheet-Storming:</strong> Upvote (Fire) the most efficient solutions to keep the best code at the top.</li>
+            </ul>
+
+            <h2>Join the Storm</h2>
+            <p>Ready to start sharing? Create an account to post your first sheet and start interacting with the community.</p>
+            <div class="prompt-buttons">
+                <a href="create.html" class="prompt-login-btn">Get Started</a>
             </div>
         </div>
     </div>
+
     <div class="sidebar-right">
         <div class="sort-container">
             <span class="sort-label"><i class="fa-solid fa-filter"></i> Sort by</span>

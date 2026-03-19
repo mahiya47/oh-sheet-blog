@@ -434,11 +434,13 @@ a {
     margin-bottom: 5px;
     text-transform: uppercase;
     font-weight: 800;
+    color: black;
 }
 
 .prompt-text p {
     font-size: 1rem;
     line-height: 1.4;
+    color: black;
 }
 
 .prompt-buttons {
@@ -448,8 +450,8 @@ a {
 
 .prompt-login-btn {
     flex: 1;
-    background-color: black;
-    color: white !important;
+    background-color: rgb(255, 255, 255);
+    color: black !important;
     text-align: center;
     padding: 12px;
     border-radius: 6px;
@@ -459,9 +461,9 @@ a {
 }
 
 .prompt-login-btn:hover {
-    background-color: #333;
+    background-color: white;
     transform: translate(-2px, -2px);
-    box-shadow: 4px 4px 0px #888;
+    box-shadow: 4px 4px 0px black;
 }
 
 .prompt-signup-btn {
@@ -617,6 +619,25 @@ a {
 
 .footer-stat:hover {
     color: white;
+}
+
+.support-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.support-form select.editor-title {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+}
+
+.support-form .editor-textarea {
+    min-height: 150px;
 }
 
 .sidebar-right {
@@ -1006,3 +1027,299 @@ input:checked + .slider:before {
     cursor: pointer;
 }
 
+/* --- Signup & Login Page Styles --- */
+
+.login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: rgb(165, 165, 165);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 550px; /* Increased width for a more prominent look */
+    padding: 20px;
+}
+
+.login-box {
+    background-color: black;
+    padding: 50px; /* Increased internal padding for the wider layout */
+    border: 2px solid white;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+    box-shadow: 12px 12px 0px rgba(255, 255, 255, 1); /* Neobrutalist white shadow */
+}
+
+.login-logo {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.login-subtitle {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 30px;
+}
+
+/* Form Inputs */
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px 15px 15px 45px; /* Adjusted padding for wider inputs */
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: white;
+    font-family: "Ubuntu Mono", monospace;
+    outline: none;
+    transition: 0.3s;
+    font-size: 16px;
+}
+
+.input-group input:focus {
+    border-color: white;
+}
+
+/* Signup Specific Elements */
+.signup-terms {
+    text-align: left;
+    margin-bottom: 25px;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.checkbox-container input {
+    margin-top: 3px;
+    accent-color: white;
+    width: 18px;
+    height: 18px;
+}
+
+.checkbox-container a {
+    color: white;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+/* Buttons */
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-family: "Ubuntu Mono", monospace;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: #ddd;
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+}
+
+.login-footer {
+    margin-top: 25px;
+    font-size: 14px;
+}
+
+.back-home {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.back-home:hover {
+    color: white;
+}
+
+/* --- Communities Page Specifics --- */
+
+.communities-header {
+    margin-bottom: 30px;
+    border-bottom: 2px solid white;
+    padding-bottom: 15px;
+}
+
+.communities-header h1 {
+    color: white;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+}
+
+.communities-header p {
+    color: #888;
+}
+
+.communities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.community-card {
+    background: black;
+    border: 2px solid white;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+.community-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 8px 8px 0px white;
+}
+
+.community-banner {
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 2px solid white;
+}
+
+.community-banner i {
+    font-size: 3rem;
+    color: white;
+    text-shadow: 2px 2px 0px black;
+}
+
+.community-info {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.community-info h3 {
+    color: white;
+    font-size: 1.4rem;
+}
+
+.community-info p {
+    color: #ccc;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    height: 40px;
+    overflow: hidden;
+}
+
+.member-count {
+    color: #888;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.join-btn {
+    margin-top: 10px;
+    background-color: white;
+    color: black;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-family: "Ubuntu Mono", monospace;
+    cursor: pointer;
+    transition: 0.2s;
+    text-transform: uppercase;
+}
+
+.join-btn:hover {
+    background-color: #ddd;
+    box-shadow: 4px 4px 0px rgba(255, 255, 255, 0.3);
+}
+
+.join-btn, .community-info a {
+    text-decoration: none;
+    color: black !important;
+}
+
+/* Create Community Card */
+.create-community-card {
+    background-color: white;
+    color: black;
+    border: 3px solid black;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 8px 8px 0px rgba(0, 0, 0, 1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.create-community-content {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.create-community-card .prompt-icon i {
+    font-size: 2.5rem;
+    color: black;
+}
+
+.create-community-card h2 {
+    font-size: 1.5rem;
+    margin: 0;
+    text-transform: uppercase;
+    font-weight: 800;
+}
+
+.create-community-card p {
+    margin: 5px 0 0 0;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.create-comm-btn {
+    background-color: black;
+    color: white;
+    border: 2px solid black;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-family: "Ubuntu Mono", monospace;
+    font-size: 1rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.create-comm-btn:hover {
+    background-color: #333;
+    transform: translate(-3px, -3px);
+    box-shadow: 5px 5px 0px #888;
+}

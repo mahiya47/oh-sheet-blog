@@ -36,8 +36,8 @@
                 <span class="icon-name">News</span>
             </div>
             <div class="icon-wrapper">
-                <a href="support.html"><i class="fa-solid fa-headset"></i></a>
-                <span class="icon-name">Support</span>
+                <a href="/trending.html"><i class="fa-solid fa-bolt"></i></a>
+                <span class="icon-name">Trending</span>
             </div>
         </div>
 
@@ -61,7 +61,7 @@
                 <span class="icon-name">Explore</span>
             </div>
             <div class="icon-wrapper">
-                <a href="/trending-posts.html"><i class="fa-solid fa-fire"></i></a>
+                <a href="/trending.html"><i class="fa-solid fa-fire"></i></a>
                 <span class="icon-name">Trending</span>
             </div>
 
@@ -95,67 +95,52 @@
     </div>
 
     <div class="sidebar-middle">
-
-        <div class="login-prompt-card">
-            <div class="login-prompt-content">
-                <div class="prompt-icon">
-                    <i class="fa-solid fa-bolt-lightning"></i>
+        <div class="content-card">
+            <h1>Help & Support Center</h1>
+            <p>Something went wrong? Or just want to say hi? Drop us a "sheet" below and our team will get back to you faster than a Python script.</p>
+            
+            <div class="editor-container">
+                <div class="editor-header">
+                    <h2>Submit a Request</h2>
+                    <i class="fa-solid fa-circle-question"></i>
                 </div>
-                <div class="prompt-text">
-                    <h2>Join the Sheet-storm!</h2>
-                    <p>Log in to save code snippets, upvote your favorite sheets, and join the conversation.</p>
-                </div>
-            </div>
-            <div class="prompt-buttons">
-                <a href="sign-in.html" class="prompt-login-btn">Log In</a>
-                <a href="create.html" class="prompt-signup-btn">Create Account</a>
-            </div>
-        </div>
 
-        <div class="sheet-card">
-            <div class="sheet-header">
-                <div class="user-meta">
-                    <img src="https://ui-avatars.com/api/?name=Python+Dev&background=3776ab&color=fff" alt="PFP" class="sheet-pfp">
-                    <div class="user-names">
-                        <span class="display-name">Python Pro</span>
-                        <span class="username">@py_master · 2h</span>
+                <form action="#" class="support-form">
+                    <div class="editor-input-group">
+                        <label>Issue Type</label>
+                        <select class="editor-title" style="width: 100%;">
+                            <option value="complaint">Report a Bug / Complaint</option>
+                            <option value="account">Account Access</option>
+                            <option value="feedback">General Feedback</option>
+                            <option value="other">Other Support</option>
+                        </select>
                     </div>
-                </div>
-                <i class="fa-solid fa-ellipsis"></i>
-            </div>
-            <div class="sheet-content">
-                <p>Quick way to merge two dictionaries in Python 3.9+ using the union operator:</p>
-                <div class="code-block">
-                    <code>dict_a = {"a": 1}<br>dict_b = {"b": 2}<br>merged = dict_a | dict_b</code>
-                </div>
-            </div>
-            <div class="sheet-footer">
-                <div class="footer-stat"><i class="fa-solid fa-fire"></i> 432</div>
-                <div class="footer-stat"><i class="fa-solid fa-comment"></i> 12</div>
-                <div class="footer-stat"><i class="fa-solid fa-retweet"></i> 5</div>
-                <div class="footer-stat"><i class="fa-solid fa-share-nodes"></i></div>
-            </div>
-        </div>
 
-        <div class="sheet-card">
-            <div class="sheet-header">
-                <div class="user-meta">
-                    <img src="https://ui-avatars.com/api/?name=Design+Daily&background=ff4500&color=fff" alt="PFP" class="sheet-pfp">
-                    <div class="user-names">
-                        <span class="display-name">Design Daily</span>
-                        <span class="username">@ui_ux · 5h</span>
+                    <div class="editor-input-group">
+                        <label>Subject</label>
+                        <input type="text" class="editor-title" placeholder="Briefly describe the issue...">
                     </div>
-                </div>
-                <i class="fa-solid fa-ellipsis"></i>
+
+                    <div class="editor-input-group">
+                        <label>Detailed Description</label>
+                        <textarea class="editor-textarea" placeholder="Provide as much detail as possible (e.g., browser version, steps to reproduce)..."></textarea>
+                    </div>
+
+                    <div class="editor-footer">
+                        <button type="button" class="cancel-btn">Discard</button>
+                        <button type="submit" class="publish-btn">Submit Request</button>
+                    </div>
+                </form>
             </div>
-            <div class="sheet-content">
-                <p>Neobrutalism is all about high contrast, bold shadows, and breaking the "soft" UI rules of the last decade. It fits perfectly with the <strong>Oh Sheet!</strong> aesthetic. ⚡</p>
+
+            <div class="separator" style="width: 100%; margin: 40px 0;"></div>
+
+            <h2>Other ways to reach us</h2>
+            <div class="footer-stat" style="font-size: 1.1rem; margin-bottom: 10px;">
+                <i class="fa-solid fa-envelope"></i> support@ohsheet.com
             </div>
-            <div class="sheet-footer">
-                <div class="footer-stat"><i class="fa-solid fa-fire"></i> 1.2k</div>
-                <div class="footer-stat"><i class="fa-solid fa-comment"></i> 89</div>
-                <div class="footer-stat"><i class="fa-solid fa-retweet"></i> 45</div>
-                <div class="footer-stat"><i class="fa-solid fa-share-nodes"></i></div>
+            <div class="footer-stat" style="font-size: 1.1rem;">
+                <i class="fa-solid fa-hashtag"></i> @OhSheetSupport on X
             </div>
         </div>
     </div>
@@ -192,7 +177,7 @@
                 <i class="fa-solid fa-ellipsis"></i>
             </a>
 
-            <a href="trending-topics.html" class="show-more-link">Show more</a>
+            <a href="#" class="show-more-link">Show more</a>
         </div>
 
         <div class="trending-card">
@@ -214,7 +199,7 @@
                 </div>
             </a>
 
-            <a href="trending-posts.html" class="show-more-link">View all posts</a>
+            <a href="#" class="show-more-link">View all posts</a>
         </div>
     </div>
 
