@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oh sheet!</title>
+    
+    <link rel="icon" type="image/png" href="/img/logo.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <nav class="nav-bar">
+        <div class="nav-section nav-section-left">
+            <img src="/img/full-logo.png" alt="logo">
+        </div>
+
+        <div class="nav-section nav-section-center">
+            <div class="icon-wrapper">
+                <a href="/logged-in/signed-in.html"><i class="fa-solid fa-house"></i></a>
+                <span class="icon-name">Home</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/create-post.html"><i class="fa-solid fa-pen-nib"></i></a>
+                <span class="icon-name">Create a post</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/news.html"><i class="fa-solid fa-newspaper"></i></a>
+                <span class="icon-name">News</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/support.html"><i class="fa-solid fa-headset"></i></a>
+                <span class="icon-name">Support</span>
+            </div>
+        </div>
+
+        <div class="nav-section nav-section-right">
+            <div class="search-container">
+                <input type="text" placeholder="Search or jump to..." class="search-input">
+                <span class="search-slash"><i class="fa-solid fa-magnifying-glass"></i></span>
+            </div>
+
+            <div class="nav-profile-wrapper">
+                <a href="/logged-in/profile.html" class="profile-link">
+                    <img src="/img/dp.jpg" alt="PFP">
+                    <span>mahiya47</span>
+                </a>
+                <div class="nav-dropdown">
+                    <a href="/logged-in/profile.html"><i class="fa-regular fa-user"></i> Visit Profile</a>
+                    <a href="/logged-in/setting.html"><i class="fa-solid fa-gear"></i> Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/index.html" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                </div>
+            </div>
+        </div> 
+    </nav>
+
+    <aside class="sidebar-left">
+        <div class="sidebar-top">
+            <div class="icon-wrapper">
+                <a href="/logged-in/communities.html"><i class="fa-solid fa-users"></i></a>
+                <span class="icon-name">Communities</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/explore.html"><i class="fa-solid fa-compass"></i></a>
+                <span class="icon-name">Explore</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/trending-posts.html"><i class="fa-solid fa-fire"></i></a>
+                <span class="icon-name">Trending</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/saved.html"><i class="fa-solid fa-bookmark"></i></a>
+                <span class="icon-name">Saved</span>
+            </div>
+            <div class="separator"></div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/about.html"><i class="fa-solid fa-circle-info"></i></a>
+                <span class="icon-name">About Oh Sheet!</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/advertise.html"><i class="fa-solid fa-rectangle-ad"></i></a>
+                <span class="icon-name">Advertise</span>
+            </div>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="separator"></div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/privacy-policy.html"><i class="fa-solid fa-shield-halved"></i></a>
+                <span class="icon-name">Privacy Policy</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/rules.html"><i class="fa-solid fa-scale-balanced"></i></a>
+                <span class="icon-name">Rules</span>
+            </div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/agreement.html"><i class="fa-solid fa-file-contract"></i></a>
+                <span class="icon-name">Agreement</span>
+            </div>
+            <div class="separator"></div>
+            <div class="icon-wrapper">
+                <a href="/logged-in/setting.html"><i class="fa-solid fa-gear"></i></a>
+                <span class="icon-name">Settings</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="sidebar-middle">
+
+        <section class="profile-container">
+            <div class="profile-cover"></div>
+            <div class="profile-info-wrapper">
+                <div class="profile-header-main">
+                    <img src="/img/dp.jpg" alt="Sourabh Mahiya" class="profile-main-pfp">
+                    <div class="profile-actions">
+                        <button class="profile-edit-btn">Edit Profile</button>
+                        <button class="profile-share-btn"><i class="fa-solid fa-share-nodes"></i></button>
+                    </div>
+                </div>
+
+                <div class="profile-details">
+                    <h1 class="profile-name">Sourabh Mahiya <i class="fa-solid fa-circle-check"></i></h1>
+                    <p class="profile-username">@mahiya47</p>
+                    <p class="profile-bio">Full-Stack Developer | Python & DSA Enthusiast. Building "Oh Sheet!" one line of code at a time. 🚀</p>
+                
+                    <div class="profile-meta-data">
+                        <span><i class="fa-solid fa-location-dot"></i> Delhi, India</span>
+                        <span><i class="fa-solid fa-link"></i> <a href="#">github.com/mahiya47</a></span>
+                        <span><i class="fa-solid fa-calendar-days"></i> Joined March 2026</span>
+                    </div>
+
+                    <div class="profile-stats-bar">
+                        <div class="stat-item"><strong>1.2k</strong> <span>Followers</span></div>
+                        <div class="stat-item"><strong>450</strong> <span>Following</span></div>
+                        <div class="stat-item"><strong>82</strong> <span>Sheets</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="skills-section">
+            <h3 class="section-title">Tech Stack</h3>
+            <div class="skills-container">
+                <span class="skill-badge python">Python</span>
+                <span class="skill-badge js">JavaScript</span>
+                <span class="skill-badge html">HTML5</span>
+                <span class="skill-badge css">CSS3</span>
+                <span class="skill-badge dsa">DSA</span>
+                <span class="skill-badge react">React</span>
+            </div>
+        </section>
+
+        <div class="separator-large"></div>
+
+        <div class="profile-feed-toggle">
+            <button class="feed-tab active">Sheets</button>
+            <button class="feed-tab">Replies</button>
+            <button class="feed-tab">Highlights</button>
+            <button class="feed-tab">Media</button>
+        </div>
+
+    </main>
+
+    <aside class="sidebar-right">
+
+        <section class="trending-card">
+            <h2 class="trending-header">Trending Topics</h2>
+    
+            <a href="#" class="trending-row">
+                <div class="trending-content">
+                    <span class="trending-meta">Technology · Trending</span>
+                    <p class="trending-tag">#Python312</p>
+                    <span class="trending-meta">1,240 Sheets</span>
+                </div>
+                <i class="fa-solid fa-ellipsis"></i>
+            </a>
+
+            <a href="#" class="trending-row">
+                <div class="trending-content">
+                    <span class="trending-meta">Fitness · Trending</span>
+                    <p class="trending-tag">Push Pull Legs</p>
+                    <span class="trending-meta">850 Sheets</span>
+                </div>
+                <i class="fa-solid fa-ellipsis"></i>
+            </a>
+
+            <a href="/logged-in/trending-topics.html" class="show-more-link">Show more</a>
+        </section>
+
+        <section class="trending-card">
+            <h2 class="trending-header">Trending Posts</h2>
+
+            <article class="trending-row">
+                <a href="#" class="trending-content">
+                    <span class="trending-meta">Posted by u/CodeWizard</span>
+                    <p class="trending-tag">10 CSS tricks you didn't know existed</p>
+                    <span class="trending-meta"><i class="fa-solid fa-fire"></i> 4.2k upvotes</span>
+                </a>
+            </article>
+
+            <article class="trending-row">
+                <a href="#" class="trending-content">
+                    <span class="trending-meta">Posted by u/DesignDaily</span>
+                    <p class="trending-tag">Why Neobrutalism is taking over 2026 web design</p>
+                    <span class="trending-meta"><i class="fa-solid fa-fire"></i> 2.1k upvotes</span>
+                </a>
+            </article>
+
+            <a href="/logged-in/trending-posts.html" class="show-more-link">View all posts</a>
+        </section>
+
+        <section class="mini-footer">
+            <div class="footer-links-secondary">
+                <a href="/logged-in/about.html">About</a>
+                <a href="/logged-in/rules.html">Rules</a>
+                <a href="/logged-in/privacy-policy.html">Privacy</a>
+                <a href="/logged-in/cookies.html">Cookies</a>
+                <a href="/logged-in/advertise.html">Ads Info</a>
+            </div>
+            <div class="footer-copyright">
+                <i class="fa-solid fa-sheet-plastic"></i>
+                <span>© 2026 Oh Sheet! Inc.</span>
+            </div>
+        </section>
+
+    </aside>
+
+    <button id="backToTop" class="back-to-top" title="Go to top">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+<script src="/script.js"></script>
+
+</body>
+</html>
