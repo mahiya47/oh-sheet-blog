@@ -4,20 +4,18 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey)
 
 const neobrutalistColors = ["#FF3E3E", "#3E54FF", "#3EFF8B", "#FFF03E", "#FF3EEF", "#3EFAFF", "#FFA53E", "#9D3EFF", "#FF3E96", "#C4FF3E"];
 
-// --- AUTH PROTECTION & LOADING OVERLAY ---
+
 async function checkUserAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    const currentPage = window.location.pathname.split("/").pop();
-    const publicPages = ["sign-in.html", "create-account.html"];
-    const overlay = document.getElementById("loading-overlay");
+    const path = window.location.pathname;
+    const currentPage = path.split("/").pop();
 
-    if (!session && !publicPages.includes(currentPage) && currentPage !== "") {
+    const publicPages = ["sign-in.html", "create-account.html"];
+
+    if (!session && !publicPages.includes(currentPage) && currentPage !== "sign-in.html") {
         window.location.href = "sign-in.html";
-    } else {
-        if (overlay) {
-            overlay.style.opacity = "0";
-            setTimeout(() => overlay.remove(), 300);
-        }
+    } else if (session && (currentPage === "sign-in.html" || currentPage === "create-account.html")) {
+        window.location.href = "index.html";
     }
 }
 checkUserAuth();
