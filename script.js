@@ -209,6 +209,7 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
     const loader = document.getElementById("feed-loader");
     if (loader) loader.remove();
 
+    // Fetch session once at the start for better performance
     const { data: { session } } = await supabaseClient.auth.getSession();
     
     container.innerHTML = isSearch ? `<div style="color: #3EFF8B; padding: 10px;">Results: ${posts.length} found</div>` : '';
@@ -239,7 +240,7 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
                         <a href="profile.html?id=${post.user_id}"><i class="fa-regular fa-user"></i> Visit Profile</a>
                         <a href="#" onclick="handleReport(${post.id})"><i class="fa-regular fa-flag"></i> Report</a>
                         ${session && session.user.id === post.user_id ? 
-                            `<a href="#" onclick="toggleOptions(${post.id})" style="color: #FF3E3E;"><i class="fa-regular fa-trash-can"></i> Delete</a>` 
+                            `<a href="#" onclick="toggleOptions(${post.id}, event)" style="color: #FF3E3E;"><i class="fa-regular fa-trash-can"></i> Delete</a>` 
                             : ''}
                     </div>
                 </div>
@@ -254,21 +255,50 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
                 </div>
                 <div class="footer-stat" onclick="handleShare(${post.id})"><i class="fa-solid fa-share-nodes"></i> <span>Share</span></div>
             </div>`;
+        
         container.appendChild(article);
     });
 }
 
-async function toggleOptions(postId) {
+async function toggleOptions(postId, e) {
+    if (e) e.preventDefault(); // Stop the page from jumping to the top
+
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return;
-    const { data: post } = await supabaseClient.from('posts').select('user_id').eq('id', postId).single();
-    if (post && post.user_id === session.user.id) {
-        if (confirm("Delete this Sheet?")) {
-            await supabaseClient.from('posts').delete().eq('id', postId);
-            window.location.reload();
+    if (!session) {
+        alert("Please sign in to perform this action.");
+        return;
+    }
+
+    const { data: post, error } = await supabaseClient
+        .from('posts')
+        .select('user_id')
+        .eq('id', postId)
+        .single();
+
+    if (error || !post) {
+        alert("Could not find the post.");
+        return;
+    }
+
+    if (post.user_id === session.user.id) {
+        if (confirm("Are you sure you want to delete this Sheet forever?")) {
+            const { error: deleteError } = await supabaseClient
+                .from('posts')
+                .delete()
+                .eq('id', postId);
+
+            if (deleteError) {
+                alert("Error deleting post: " + deleteError.message);
+            } else {
+                window.location.reload();
+            }
         }
+    } else {
+        alert("You can only delete your own posts!");
     }
 }
+
+window.toggleOptions = toggleOptions;
 
 async function handleLike(postId, element) {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -297,7 +327,11 @@ async function handleRepost(postId) {
     if (!session) return alert("Sign in first!");
     const { data: original } = await supabaseClient.from('posts').select('*').eq('id', postId).single();
     if (original) {
-        await supabaseClient.from('posts').insert([{ content: `Repost: ${original.content}`, user_id: session.user.id }]);
+        // USE BACKTICKS HERE ` `
+        await supabaseClient.from('posts').insert([{ 
+            content: `Repost: ${original.content}`, 
+            user_id: session.user.id 
+        }]);
         alert("Reposted!");
         window.location.reload();
     }
@@ -347,3 +381,10 @@ function setupGlobalInteractions() {
     const btn = document.getElementById("logout-btn");
     if (btn) btn.onclick = async () => { await supabaseClient.auth.signOut(); window.location.href = "index.html"; };
 }
+
+window.toggleOptions = toggleOptions;
+window.handleLike = handleLike;
+window.handleRepost = handleRepost;
+window.handleShare = handleShare;
+window.handleComment = handleComment;
+window.handleReport = handleReport;
