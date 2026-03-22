@@ -240,7 +240,9 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
                         <a href="profile.html?id=${post.user_id}"><i class="fa-regular fa-user"></i> Visit Profile</a>
                         <a href="#" onclick="handleReport(${post.id})"><i class="fa-regular fa-flag"></i> Report</a>
                         ${session && session.user.id === post.user_id ? 
-                            `<a href="#" onclick="toggleOptions(${post.id}, event)" style="color: #FF3E3E;"><i class="fa-regular fa-trash-can"></i> Delete</a>` 
+                            `<a href="#" onclick="toggleOptions(${post.id}, '${post.user_id}', event)" style="color: #FF3E3E;">
+                                <i class="fa-regular fa-trash-can"></i> Delete
+                            </a>` 
                             : ''}
                     </div>
                 </div>
@@ -260,41 +262,35 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
     });
 }
 
-async function toggleOptions(postId, e) {
-    if (e) e.preventDefault(); // Stop the page from jumping to the top
+async function toggleOptions(postId, postUserId, e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
 
     const { data: { session } } = await supabaseClient.auth.getSession();
+    
     if (!session) {
         alert("Please sign in to perform this action.");
         return;
     }
 
-    const { data: post, error } = await supabaseClient
-        .from('posts')
-        .select('user_id')
-        .eq('id', postId)
-        .single();
-
-    if (error || !post) {
-        alert("Could not find the post.");
+    if (postUserId !== session.user.id) {
+        alert("You can only delete your own posts!");
         return;
     }
 
-    if (post.user_id === session.user.id) {
-        if (confirm("Are you sure you want to delete this Sheet forever?")) {
-            const { error: deleteError } = await supabaseClient
-                .from('posts')
-                .delete()
-                .eq('id', postId);
+    if (confirm("Are you sure you want to delete this Sheet forever?")) {
+        const { error: deleteError } = await supabaseClient
+            .from('posts')
+            .delete()
+            .eq('id', postId);
 
-            if (deleteError) {
-                alert("Error deleting post: " + deleteError.message);
-            } else {
-                window.location.reload();
-            }
+        if (deleteError) {
+            alert("Error deleting post: " + deleteError.message);
+        } else {
+            window.location.reload();
         }
-    } else {
-        alert("You can only delete your own posts!");
     }
 }
 
