@@ -208,7 +208,6 @@ async function fetchTrendingSidebar() {
 }
 
 async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
-    // 1. Identify the correct container (Handle both Home and Profile pages)
     let container = document.getElementById(containerId);
     
     if (!container && containerId === "main-feed") {
@@ -216,17 +215,14 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
     }
 
     if (!container) {
-        console.error("Feed container not found. Check if the ID exists in your HTML.");
         return;
     }
 
-    // 2. Clear existing content and remove loader
     const loader = document.getElementById("feed-loader");
     if (loader) loader.remove();
     
     container.innerHTML = isSearch ? `<div style="color: #3EFF8B; padding: 10px; font-weight: bold;">Results: ${posts.length} found</div>` : '';
 
-    // 3. Handle empty states
     if (!posts || posts.length === 0) {
         container.innerHTML += `
             <div style="color: white; text-align: center; padding: 40px; border: 2px dashed #444; border-radius: 12px; margin-top: 20px;">
@@ -236,16 +232,21 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
         return;
     }
 
-    // 4. Get session once for better performance
     const { data: { session } } = await supabaseClient.auth.getSession();
 
-    // 5. Loop and Render
     posts.forEach((post) => {
         const isLiked = session ? post.likes.some(l => l.user_id === session.user.id) : false;
         const color = neobrutalistColors[Math.floor(Math.random() * neobrutalistColors.length)];
         
         const article = document.createElement("article");
         article.className = "sheet-card";
+        
+        article.onclick = (e) => {
+            if (!e.target.closest('.footer-stat') && !e.target.closest('.more-options') && !e.target.closest('a')) {
+                openPostModal(post.id);
+            }
+        };
+
         article.innerHTML = `
             <div class="sheet-header" style="background-color: ${color}">
                 <a href="profile.html?id=${post.user_id}" class="user-meta">
@@ -386,8 +387,14 @@ async function handleComment(postId) {
 
 async function createNewPost(e) {
     e.preventDefault();
-    const content = document.querySelector(".editor-textarea").value;
+    const textarea = document.querySelector(".editor-textarea");
+    if (!textarea) return;
+    
+    const content = textarea.value;
     const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    if (!content) return alert("Sheet cannot be empty!");
+
     await supabaseClient.from('posts').insert([{ content, user_id: user.id }]);
     window.location.href = "feed.html";
 }
@@ -413,6 +420,101 @@ function setupGlobalInteractions() {
     const btn = document.getElementById("logout-btn");
     if (btn) btn.onclick = async () => { await supabaseClient.auth.signOut(); window.location.href = "index.html"; };
 }
+;
+
+async function openPostModal(postId) {
+    const modal = document.getElementById("post-modal");
+    const contentDiv = document.getElementById("modal-post-content");
+    const commentsList = document.getElementById("modal-comments-list");
+    
+    modal.style.display = "flex";
+    contentDiv.innerHTML = `<div style="text-align:center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="color: #3EFF8B; font-size: 2rem;"></i></div>`;
+    commentsList.innerHTML = "";
+
+    const { data: post, error } = await supabaseClient
+        .from('posts')
+        .select('*, profiles(username, display_name, avatar_url), likes(user_id)')
+        .eq('id', postId)
+        .single();
+
+    if (error) {
+        contentDiv.innerHTML = "<p style='color:red;'>Error loading post.</p>";
+        return;
+    }
+
+    contentDiv.innerHTML = `
+        <div class="sheet-header" style="background: white; color: black; margin: -20px -20px 20px -20px; padding: 15px; border-bottom: 2px solid black;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="${post.profiles.avatar_url || 'img/dp.jpg'}" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid black;">
+                <div>
+                    <div style="font-weight: 900; text-transform: uppercase; line-height: 1;">${post.profiles.display_name}</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">@${post.profiles.username}</div>
+                </div>
+            </div>
+        </div>
+        <div style="padding: 30px 0;">
+            <p style="font-size: 1.6rem; color: white; line-height: 1.4; font-weight: 500;">${post.content}</p>
+        </div>
+        <div class="sheet-footer" style="border-top: 1px solid #333; padding-top: 15px; display: flex; gap: 20px;">
+            <div class="footer-stat" onclick="handleLike(${post.id}, this)">
+                <i class="fa-regular fa-heart"></i> 
+                <span class="like-count">${post.likes?.length || 0}</span>
+            </div>
+            <div class="footer-stat" onclick="handleShare(${post.id})">
+                <i class="fa-solid fa-share-nodes"></i> 
+                <span>Share</span>
+            </div>
+        </div>
+    `;
+
+    const { data: comments } = await supabaseClient
+        .from('comments')
+        .select('*, profiles(username, avatar_url)')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true });
+
+    if (comments && comments.length > 0) {
+        comments.forEach(comment => {
+            const cDiv = document.createElement("div");
+            cDiv.style.padding = "12px 0";
+            cDiv.style.borderBottom = "1px solid #222";
+            cDiv.innerHTML = `
+                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                    <img src="${comment.profiles.avatar_url || 'img/dp.jpg'}" style="width: 25px; height: 25px; border-radius: 50%;">
+                    <div>
+                        <strong style="color: #3EFF8B; font-size: 0.9rem;">@${comment.profiles.username}</strong>
+                        <p style="color: white; margin-top: 4px;">${comment.content}</p>
+                    </div>
+                </div>`;
+            commentsList.appendChild(cDiv);
+        });
+    } else {
+        commentsList.innerHTML = "<p style='color: #555; padding: 20px 0;'>No comments yet. Be the first to sheet!</p>";
+    }
+
+    document.getElementById("submit-modal-comment").onclick = () => submitModalComment(postId);
+}
+
+async function submitModalComment(postId) {
+    const text = document.getElementById("modal-comment-text").value
+    if (!text) return
+
+    const { data: { session } } = await supabaseClient.auth.getSession()
+    if (!session) return alert("Sign in to comment")
+
+    await supabaseClient.from('comments').insert([{ 
+        content: text, 
+        post_id: postId, 
+        user_id: session.user.id 
+    }])
+
+    document.getElementById("modal-comment-text").value = ""
+    openPostModal(postId)
+}
+
+function closePostModal() {
+    document.getElementById("post-modal").style.display = "none"
+}
 
 window.toggleOptions = toggleOptions;
 window.handleLike = handleLike;
@@ -420,3 +522,6 @@ window.handleRepost = handleRepost;
 window.handleShare = handleShare;
 window.handleComment = handleComment;
 window.handleReport = handleReport;
+window.openPostModal = openPostModal;
+window.submitModalComment = submitModalComment;
+window.closePostModal = closePostModal
