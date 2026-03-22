@@ -18,33 +18,39 @@
     <meta property="twitter:description" content="A neobrutalist blog for developers.">
     <meta property="twitter:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
     <title>Oh sheet!</title>
-    <link rel="icon" type="image/png" href="/img/logo.png">
+    <link rel="icon" type="image/png" href="img/logo.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; color: #3EFF8B; font-family: 'Ubuntu Mono';">
+        <div class="loader-content">
+            <i class="fa-solid fa-sheet-plastic fa-spin" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <p>Verifying Session...</p>
+        </div>
+    </div>
 
     <nav class="nav-bar">
         <div class="nav-section nav-section-left">
-            <img src="/img/full-logo.png" alt="logo">
+            <img src="img/full-logo.png" alt="logo">
         </div>
 
         <div class="nav-section nav-section-center">
             <div class="icon-wrapper">
-                <a href="/index.html"><i class="fa-solid fa-house"></i></a>
+                <a href="index.html"><i class="fa-solid fa-house"></i></a>
                 <span class="icon-name">Home</span>
             </div>
             <div class="icon-wrapper">
-                <a href="/create-post.html"><i class="fa-solid fa-pen-nib"></i></a>
+                <a href="create-post.html"><i class="fa-solid fa-pen-nib"></i></a>
                 <span class="icon-name">Create a post</span>
             </div>
             <div class="icon-wrapper">
-                <a href="/support.html"><i class="fa-solid fa-headset"></i></a>
+                <a href="support.html"><i class="fa-solid fa-headset"></i></a>
                 <span class="icon-name">Support</span>
             </div>
         </div>
@@ -56,13 +62,13 @@
             </div>
 
             <div class="nav-profile-wrapper">
-                <a href="/profile.html" class="profile-link">
-                    <img src="/img/dp.jpg" alt="PFP" id="nav-user-pfp">
+                <a href="profile.html" class="profile-link">
+                    <img src="img/dp.jpg" alt="PFP" id="nav-user-pfp">
                     <span id="nav-username">Guest</span>
                 </a>
                 <div class="nav-dropdown">
-                    <a href="/profile.html"><i class="fa-regular fa-user"></i> Visit Profile</a>
-                    <a href="/setting.html"><i class="fa-solid fa-gear"></i> Settings</a>
+                    <a href="profile.html"><i class="fa-regular fa-user"></i> Visit Profile</a>
+                    <a href="setting.html"><i class="fa-solid fa-gear"></i> Settings</a>
                     <div class="dropdown-divider"></div>
                     <a href="#" class="logout-link" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
                 </div>
@@ -73,36 +79,36 @@
     <aside class="sidebar-left">
         <div class="sidebar-top">
             <div class="icon-wrapper">
-                <a href="/explore.html"><i class="fa-solid fa-compass"></i></a>
+                <a href="explore.html"><i class="fa-solid fa-compass"></i></a>
                 <span class="icon-name">Explore</span>
             </div>
             <div class="icon-wrapper">
-                <a href="/trending-posts.html"><i class="fa-solid fa-fire"></i></a>
+                <a href="trending-posts.html"><i class="fa-solid fa-fire"></i></a>
                 <span class="icon-name">Trending</span>
             </div>
             <div class="separator"></div>
             <div class="icon-wrapper">
-                <a href="/about.html"><i class="fa-solid fa-circle-info"></i></a>
+                <a href="about.html"><i class="fa-solid fa-circle-info"></i></a>
                 <span class="icon-name">About Oh Sheet!</span>
             </div>
         </div>
         <div class="sidebar-bottom">
             <div class="separator"></div>
             <div class="icon-wrapper">
-                <a href="/privacy-policy.html"><i class="fa-solid fa-shield-halved"></i></a>
+                <a href="privacy-policy.html"><i class="fa-solid fa-shield-halved"></i></a>
                 <span class="icon-name">Privacy Policy</span>
             </div>
             <div class="icon-wrapper">
-                <a href="/rules.html"><i class="fa-solid fa-scale-balanced"></i></a>
+                <a href="rules.html"><i class="fa-solid fa-scale-balanced"></i></a>
                 <span class="icon-name">Rules</span>
             </div>
             <div class="icon-wrapper">
-                <a href="/agreement.html"><i class="fa-solid fa-file-contract"></i></a>
+                <a href="agreement.html"><i class="fa-solid fa-file-contract"></i></a>
                 <span class="icon-name">Agreement</span>
             </div>
             <div class="separator"></div>
             <div class="icon-wrapper">
-                <a href="/setting.html"><i class="fa-solid fa-gear"></i></a>
+                <a href="setting.html"><i class="fa-solid fa-gear"></i></a>
                 <span class="icon-name">Settings</span>
             </div>
         </div>
@@ -128,16 +134,16 @@
             <h2 class="trending-header">Trending Posts</h2>
             <div id="trending-container">
                 </div>
-            <a href="/trending-posts.html" class="show-more-link">View all posts</a>
+            <a href="trending-posts.html" class="show-more-link">View all posts</a>
         </section>
 
         <section class="mini-footer">
             <div class="footer-links-secondary">
-                <a href="/about.html">About</a>
-                <a href="/rules.html">Rules</a>
-                <a href="/privacy-policy.html">Privacy</a>
-                <a href="/cookies.html">Cookies</a>
-                <a href="/advertise.html">Ads Info</a>
+                <a href="about.html">About</a>
+                <a href="rules.html">Rules</a>
+                <a href="privacy-policy.html">Privacy</a>
+                <a href="cookies.html">Cookies</a>
+                <a href="advertise.html">Ads Info</a>
             </div>
             <div class="footer-copyright">
                 <i class="fa-solid fa-sheet-plastic"></i>
@@ -152,6 +158,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
-    <script src="/script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

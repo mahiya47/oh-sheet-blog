@@ -4,6 +4,24 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey)
 
 const neobrutalistColors = ["#FF3E3E", "#3E54FF", "#3EFF8B", "#FFF03E", "#FF3EEF", "#3EFAFF", "#FFA53E", "#9D3EFF", "#FF3E96", "#C4FF3E"];
 
+// --- AUTH PROTECTION & LOADING OVERLAY ---
+async function checkUserAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const currentPage = window.location.pathname.split("/").pop();
+    const publicPages = ["sign-in.html", "create-account.html"];
+    const overlay = document.getElementById("loading-overlay");
+
+    if (!session && !publicPages.includes(currentPage) && currentPage !== "") {
+        window.location.href = "sign-in.html";
+    } else {
+        if (overlay) {
+            overlay.style.opacity = "0";
+            setTimeout(() => overlay.remove(), 300);
+        }
+    }
+}
+checkUserAuth();
+
 document.addEventListener("DOMContentLoaded", async () => {
     initUserNav();
 
@@ -37,7 +55,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (settingsTabs.length > 0) {
         setupSettingsTabs(settingsTabs);
         loadCurrentSettings();
-        document.getElementById("save-settings-btn").addEventListener("click", saveProfileSettings);
+        const saveBtn = document.getElementById("save-settings-btn");
+        if (saveBtn) saveBtn.addEventListener("click", saveProfileSettings);
     }
 
     setupGlobalInteractions();
@@ -57,10 +76,11 @@ async function handleSignUp(e) {
         options: { data: { username: username, display_name: username } }
     });
 
-    if (error) alert(error.message);
-    else {
-        alert("Account created! You can now sign in.");
-        window.location.href = "/sign-in.html";
+    if (error) {
+        alert(error.message);
+    } else {
+        alert("Account created! Redirecting to Sign In...");
+        window.location.href = "sign-in.html";
     }
 }
 
@@ -70,11 +90,14 @@ async function handleSignIn(e) {
     const password = e.target.querySelector('input[type="password"]').value;
 
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) alert(error.message);
-    else window.location.href = "/index.html";
+    if (error) {
+        alert(error.message);
+    } else {
+        window.location.href = "index.html";
+    }
 }
 
-// --- PROFILE & DP UPLOAD (WITH COMPRESSION & FAIL-SAFE) ---
+// --- PROFILE & DP UPLOAD (WITH COMPRESSION) ---
 
 async function initUserNav() {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -106,34 +129,21 @@ async function uploadProfilePicture(e) {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) return;
 
-    const options = {
-        maxSizeMB: 0.05,
-        maxWidthOrHeight: 500,
-        useWebWorker: true
-    };
+    const options = { maxSizeMB: 0.05, maxWidthOrHeight: 500, useWebWorker: true };
 
     try {
         const compressedFile = await imageCompression(file, options);
         const fileExt = file.name.split('.').pop();
         const filePath = `${session.user.id}/${Math.random()}.${fileExt}`;
 
-        const { error: uploadError } = await supabaseClient.storage
-            .from('avatars')
-            .upload(filePath, compressedFile);
-
+        const { error: uploadError } = await supabaseClient.storage.from('avatars').upload(filePath, compressedFile);
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabaseClient.storage
-            .from('avatars')
-            .getPublicUrl(filePath);
-
-        document.getElementById("settings-pfp-preview").src = publicUrl;
+        const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(filePath);
+        const preview = document.getElementById("settings-pfp-preview");
+        if (preview) preview.src = publicUrl;
         
-        await supabaseClient
-            .from('profiles')
-            .update({ avatar_url: publicUrl })
-            .eq('id', session.user.id);
-
+        await supabaseClient.from('profiles').update({ avatar_url: publicUrl }).eq('id', session.user.id);
         alert("Profile picture updated!");
     } catch (error) {
         alert("Error processing image: " + error.message);
@@ -164,7 +174,6 @@ async function performGlobalSearch(query) {
 async function renderFeed(posts, isSearch = false) {
     const feedContainer = document.getElementById("main-feed");
     const { data: { session } } = await supabaseClient.auth.getSession();
-    
     const loader = document.getElementById("feed-loader");
     if (loader) loader.remove();
     
@@ -179,8 +188,8 @@ async function renderFeed(posts, isSearch = false) {
         article.innerHTML = `
             <div class="sheet-header" style="background-color: ${color}">
                 <div class="header-left">
-                    <a href="/profile.html" class="user-meta">
-                        <img src="${post.profiles?.avatar_url || '/img/dp.jpg'}" class="sheet-pfp">
+                    <a href="profile.html" class="user-meta">
+                        <img src="${post.profiles?.avatar_url || 'img/dp.jpg'}" class="sheet-pfp">
                         <div class="user-names">
                             <span class="display-name" style="color:black">${post.profiles?.display_name || 'User'}</span>
                             <span class="username" style="color:rgba(0,0,0,0.6)">@${post.profiles?.username || 'anon'} • ${formatDate(post.created_at)}</span>
@@ -211,11 +220,7 @@ async function handleLike(postId, element) {
     const likeCountSpan = element.querySelector('.like-count');
     let currentCount = parseInt(likeCountSpan.innerText);
 
-    const { data: existingLike } = await supabaseClient
-        .from('likes')
-        .select('*')
-        .match({ post_id: postId, user_id: session.user.id })
-        .single();
+    const { data: existingLike } = await supabaseClient.from('likes').select('*').match({ post_id: postId, user_id: session.user.id }).single();
 
     if (existingLike) {
         await supabaseClient.from('likes').delete().match({ post_id: postId, user_id: session.user.id });
@@ -245,9 +250,7 @@ async function handleComment(postId) {
 async function toggleOptions(postId) {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) return;
-
     const { data: post } = await supabaseClient.from('posts').select('user_id').eq('id', postId).single();
-
     if (post && post.user_id === session.user.id) {
         if (confirm("Delete this Sheet?")) {
             await supabaseClient.from('posts').delete().eq('id', postId);
@@ -265,13 +268,12 @@ async function createNewPost(e) {
     const content = document.querySelector(".editor-textarea").value;
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) return alert("Sign in to post!");
-
     await supabaseClient.from('posts').insert([{ content, user_id: user.id }]);
-    window.location.href = "/index.html";
+    window.location.href = "index.html";
 }
 
 function handleShare(postId) {
-    navigator.clipboard.writeText(`${window.location.origin}/post.html?id=${postId}`);
+    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?id=${postId}`);
     alert("Link copied!");
 }
 
@@ -293,7 +295,8 @@ function setupSettingsTabs(tabs) {
             tabs.forEach(t => t.classList.remove("active"));
             tab.classList.add("active");
             document.querySelectorAll(".settings-section").forEach(sec => sec.classList.remove("active"));
-            document.getElementById(`${sectionId}-section`).classList.add("active");
+            const target = document.getElementById(`${sectionId}-section`);
+            if (target) target.classList.add("active");
         });
     });
 }
@@ -303,18 +306,22 @@ async function loadCurrentSettings() {
     if (!session) return;
     const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
     if (profile) {
-        document.getElementById("settings-display-name").value = profile.display_name || "";
-        document.getElementById("settings-bio").value = profile.bio || "";
-        document.getElementById("settings-email").value = session.user.email;
-        if (profile.avatar_url) document.getElementById("settings-pfp-preview").src = profile.avatar_url;
+        const dName = document.getElementById("settings-display-name");
+        const bio = document.getElementById("settings-bio");
+        const email = document.getElementById("settings-email");
+        const pfp = document.getElementById("settings-pfp-preview");
+        if (dName) dName.value = profile.display_name || "";
+        if (bio) bio.value = profile.bio || "";
+        if (email) email.value = session.user.email;
+        if (pfp && profile.avatar_url) pfp.src = profile.avatar_url;
     }
 }
 
 async function saveProfileSettings() {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    const display_name = document.getElementById("settings-display-name").value;
+    const dName = document.getElementById("settings-display-name").value;
     const bio = document.getElementById("settings-bio").value;
-    await supabaseClient.from('profiles').update({ display_name, bio }).eq('id', session.user.id);
+    await supabaseClient.from('profiles').update({ display_name: dName, bio: bio }).eq('id', session.user.id);
     alert("Settings saved!");
 }
 
@@ -341,8 +348,11 @@ function formatDate(dateString) {
 
 function setupGlobalInteractions() {
     const logoutBtn = document.getElementById("logout-btn");
-    if (logoutBtn) logoutBtn.onclick = async () => { 
-        await supabaseClient.auth.signOut(); 
-        window.location.href = "/index.html"; 
-    };
+    if (logoutBtn) {
+        logoutBtn.onclick = async (e) => { 
+            e.preventDefault();
+            await supabaseClient.auth.signOut(); 
+            window.location.href = "sign-in.html"; 
+        };
+    }
 }

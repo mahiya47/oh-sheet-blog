@@ -6,7 +6,7 @@
     <title>Settings - Oh sheet!</title>
     <link rel="icon" type="image/png" href="/img/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="settings-body">
 
@@ -17,7 +17,7 @@
                 <a href="#profile" class="nav-tab active" data-section="profile"><i class="fa-solid fa-user"></i> Profile</a>
                 <a href="#account" class="nav-tab" data-section="account"><i class="fa-solid fa-gears"></i> Account</a>
                 <a href="#appearance" class="nav-tab" data-section="appearance"><i class="fa-solid fa-palette"></i> Appearance</a>
-                <a href="/index.html" class="exit-settings"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+                <a href="index.html" class="exit-settings"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
             </nav>
         </aside>
 
@@ -25,7 +25,7 @@
             <section id="profile-section" class="settings-section active">
                 <h3>Public Profile</h3>
                 <div class="profile-upload">
-                    <img src="/img/dp.jpg" alt="Profile Picture" id="settings-pfp-preview">
+                    <img src="img/dp.jpg" alt="Profile Picture" id="settings-pfp-preview">
                     <input type="file" id="pfp-input" hidden accept="image/*">
                     <button class="change-btn" onclick="document.getElementById('pfp-input').click()">Change Photo</button>
                 </div>
@@ -66,6 +66,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
