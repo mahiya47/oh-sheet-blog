@@ -3,27 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="title" content="Oh Sheet! - Share your thoughts instantly">
-    <meta name="description" content="A neobrutalist blog for developers and fitness enthusiasts to share their daily sheets.">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-username.github.io/oh-sheet/">
-    <meta property="og:title" content="Oh Sheet! - Share your thoughts instantly">
-    <meta property="og:description" content="Join Sourabh Mahiya on Oh Sheet! to post updates, likes, and comments.">
-    <meta property="og:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
-
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://your-username.github.io/oh-sheet/">
-    <meta property="twitter:title" content="Oh Sheet!">
-    <meta property="twitter:description" content="A neobrutalist blog for developers.">
-    <meta property="twitter:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
-    <title>Oh sheet!</title>
+    <title>Create | Oh sheet!</title>
     <link rel="icon" type="image/png" href="/img/logo.png">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
 </head>
@@ -51,7 +35,7 @@
 
         <div class="nav-section nav-section-right">
             <div class="search-container">
-                <input type="text" id="global-search" placeholder="Search users or sheets..." class="search-input">
+                <input type="text" placeholder="Search..." class="search-input">
                 <span class="search-slash"><i class="fa-solid fa-magnifying-glass"></i></span>
             </div>
 
@@ -108,19 +92,37 @@
         </div>
     </aside>
 
-    <main class="sidebar-middle" id="main-feed">
-        <div class="sort-container">
-            <div class="sort-left">
-                <div class="sort-label"><i class="fa-solid fa-fire"></i><span>Sort:</span></div>
-                <select class="sort-select" id="feed-sort">
-                    <option value="hot">Hot</option>
-                    <option value="new">New</option>
-                    <option value="top">Top</option>
-                </select>
+    <main class="sidebar-middle">
+        <div class="editor-container">
+            <div class="editor-header">
+                <h1>Create a New Sheet</h1>
+                <a href="/index.html" class="close-editor"><i class="fa-solid fa-xmark"></i></a>
+            </div>
+
+            <div class="editor-body">
+                <div class="editor-input-group">
+                    <label>Content</label>
+                    <textarea placeholder="Write your thoughts or paste code here..." class="editor-textarea"></textarea>
+                </div>
+
+                <div class="editor-toolbar">
+                    <button class="tool-btn"><i class="fa-solid fa-bold"></i></button>
+                    <button class="tool-btn"><i class="fa-solid fa-italic"></i></button>
+                    <button class="tool-btn"><i class="fa-solid fa-code"></i></button>
+                    <button class="tool-btn"><i class="fa-solid fa-image"></i></button>
+                </div>
+
+                <div class="editor-input-group">
+                    <label>Tags</label>
+                    <input type="text" placeholder="e.g. python, tutorial" class="editor-tags">
+                </div>
+            </div>
+
+            <div class="editor-footer">
+                <button class="cancel-btn" onclick="window.location.href='/index.html'">Discard</button>
+                <button class="publish-btn">Post Sheet</button>
             </div>
         </div>
-        
-        <div id="feed-loader" style="color: white; text-align: center; padding: 20px;">Loading Sheets...</div>
     </main>
 
     <aside class="sidebar-right">
@@ -130,28 +132,9 @@
                 </div>
             <a href="/trending-posts.html" class="show-more-link">View all posts</a>
         </section>
-
-        <section class="mini-footer">
-            <div class="footer-links-secondary">
-                <a href="/about.html">About</a>
-                <a href="/rules.html">Rules</a>
-                <a href="/privacy-policy.html">Privacy</a>
-                <a href="/cookies.html">Cookies</a>
-                <a href="/advertise.html">Ads Info</a>
-            </div>
-            <div class="footer-copyright">
-                <i class="fa-solid fa-sheet-plastic"></i>
-                <span>© 2026 Oh Sheet! Inc.</span>
-            </div>
-        </section>
     </aside>
 
-    <button id="backToTop" class="back-to-top" title="Go to top">
-        <i class="fa-solid fa-arrow-up"></i>
-    </button>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <script src="/script.js"></script>
 </body>
 </html>

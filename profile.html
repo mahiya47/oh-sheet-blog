@@ -2,28 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="title" content="Oh Sheet! - Share your thoughts instantly">
-    <meta name="description" content="A neobrutalist blog for developers and fitness enthusiasts to share their daily sheets.">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-username.github.io/oh-sheet/">
-    <meta property="og:title" content="Oh Sheet! - Share your thoughts instantly">
-    <meta property="og:description" content="Join Sourabh Mahiya on Oh Sheet! to post updates, likes, and comments.">
-    <meta property="og:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
-
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://your-username.github.io/oh-sheet/">
-    <meta property="twitter:title" content="Oh Sheet!">
-    <meta property="twitter:description" content="A neobrutalist blog for developers.">
-    <meta property="twitter:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
-    <title>Oh sheet!</title>
-    <link rel="icon" type="image/png" href="/img/logo.png">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-    
+    <title>Profile | Oh sheet!</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
 </head>
@@ -36,7 +15,7 @@
 
         <div class="nav-section nav-section-center">
             <div class="icon-wrapper">
-                <a href="/index.html"><i class="fa-solid fa-house"></i></a>
+                <a href="/signed-in.html"><i class="fa-solid fa-house"></i></a>
                 <span class="icon-name">Home</span>
             </div>
             <div class="icon-wrapper">
@@ -51,7 +30,7 @@
 
         <div class="nav-section nav-section-right">
             <div class="search-container">
-                <input type="text" id="global-search" placeholder="Search users or sheets..." class="search-input">
+                <input type="text" placeholder="Search or jump to..." class="search-input">
                 <span class="search-slash"><i class="fa-solid fa-magnifying-glass"></i></span>
             </div>
 
@@ -108,19 +87,23 @@
         </div>
     </aside>
 
-    <main class="sidebar-middle" id="main-feed">
-        <div class="sort-container">
-            <div class="sort-left">
-                <div class="sort-label"><i class="fa-solid fa-fire"></i><span>Sort:</span></div>
-                <select class="sort-select" id="feed-sort">
-                    <option value="hot">Hot</option>
-                    <option value="new">New</option>
-                    <option value="top">Top</option>
-                </select>
+    <main class="sidebar-middle" id="profile-page-container">
+        <section class="profile-container">
+            <div class="profile-cover"></div>
+            <div class="profile-info-wrapper">
+                <div class="profile-header-main">
+                    <img src="/img/dp.jpg" id="profile-main-pfp" class="profile-main-pfp">
+                    <div class="profile-actions">
+                        <button class="profile-edit-btn" onclick="window.location.href='/setting.html'">Edit Profile</button>
+                    </div>
+                </div>
+                <div class="profile-details">
+                    <h1 id="profile-display-name" class="profile-name">Loading...</h1>
+                    <p id="profile-handle" class="profile-username">@loading</p>
+                    <p id="profile-bio-text" class="profile-bio">Fetching bio...</p>
+                </div>
             </div>
-        </div>
-        
-        <div id="feed-loader" style="color: white; text-align: center; padding: 20px;">Loading Sheets...</div>
+        </section>
     </main>
 
     <aside class="sidebar-right">
@@ -146,12 +129,7 @@
         </section>
     </aside>
 
-    <button id="backToTop" class="back-to-top" title="Go to top">
-        <i class="fa-solid fa-arrow-up"></i>
-    </button>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <script src="/script.js"></script>
 </body>
 </html>

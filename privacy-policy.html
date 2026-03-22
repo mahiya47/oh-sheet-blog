@@ -3,20 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="title" content="Oh Sheet! - Share your thoughts instantly">
-    <meta name="description" content="A neobrutalist blog for developers and fitness enthusiasts to share their daily sheets.">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-username.github.io/oh-sheet/">
-    <meta property="og:title" content="Oh Sheet! - Share your thoughts instantly">
-    <meta property="og:description" content="Join Sourabh Mahiya on Oh Sheet! to post updates, likes, and comments.">
-    <meta property="og:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
-
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://your-username.github.io/oh-sheet/">
-    <meta property="twitter:title" content="Oh Sheet!">
-    <meta property="twitter:description" content="A neobrutalist blog for developers.">
-    <meta property="twitter:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
     <title>Oh sheet!</title>
     <link rel="icon" type="image/png" href="/img/logo.png">
     
@@ -36,7 +22,7 @@
 
         <div class="nav-section nav-section-center">
             <div class="icon-wrapper">
-                <a href="/index.html"><i class="fa-solid fa-house"></i></a>
+                <a href="/signed-in.html"><i class="fa-solid fa-house"></i></a>
                 <span class="icon-name">Home</span>
             </div>
             <div class="icon-wrapper">
@@ -51,7 +37,7 @@
 
         <div class="nav-section nav-section-right">
             <div class="search-container">
-                <input type="text" id="global-search" placeholder="Search users or sheets..." class="search-input">
+                <input type="text" placeholder="Search or jump to..." class="search-input">
                 <span class="search-slash"><i class="fa-solid fa-magnifying-glass"></i></span>
             </div>
 
@@ -108,19 +94,23 @@
         </div>
     </aside>
 
-    <main class="sidebar-middle" id="main-feed">
-        <div class="sort-container">
-            <div class="sort-left">
-                <div class="sort-label"><i class="fa-solid fa-fire"></i><span>Sort:</span></div>
-                <select class="sort-select" id="feed-sort">
-                    <option value="hot">Hot</option>
-                    <option value="new">New</option>
-                    <option value="top">Top</option>
-                </select>
-            </div>
+
+    <main class="sidebar-middle">
+
+        <div class="content-card">
+            <h1>Privacy Policy</h1>
+            <p>Last Updated: March 2026</p>
+
+            <h2>Information We Collect</h2>
+            <p>We collect your username, email address, and any "Sheets" or comments you post on the platform.</p>
+
+            <h2>How We Use Data</h2>
+            <p>Your data is used to personalize your feed and allow you to interact with other users. We do not sell your personal data to third parties.</p>
+
+            <h2>Cookies</h2>
+            <p>We use essential cookies to keep you logged into your account and remember your theme preferences.</p>
         </div>
-        
-        <div id="feed-loader" style="color: white; text-align: center; padding: 20px;">Loading Sheets...</div>
+
     </main>
 
     <aside class="sidebar-right">
@@ -151,7 +141,6 @@
     </button>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <script src="/script.js"></script>
 </body>
 </html>
