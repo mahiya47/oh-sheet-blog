@@ -7,16 +7,17 @@
     <meta name="description" content="A neobrutalist blog for developers and fitness enthusiasts to share their daily sheets.">
 
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-username.github.io/oh-sheet/">
+    <meta property="og:url" content="https://mahiya47.github.io/oh-sheet-blog/">
     <meta property="og:title" content="Oh Sheet! - Share your thoughts instantly">
     <meta property="og:description" content="Join Sourabh Mahiya on Oh Sheet! to post updates, likes, and comments.">
-    <meta property="og:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
+    <meta property="og:image" content="https://mahiya47.github.io/oh-sheet-blog/img/full-logo.png">
 
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://your-username.github.io/oh-sheet/">
+    <meta property="twitter:url" content="https://mahiya47.github.io/oh-sheet-blog/">
     <meta property="twitter:title" content="Oh Sheet!">
     <meta property="twitter:description" content="A neobrutalist blog for developers.">
-    <meta property="twitter:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
+    <meta property="twitter:image" content="https://mahiya47.github.io/oh-sheet-blog/img/full-logo.png">
+    
     <title>Oh sheet!</title>
     <link rel="icon" type="image/png" href="img/logo.png">
     
@@ -42,7 +43,7 @@
 
         <div class="nav-section nav-section-center">
             <div class="icon-wrapper">
-                <a href="index.html"><i class="fa-solid fa-house"></i></a>
+                <a href="feed.html"><i class="fa-solid fa-house"></i></a>
                 <span class="icon-name">Home</span>
             </div>
             <div class="icon-wrapper">
@@ -114,65 +115,25 @@
         </div>
     </aside>
 
-
-    <main class="sidebar-middle">
-
-        <div class="content-card">
-            <h1>Help & Support Center</h1>
-            <p>Something went wrong? Or just want to say hi? Drop us a "sheet" below and our team will get back to you faster than a Python script.</p>
-            
-            <div class="editor-container">
-                <div class="editor-header">
-                    <h2>Submit a Request</h2>
-                    <i class="fa-solid fa-circle-question"></i>
-                </div>
-
-                <form action="#" class="support-form">
-                    <div class="editor-input-group">
-                        <label>Issue Type</label>
-                        <select class="editor-title" style="width: 100%;">
-                            <option value="complaint">Report a Bug / Complaint</option>
-                            <option value="account">Account Access</option>
-                            <option value="feedback">General Feedback</option>
-                            <option value="other">Other Support</option>
-                        </select>
-                    </div>
-
-                    <div class="editor-input-group">
-                        <label>Subject</label>
-                        <input type="text" class="editor-title" placeholder="Briefly describe the issue...">
-                    </div>
-
-                    <div class="editor-input-group">
-                        <label>Detailed Description</label>
-                        <textarea class="editor-textarea" placeholder="Provide as much detail as possible (e.g., browser version, steps to reproduce)..."></textarea>
-                    </div>
-
-                    <div class="editor-footer">
-                        <button type="button" class="cancel-btn">Discard</button>
-                        <button type="submit" class="publish-btn">Submit Request</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="separator" style="width: 100%; margin: 40px 0;"></div>
-
-            <h2>Other ways to reach us</h2>
-            <div class="footer-stat" style="font-size: 1.1rem; margin-bottom: 10px;">
-                <i class="fa-solid fa-envelope"></i> support@ohsheet.com
-            </div>
-            <div class="footer-stat" style="font-size: 1.1rem;">
-                <i class="fa-solid fa-hashtag"></i> @OhSheetSupport on X
+    <main class="sidebar-middle" id="main-feed">
+        <div class="sort-container">
+            <div class="sort-left">
+                <div class="sort-label"><i class="fa-solid fa-fire"></i><span>Sort:</span></div>
+                <select class="sort-select" id="feed-sort">
+                    <option value="hot">Hot</option>
+                    <option value="new">New</option>
+                    <option value="top">Top</option>
+                </select>
             </div>
         </div>
-
+        
+        <div id="feed-loader" style="color: white; text-align: center; padding: 20px;">Loading Sheets...</div>
     </main>
 
     <aside class="sidebar-right">
         <section class="trending-card">
             <h2 class="trending-header">Trending Posts</h2>
-            <div id="trending-container">
-                </div>
+            <div id="trending-container"></div>
             <a href="trending-posts.html" class="show-more-link">View all posts</a>
         </section>
 

@@ -4,18 +4,29 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey)
 
 const neobrutalistColors = ["#FF3E3E", "#3E54FF", "#3EFF8B", "#FFF03E", "#FF3EEF", "#3EFAFF", "#FFA53E", "#9D3EFF", "#FF3E96", "#C4FF3E"];
 
-
+// --- UPDATED AUTH PROTECTION FOR NEW FILE STRUCTURE ---
 async function checkUserAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     const path = window.location.pathname;
     const currentPage = path.split("/").pop();
+    
+    // index.html is now your LOGIN page. feed.html is now your main FEED page.
+    const publicPages = ["index.html", "create-account.html"];
 
-    const publicPages = ["sign-in.html", "create-account.html"];
-
-    if (!session && !publicPages.includes(currentPage) && currentPage !== "sign-in.html") {
-        window.location.href = "sign-in.html";
-    } else if (session && (currentPage === "sign-in.html" || currentPage === "create-account.html")) {
+    // 1. Redirect to Login if not signed in (and not already on a public page)
+    if (!session && !publicPages.includes(currentPage) && currentPage !== "") {
         window.location.href = "index.html";
+    } 
+    // 2. Redirect to Feed if already signed in and trying to access Login/Signup
+    else if (session && (currentPage === "index.html" || currentPage === "create-account.html" || currentPage === "")) {
+        window.location.href = "feed.html";
+    } else {
+        // Handle loading overlay removal
+        const overlay = document.getElementById("loading-overlay");
+        if (overlay) {
+            overlay.style.opacity = "0";
+            setTimeout(() => overlay.remove(), 300);
+        }
     }
 }
 checkUserAuth();
@@ -60,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupGlobalInteractions();
 });
 
-// --- AUTHENTICATION ---
+// --- AUTHENTICATION HANDLERS ---
 
 async function handleSignUp(e) {
     e.preventDefault();
@@ -78,7 +89,7 @@ async function handleSignUp(e) {
         alert(error.message);
     } else {
         alert("Account created! Redirecting to Sign In...");
-        window.location.href = "sign-in.html";
+        window.location.href = "index.html"; 
     }
 }
 
@@ -91,11 +102,11 @@ async function handleSignIn(e) {
     if (error) {
         alert(error.message);
     } else {
-        window.location.href = "index.html";
+        window.location.href = "feed.html";
     }
 }
 
-// --- PROFILE & DP UPLOAD (WITH COMPRESSION) ---
+// --- PROFILE & DP UPLOAD ---
 
 async function initUserNav() {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -267,7 +278,7 @@ async function createNewPost(e) {
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) return alert("Sign in to post!");
     await supabaseClient.from('posts').insert([{ content, user_id: user.id }]);
-    window.location.href = "index.html";
+    window.location.href = "feed.html";
 }
 
 function handleShare(postId) {
@@ -350,7 +361,7 @@ function setupGlobalInteractions() {
         logoutBtn.onclick = async (e) => { 
             e.preventDefault();
             await supabaseClient.auth.signOut(); 
-            window.location.href = "sign-in.html"; 
+            window.location.href = "index.html"; 
         };
     }
 }
