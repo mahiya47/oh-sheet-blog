@@ -294,9 +294,9 @@ a {
     display: flex;
     position: fixed;
     top: 7.5%;
-    left: 6%;
+    left: 7%;
     bottom: 0;
-    width:72%;
+    width:70%;
     background-color: black;
     border: 2px solid white;
     overflow-y: auto;
@@ -304,7 +304,7 @@ a {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 20px 10%;
+    padding: 20px 2%;
 }
 
 .profile-container {
@@ -313,6 +313,9 @@ a {
     border-radius: 16px;
     overflow: hidden;
     margin-bottom: 20px;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .profile-cover {
@@ -339,8 +342,9 @@ a {
     height: 120px;
     border-radius: 50%;
     border: 5px solid black;
+    object-fit: cover;
     box-shadow: 0 0 0 3px white;
-    background-color: black;
+    background-color: white;
 }
 
 .profile-actions {
