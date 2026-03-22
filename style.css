@@ -937,6 +937,7 @@ a {
     position: relative;
     cursor: pointer;
     color: black;
+    padding: 10px;
 }
 
 .more-options i.fa-ellipsis {
@@ -947,13 +948,13 @@ a {
     display: none;
     position: absolute;
     right: 0;
-    top: 20px;
+    top: 35px;
     background-color: black;
     border: 2px solid white;
     min-width: 160px;
-    z-index: 105;
+    z-index: 1000;
     border-radius: 8px;
-    box-shadow: 5px 5px 0px rgba(0,0,0,0.5);
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.8);
 }
 
 .dropdown-content::before {
@@ -968,12 +969,14 @@ a {
 
 .dropdown-content a {
     color: white;
-    padding: 10px 15px;
+    padding: 12px 16px;
+    text-decoration: none;
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 13px;
+    font-size: 14px;
     border-bottom: 1px solid #333;
+    transition: 0.2s;
 }
 
 .dropdown-content a:last-child {

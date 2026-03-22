@@ -57,7 +57,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupGlobalInteractions();
 });
 
-// --- AUTH HANDLERS ---
 async function handleSignUp(e) {
     e.preventDefault();
     const email = document.getElementById("signup-email").value;
@@ -109,7 +108,30 @@ async function initUserNav() {
     }
 }
 
-// --- PROFILE LOGIC ---
+async function uploadProfilePicture(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 500, useWebWorker: true };
+
+    try {
+        const compressedFile = await imageCompression(file, options);
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${session.user.id}/${Math.random()}.${fileExt}`;
+
+        const { error: uploadError } = await supabaseClient.storage.from('avatars').upload(filePath, compressedFile);
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(filePath);
+        await supabaseClient.from('profiles').update({ avatar_url: publicUrl }).eq('id', session.user.id);
+        alert("Profile picture updated!");
+        window.location.reload();
+    } catch (error) {
+        alert("Error: " + error.message);
+    }
+}
+
 async function fetchUserProfile() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     const urlParams = new URLSearchParams(window.location.search);
@@ -117,11 +139,7 @@ async function fetchUserProfile() {
 
     if (!targetUserId) return;
 
-    const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('*')
-        .eq('id', targetUserId)
-        .single();
+    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', targetUserId).single();
 
     if (profile) {
         document.getElementById("profile-display-name").innerText = profile.display_name || profile.username;
@@ -147,7 +165,6 @@ async function fetchUserPosts(userId) {
     renderFeed(posts, false, "user-posts-feed");
 }
 
-// --- FEED & TRENDING ---
 async function fetchMainFeed() {
     const { data: posts } = await supabaseClient
         .from('posts')
@@ -161,35 +178,47 @@ async function fetchTrendingSidebar() {
     const container = document.getElementById("trending-container");
     if (!container) return;
 
-    const { data: trends } = await supabaseClient
+    const { data: trends, error } = await supabaseClient
         .from('posts')
         .select('content, profiles(username)')
         .limit(3)
         .order('created_at', { ascending: false });
 
-    if (!trends) return;
+    if (error) {
+        console.error("Trending Error:", error);
+        return;
+    }
+
     container.innerHTML = "";
     trends.forEach(item => {
         const div = document.createElement("article");
         div.className = "trending-row";
-        div.innerHTML = `<div class="trending-content"><span class="trending-meta">u/${item.profiles?.username}</span><p class="trending-tag">${item.content.substring(0, 30)}...</p></div>`;
+        div.innerHTML = `
+            <div class="trending-content">
+                <span class="trending-meta">u/${item.profiles?.username || 'anon'}</span>
+                <p class="trending-tag">${item.content.substring(0, 30)}...</p>
+            </div>`;
         container.appendChild(div);
     });
 }
 
-function renderFeed(posts, isSearch = false, containerId = "main-feed") {
+async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
     const container = document.getElementById(containerId);
     if (!container) return;
 
     const loader = document.getElementById("feed-loader");
     if (loader) loader.remove();
 
-    const currentUserId = supabaseClient.auth.getSession().then(({data}) => data.session?.user.id);
-
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    
     container.innerHTML = isSearch ? `<div style="color: #3EFF8B; padding: 10px;">Results: ${posts.length} found</div>` : '';
 
-    posts.forEach(async (post) => {
-        const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!posts || posts.length === 0) {
+        container.innerHTML += `<div style="color: white; text-align: center; padding: 20px;">No sheets found here.</div>`;
+        return;
+    }
+
+    posts.forEach((post) => {
         const isLiked = session ? post.likes.some(l => l.user_id === session.user.id) : false;
         const color = neobrutalistColors[Math.floor(Math.random() * neobrutalistColors.length)];
         
@@ -204,7 +233,16 @@ function renderFeed(posts, isSearch = false, containerId = "main-feed") {
                         <span class="username" style="color:rgba(0,0,0,0.6)">@${post.profiles?.username} • ${formatDate(post.created_at)}</span>
                     </div>
                 </a>
-                <div class="more-options" onclick="toggleOptions(${post.id})"><i class="fa-solid fa-ellipsis"></i></div>
+                <div class="more-options">
+                    <i class="fa-solid fa-ellipsis"></i>
+                    <div class="dropdown-content">
+                        <a href="profile.html?id=${post.user_id}"><i class="fa-regular fa-user"></i> Visit Profile</a>
+                        <a href="#" onclick="handleReport(${post.id})"><i class="fa-regular fa-flag"></i> Report</a>
+                        ${session && session.user.id === post.user_id ? 
+                            `<a href="#" onclick="toggleOptions(${post.id})" style="color: #FF3E3E;"><i class="fa-regular fa-trash-can"></i> Delete</a>` 
+                            : ''}
+                    </div>
+                </div>
             </div>
             <div class="sheet-content"><p>${post.content}</p></div>
             <div class="sheet-footer">
@@ -214,86 +252,98 @@ function renderFeed(posts, isSearch = false, containerId = "main-feed") {
                     <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" style="${isLiked ? 'color: #FF3E3E' : ''}"></i> 
                     <span class="like-count">${post.likes?.length || 0}</span>
                 </div>
+                <div class="footer-stat" onclick="handleShare(${post.id})"><i class="fa-solid fa-share-nodes"></i> <span>Share</span></div>
             </div>`;
         container.appendChild(article);
     });
 }
 
-// --- INTERACTIONS ---
+async function toggleOptions(postId) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+    const { data: post } = await supabaseClient.from('posts').select('user_id').eq('id', postId).single();
+    if (post && post.user_id === session.user.id) {
+        if (confirm("Delete this Sheet?")) {
+            await supabaseClient.from('posts').delete().eq('id', postId);
+            window.location.reload();
+        }
+    }
+}
+
 async function handleLike(postId, element) {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return alert("Sign in to like!");
-
+    if (!session) return alert("Sign in first!");
     const heartIcon = element.querySelector('i');
     const likeCountSpan = element.querySelector('.like-count');
-    let currentCount = parseInt(likeCountSpan.innerText);
+    let count = parseInt(likeCountSpan.innerText);
 
-    const { data: existingLike } = await supabaseClient.from('likes').select('*').match({ post_id: postId, user_id: session.user.id }).single();
+    const { data: existing } = await supabaseClient.from('likes').select('*').match({ post_id: postId, user_id: session.user.id }).single();
 
-    if (existingLike) {
+    if (existing) {
         await supabaseClient.from('likes').delete().match({ post_id: postId, user_id: session.user.id });
         heartIcon.classList.replace('fa-solid', 'fa-regular');
         heartIcon.style.color = "";
-        likeCountSpan.innerText = currentCount - 1;
+        likeCountSpan.innerText = count - 1;
     } else {
         await supabaseClient.from('likes').insert([{ post_id: postId, user_id: session.user.id }]);
         heartIcon.classList.replace('fa-regular', 'fa-solid');
         heartIcon.style.color = "#FF3E3E";
-        likeCountSpan.innerText = currentCount + 1;
+        likeCountSpan.innerText = count + 1;
     }
 }
 
 async function handleRepost(postId) {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return alert("Sign in to repost!");
-    
+    if (!session) return alert("Sign in first!");
     const { data: original } = await supabaseClient.from('posts').select('*').eq('id', postId).single();
     if (original) {
-        await supabaseClient.from('posts').insert([{ 
-            content: `Repost from @${session.user.user_metadata.username}: ${original.content}`, 
-            user_id: session.user.id 
-        }]);
-        alert("Sheet Reposted!");
+        await supabaseClient.from('posts').insert([{ content: `Repost: ${original.content}`, user_id: session.user.id }]);
+        alert("Reposted!");
         window.location.reload();
     }
 }
 
+function handleShare(postId) {
+    const url = `${window.location.origin}${window.location.pathname}?id=${postId}`;
+    navigator.clipboard.writeText(url).then(() => alert("Link copied!"));
+}
+
 async function handleComment(postId) {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return alert("Sign in to comment!");
-
-    const commentBody = prompt("Enter your comment:");
-    if (!commentBody || commentBody.trim() === "") return;
-
-    await supabaseClient.from('comments').insert([{ content: commentBody, post_id: postId, user_id: session.user.id }]);
-    alert("Comment added!");
-    window.location.reload(); 
+    if (!session) return alert("Sign in first!");
+    const body = prompt("Enter comment:");
+    if (body) {
+        await supabaseClient.from('comments').insert([{ content: body, post_id: postId, user_id: session.user.id }]);
+        window.location.reload();
+    }
 }
 
 async function createNewPost(e) {
     e.preventDefault();
     const content = document.querySelector(".editor-textarea").value;
     const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return alert("Sign in to post!");
     await supabaseClient.from('posts').insert([{ content, user_id: user.id }]);
     window.location.href = "feed.html";
 }
 
-function formatDate(dateString) {
-    const diff = Math.floor((new Date() - new Date(dateString)) / 1000);
-    if (diff < 60) return 'now';
-    if (diff < 3600) return Math.floor(diff/60) + 'm';
-    if (diff < 86400) return Math.floor(diff/3600) + 'h';
-    return Math.floor(diff/86400) + 'd';
+
+function handleReport(postId) {
+    const reason = prompt("Why are you reporting this post? (Spam, Harassment, Inappropriate)");
+    if (reason) {
+        alert("Thank you. Post #" + postId + " has been reported for: " + reason);
+        console.log(`Post ${postId} reported for: ${reason}`);
+    }
+}
+
+function formatDate(date) {
+    const d = Math.floor((new Date() - new Date(date)) / 1000);
+    if (d < 60) return 'now';
+    if (d < 3600) return Math.floor(d/60) + 'm';
+    if (d < 86400) return Math.floor(d/3600) + 'h';
+    return Math.floor(d/86400) + 'd';
 }
 
 function setupGlobalInteractions() {
-    const logoutBtn = document.getElementById("logout-btn");
-    if (logoutBtn) {
-        logoutBtn.onclick = async (e) => { 
-            e.preventDefault();
-            await supabaseClient.auth.signOut(); 
-            window.location.href = "index.html"; 
-        };
-    }
+    const btn = document.getElementById("logout-btn");
+    if (btn) btn.onclick = async () => { await supabaseClient.auth.signOut(); window.location.href = "index.html"; };
 }
