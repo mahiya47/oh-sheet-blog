@@ -240,7 +240,7 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
                         <a href="profile.html?id=${post.user_id}"><i class="fa-regular fa-user"></i> Visit Profile</a>
                         <a href="#" onclick="handleReport(${post.id})"><i class="fa-regular fa-flag"></i> Report</a>
                         ${session && session.user.id === post.user_id ? 
-                            `<a href="#" onclick="toggleOptions(${post.id}, '${post.user_id}', event)" style="color: #FF3E3E;">
+                            `<a href="javascript:void(0)" onclick="toggleOptions(${post.id}, '${post.user_id}', event)" style="color: #FF3E3E;">
                                 <i class="fa-regular fa-trash-can"></i> Delete
                             </a>` 
                             : ''}
@@ -268,27 +268,31 @@ async function toggleOptions(postId, postUserId, e) {
         e.stopPropagation();
     }
 
-    const { data: { session } } = await supabaseClient.auth.getSession();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     
-    if (!session) {
+    if (!user) {
         alert("Please sign in to perform this action.");
         return;
     }
 
-    if (postUserId !== session.user.id) {
+    if (postUserId !== user.id) {
         alert("You can only delete your own posts!");
         return;
     }
 
-    if (confirm("Are you sure you want to delete this Sheet forever?")) {
-        const { error: deleteError } = await supabaseClient
+    const confirmDelete = confirm("Are you sure you want to delete this Sheet?");
+    if (confirmDelete) {
+        const { error } = await supabaseClient
             .from('posts')
             .delete()
-            .eq('id', postId);
+            .eq('id', postId)
+            .eq('user_id', user.id);
 
-        if (deleteError) {
-            alert("Error deleting post: " + deleteError.message);
+        if (error) {
+            console.error("Delete Error:", error);
+            alert("Delete failed: " + error.message);
         } else {
+            alert("Sheet deleted successfully!");
             window.location.reload();
         }
     }
