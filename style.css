@@ -259,7 +259,7 @@ a {
     top: 7.5%;
     left: 0.5%;
     bottom: 1%;
-    width: 5%;
+    width: 6%;
     background-color: black;
     border: 2px solid white;
     z-index: 100;
@@ -1952,4 +1952,25 @@ input:checked + .slider:before {
     box-shadow: 2px 2px 0px black;
 }
 
+.profile-tabs {
+    display: flex;
+    border-bottom: 2px solid white;
+    margin-top: 20px;
+    padding: 0 30px;
+}
 
+.profile-tab {
+    padding: 10px 20px;
+    color: #888;
+    font-weight: bold;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.profile-tab.active {
+    color: white;
+    background: #3EFF8B;
+    color: black;
+    border: 2px solid white;
+    border-bottom: none;
+}

@@ -3,33 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="title" content="Oh Sheet! - Share your thoughts instantly">
-    <meta name="description" content="A neobrutalist blog for developers and fitness enthusiasts to share their daily sheets.">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://your-username.github.io/oh-sheet/">
-    <meta property="og:title" content="Oh Sheet! - Share your thoughts instantly">
-    <meta property="og:description" content="Join Sourabh Mahiya on Oh Sheet! to post updates, likes, and comments.">
-    <meta property="og:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
-
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://your-username.github.io/oh-sheet/">
-    <meta property="twitter:title" content="Oh Sheet!">
-    <meta property="twitter:description" content="A neobrutalist blog for developers.">
-    <meta property="twitter:image" content="https://your-username.github.io/oh-sheet/img/full-logo.png">
-    <title>Oh sheet!</title>
+    <title>Profile | Oh sheet!</title>
     <link rel="icon" type="image/png" href="img/logo.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; color: #3EFF8B; font-family: 'Ubuntu Mono';">
-        <div class="loader-content">
+        <div class="loader-content" style="text-align: center;">
             <i class="fa-solid fa-sheet-plastic fa-spin" style="font-size: 3rem; margin-bottom: 1rem;"></i>
             <p>Verifying Session...</p>
         </div>
@@ -120,16 +105,22 @@
             <div class="profile-info-wrapper">
                 <div class="profile-header-main">
                     <img src="img/dp.jpg" id="profile-main-pfp" class="profile-main-pfp">
-                    <div class="profile-actions">
-                        <button class="profile-edit-btn" onclick="window.location.href='/setting.html'">Edit Profile</button>
-                    </div>
+                    <div class="profile-actions" id="profile-actions-area">
+                        </div>
                 </div>
                 <div class="profile-details">
                     <h1 id="profile-display-name" class="profile-name">Loading...</h1>
-                    <p id="profile-handle" class="profile-username">@loading</p>
+                    <p id="profile-handle" class="profile-username">@username</p>
                     <p id="profile-bio-text" class="profile-bio">Fetching bio...</p>
                 </div>
             </div>
+            
+            <div class="profile-tabs">
+                <div class="profile-tab active">Sheets</div>
+            </div>
+
+            <div id="user-posts-feed">
+                </div>
         </section>
     </main>
 
@@ -146,8 +137,6 @@
                 <a href="about.html">About</a>
                 <a href="rules.html">Rules</a>
                 <a href="privacy-policy.html">Privacy</a>
-                <a href="cookies.html">Cookies</a>
-                <a href="advertise.html">Ads Info</a>
             </div>
             <div class="footer-copyright">
                 <i class="fa-solid fa-sheet-plastic"></i>

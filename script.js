@@ -4,24 +4,18 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey)
 
 const neobrutalistColors = ["#FF3E3E", "#3E54FF", "#3EFF8B", "#FFF03E", "#FF3EEF", "#3EFAFF", "#FFA53E", "#9D3EFF", "#FF3E96", "#C4FF3E"];
 
-// --- UPDATED AUTH PROTECTION FOR NEW FILE STRUCTURE ---
 async function checkUserAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     const path = window.location.pathname;
     const currentPage = path.split("/").pop();
-    
-    // index.html is now your LOGIN page. feed.html is now your main FEED page.
     const publicPages = ["index.html", "create-account.html"];
 
-    // 1. Redirect to Login if not signed in (and not already on a public page)
     if (!session && !publicPages.includes(currentPage) && currentPage !== "") {
         window.location.href = "index.html";
     } 
-    // 2. Redirect to Feed if already signed in and trying to access Login/Signup
     else if (session && (currentPage === "index.html" || currentPage === "create-account.html" || currentPage === "")) {
         window.location.href = "feed.html";
     } else {
-        // Handle loading overlay removal
         const overlay = document.getElementById("loading-overlay");
         if (overlay) {
             overlay.style.opacity = "0";
@@ -37,7 +31,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const mainFeed = document.getElementById("main-feed");
     const trendingContainer = document.getElementById("trending-container");
     const profilePage = document.getElementById("profile-page-container");
-    const settingsTabs = document.querySelectorAll(".nav-tab");
     const signupForm = document.getElementById("signup-form");
     const loginForm = document.querySelector(".login-form");
     const publishBtn = document.querySelector(".publish-btn");
@@ -61,17 +54,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    if (settingsTabs.length > 0) {
-        setupSettingsTabs(settingsTabs);
-        loadCurrentSettings();
-        const saveBtn = document.getElementById("save-settings-btn");
-        if (saveBtn) saveBtn.addEventListener("click", saveProfileSettings);
-    }
-
     setupGlobalInteractions();
 });
-
-// --- AUTHENTICATION HANDLERS ---
 
 async function handleSignUp(e) {
     e.preventDefault();
@@ -106,8 +90,6 @@ async function handleSignIn(e) {
     }
 }
 
-// --- PROFILE & DP UPLOAD ---
-
 async function initUserNav() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) return;
@@ -130,18 +112,19 @@ async function uploadProfilePicture(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-        alert("File too large! Please select an image under 5MB.");
-        return;
-    }
-
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) return;
 
-    const options = { maxSizeMB: 0.05, maxWidthOrHeight: 500, useWebWorker: true };
+    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 500, useWebWorker: true };
 
     try {
         const compressedFile = await imageCompression(file, options);
+        
+        if (compressedFile.size > 2 * 1024 * 1024) {
+            alert("Image is still too large after compression. Please use a smaller file.");
+            return;
+        }
+
         const fileExt = file.name.split('.').pop();
         const filePath = `${session.user.id}/${Math.random()}.${fileExt}`;
 
@@ -159,88 +142,112 @@ async function uploadProfilePicture(e) {
     }
 }
 
-// --- FEED, SEARCH & INTERACTION ---
+async function fetchUserProfile() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetUserId = urlParams.get('id') || session?.user.id;
+
+    if (!targetUserId) return;
+
+    const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', targetUserId)
+        .single();
+
+    if (profile) {
+        document.getElementById("profile-display-name").innerText = profile.display_name || profile.username;
+        document.getElementById("profile-handle").innerText = "@" + profile.username;
+        document.getElementById("profile-bio-text").innerText = profile.bio || "No bio yet.";
+        if (profile.avatar_url) document.getElementById("profile-main-pfp").src = profile.avatar_url;
+
+        const actionArea = document.getElementById("profile-actions-area");
+        if (session && session.user.id === targetUserId) {
+            actionArea.innerHTML = `<button class="profile-edit-btn" onclick="window.location.href='setting.html'">Edit Profile</button>`;
+        }
+        fetchUserPosts(targetUserId);
+    }
+}
+
+async function fetchUserPosts(userId) {
+    const { data: posts } = await supabaseClient
+        .from('posts')
+        .select('*, profiles(username, display_name, avatar_url), likes(user_id), comments(id)')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    renderFeed(posts, false, "user-posts-feed");
+}
 
 async function fetchMainFeed() {
-    const { data: posts, error } = await supabaseClient
+    const { data: posts } = await supabaseClient
         .from('posts')
         .select('*, profiles(username, display_name, avatar_url), likes(user_id), comments(id)')
         .order('created_at', { ascending: false });
 
-    if (!error) renderFeed(posts);
+    renderFeed(posts, false, "main-feed");
 }
 
 async function performGlobalSearch(query) {
-    const { data: posts, error } = await supabaseClient
+    const { data: posts } = await supabaseClient
         .from('posts')
         .select('*, profiles!inner(username, display_name, avatar_url), likes(user_id), comments(id)')
         .or(`content.ilike.%${query}%, profiles.username.ilike.%${query}%`)
         .order('created_at', { ascending: false });
 
-    if (!error) renderFeed(posts, true);
+    renderFeed(posts, true, "main-feed");
 }
 
-async function renderFeed(posts, isSearch = false) {
-    const feedContainer = document.getElementById("main-feed");
-    const { data: { session } } = await supabaseClient.auth.getSession();
+function renderFeed(posts, isSearch = false, containerId = "main-feed") {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
     const loader = document.getElementById("feed-loader");
     if (loader) loader.remove();
-    
-    feedContainer.innerHTML = isSearch ? `<div style="color: #3EFF8B; padding: 10px; font-family: 'Ubuntu Mono';">Results: ${posts.length} found</div>` : '';
+
+    container.innerHTML = isSearch ? `<div style="color: #3EFF8B; padding: 10px;">Results: ${posts.length} found</div>` : '';
 
     posts.forEach(post => {
         const color = neobrutalistColors[Math.floor(Math.random() * neobrutalistColors.length)];
-        const isLiked = session ? post.likes.some(l => l.user_id === session.user.id) : false;
-        
         const article = document.createElement("article");
         article.className = "sheet-card";
         article.innerHTML = `
             <div class="sheet-header" style="background-color: ${color}">
-                <div class="header-left">
-                    <a href="profile.html" class="user-meta">
-                        <img src="${post.profiles?.avatar_url || 'img/dp.jpg'}" class="sheet-pfp">
-                        <div class="user-names">
-                            <span class="display-name" style="color:black">${post.profiles?.display_name || 'User'}</span>
-                            <span class="username" style="color:rgba(0,0,0,0.6)">@${post.profiles?.username || 'anon'} • ${formatDate(post.created_at)}</span>
-                        </div>
-                    </a>
-                </div>
+                <a href="profile.html?id=${post.user_id}" class="user-meta">
+                    <img src="${post.profiles?.avatar_url || 'img/dp.jpg'}" class="sheet-pfp">
+                    <div class="user-names">
+                        <span class="display-name" style="color:black">${post.profiles?.display_name || 'User'}</span>
+                        <span class="username" style="color:rgba(0,0,0,0.6)">@${post.profiles?.username} • ${formatDate(post.created_at)}</span>
+                    </div>
+                </a>
                 <div class="more-options" onclick="toggleOptions(${post.id})"><i class="fa-solid fa-ellipsis"></i></div>
             </div>
             <div class="sheet-content"><p>${post.content}</p></div>
             <div class="sheet-footer">
                 <div class="footer-stat" onclick="handleComment(${post.id})"><i class="fa-regular fa-comment"></i> <span>${post.comments?.length || 0}</span></div>
-                <div class="footer-stat" onclick="handleRepost(${post.id})"><i class="fa-solid fa-arrows-rotate"></i> <span>0</span></div>
-                <div class="footer-stat" onclick="handleLike(${post.id}, this)">
-                    <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" style="${isLiked ? 'color: #FF3E3E' : ''}"></i> 
-                    <span class="like-count">${post.likes?.length || 0}</span>
-                </div>
-                <div class="footer-stat" onclick="handleShare(${post.id})"><i class="fa-solid fa-share-nodes"></i></div>
+                <div class="footer-stat"><i class="fa-regular fa-heart"></i> <span>${post.likes?.length || 0}</span></div>
             </div>`;
-        feedContainer.appendChild(article);
+        container.appendChild(article);
     });
 }
 
-async function handleLike(postId, element) {
+async function toggleOptions(postId) {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return alert("Sign in to like!");
-
-    const heartIcon = element.querySelector('i');
-    const likeCountSpan = element.querySelector('.like-count');
-    let currentCount = parseInt(likeCountSpan.innerText);
-
-    const { data: existingLike } = await supabaseClient.from('likes').select('*').match({ post_id: postId, user_id: session.user.id }).single();
-
-    if (existingLike) {
-        await supabaseClient.from('likes').delete().match({ post_id: postId, user_id: session.user.id });
-        heartIcon.classList.replace('fa-solid', 'fa-regular');
-        heartIcon.style.color = "";
-        likeCountSpan.innerText = currentCount - 1;
+    if (!session) return;
+    
+    const { data: post } = await supabaseClient.from('posts').select('user_id').eq('id', postId).single();
+    
+    if (post && post.user_id === session.user.id) {
+        if (confirm("Are you sure you want to delete this Sheet?")) {
+            const { error } = await supabaseClient.from('posts').delete().eq('id', postId);
+            if (!error) {
+                window.location.reload();
+            } else {
+                alert("Error deleting post: " + error.message);
+            }
+        }
     } else {
-        await supabaseClient.from('likes').insert([{ post_id: postId, user_id: session.user.id }]);
-        heartIcon.classList.replace('fa-regular', 'fa-solid');
-        heartIcon.style.color = "#FF3E3E";
-        likeCountSpan.innerText = currentCount + 1;
+        alert("You can only delete your own posts!");
     }
 }
 
@@ -256,22 +263,6 @@ async function handleComment(postId) {
     window.location.reload(); 
 }
 
-async function toggleOptions(postId) {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return;
-    const { data: post } = await supabaseClient.from('posts').select('user_id').eq('id', postId).single();
-    if (post && post.user_id === session.user.id) {
-        if (confirm("Delete this Sheet?")) {
-            await supabaseClient.from('posts').delete().eq('id', postId);
-            window.location.reload();
-        }
-    } else {
-        alert("Only the owner can delete this post.");
-    }
-}
-
-// --- CORE UTILITIES ---
-
 async function createNewPost(e) {
     e.preventDefault();
     const content = document.querySelector(".editor-textarea").value;
@@ -281,78 +272,12 @@ async function createNewPost(e) {
     window.location.href = "feed.html";
 }
 
-function handleShare(postId) {
-    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?id=${postId}`);
-    alert("Link copied!");
-}
-
-async function handleRepost(postId) {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return alert("Sign in to repost!");
-    const { data: original } = await supabaseClient.from('posts').select('*').eq('id', postId).single();
-    await supabaseClient.from('posts').insert([{ content: `Repost: ${original.content}`, user_id: session.user.id }]);
-    window.location.reload();
-}
-
-// --- SETTINGS ---
-
-function setupSettingsTabs(tabs) {
-    tabs.forEach(tab => {
-        tab.addEventListener("click", (e) => {
-            e.preventDefault();
-            const sectionId = tab.getAttribute("data-section");
-            tabs.forEach(t => t.classList.remove("active"));
-            tab.classList.add("active");
-            document.querySelectorAll(".settings-section").forEach(sec => sec.classList.remove("active"));
-            const target = document.getElementById(`${sectionId}-section`);
-            if (target) target.classList.add("active");
-        });
-    });
-}
-
-async function loadCurrentSettings() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return;
-    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-    if (profile) {
-        const dName = document.getElementById("settings-display-name");
-        const bio = document.getElementById("settings-bio");
-        const email = document.getElementById("settings-email");
-        const pfp = document.getElementById("settings-pfp-preview");
-        if (dName) dName.value = profile.display_name || "";
-        if (bio) bio.value = profile.bio || "";
-        if (email) email.value = session.user.email;
-        if (pfp && profile.avatar_url) pfp.src = profile.avatar_url;
-    }
-}
-
-async function saveProfileSettings() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    const dName = document.getElementById("settings-display-name").value;
-    const bio = document.getElementById("settings-bio").value;
-    await supabaseClient.from('profiles').update({ display_name: dName, bio: bio }).eq('id', session.user.id);
-    alert("Settings saved!");
-}
-
-async function fetchTrendingSidebar() {
-    const container = document.getElementById("trending-container");
-    if (!container) return;
-    const { data: trends } = await supabaseClient.from('posts').select('content, profiles(username)').limit(3).order('created_at', { ascending: false });
-    if (!trends) return;
-    container.innerHTML = "";
-    trends.forEach(item => {
-        const div = document.createElement("article");
-        div.className = "trending-row";
-        div.innerHTML = `<a href="#" class="trending-content"><span class="trending-meta">u/${item.profiles?.username}</span><p class="trending-tag">${item.content.substring(0, 30)}...</p></a>`;
-        container.appendChild(div);
-    });
-}
-
 function formatDate(dateString) {
     const diff = Math.floor((new Date() - new Date(dateString)) / 1000);
     if (diff < 60) return 'now';
     if (diff < 3600) return Math.floor(diff/60) + 'm';
-    return Math.floor(diff/3600) + 'h';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h';
+    return Math.floor(diff/86400) + 'd';
 }
 
 function setupGlobalInteractions() {
