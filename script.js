@@ -156,11 +156,16 @@ async function fetchUserProfile() {
 }
 
 async function fetchUserPosts(userId) {
-    const { data: posts } = await supabaseClient
+    const { data: posts, error } = await supabaseClient
         .from('posts')
         .select('*, profiles(username, display_name, avatar_url), likes(user_id), comments(id)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Error fetching user posts:", error);
+        return;
+    }
 
     renderFeed(posts, false, "user-posts-feed");
 }
@@ -203,22 +208,38 @@ async function fetchTrendingSidebar() {
 }
 
 async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const loader = document.getElementById("feed-loader");
-    if (loader) loader.remove();
-
-    // Fetch session once at the start for better performance
-    const { data: { session } } = await supabaseClient.auth.getSession();
+    // 1. Identify the correct container (Handle both Home and Profile pages)
+    let container = document.getElementById(containerId);
     
-    container.innerHTML = isSearch ? `<div style="color: #3EFF8B; padding: 10px;">Results: ${posts.length} found</div>` : '';
+    if (!container && containerId === "main-feed") {
+        container = document.getElementById("user-posts-feed");
+    }
 
-    if (!posts || posts.length === 0) {
-        container.innerHTML += `<div style="color: white; text-align: center; padding: 20px;">No sheets found here.</div>`;
+    if (!container) {
+        console.error("Feed container not found. Check if the ID exists in your HTML.");
         return;
     }
 
+    // 2. Clear existing content and remove loader
+    const loader = document.getElementById("feed-loader");
+    if (loader) loader.remove();
+    
+    container.innerHTML = isSearch ? `<div style="color: #3EFF8B; padding: 10px; font-weight: bold;">Results: ${posts.length} found</div>` : '';
+
+    // 3. Handle empty states
+    if (!posts || posts.length === 0) {
+        container.innerHTML += `
+            <div style="color: white; text-align: center; padding: 40px; border: 2px dashed #444; border-radius: 12px; margin-top: 20px;">
+                <i class="fa-solid fa-sheet-plastic" style="font-size: 2rem; color: #444; margin-bottom: 10px;"></i>
+                <p>No sheets found here yet.</p>
+            </div>`;
+        return;
+    }
+
+    // 4. Get session once for better performance
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    // 5. Loop and Render
     posts.forEach((post) => {
         const isLiked = session ? post.likes.some(l => l.user_id === session.user.id) : false;
         const color = neobrutalistColors[Math.floor(Math.random() * neobrutalistColors.length)];
@@ -238,7 +259,7 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
                     <i class="fa-solid fa-ellipsis"></i>
                     <div class="dropdown-content">
                         <a href="profile.html?id=${post.user_id}"><i class="fa-regular fa-user"></i> Visit Profile</a>
-                        <a href="#" onclick="handleReport(${post.id})"><i class="fa-regular fa-flag"></i> Report</a>
+                        <a href="javascript:void(0)" onclick="handleReport(${post.id})"><i class="fa-regular fa-flag"></i> Report</a>
                         ${session && session.user.id === post.user_id ? 
                             `<a href="javascript:void(0)" onclick="toggleOptions(${post.id}, '${post.user_id}', event)" style="color: #FF3E3E;">
                                 <i class="fa-regular fa-trash-can"></i> Delete
@@ -247,15 +268,26 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
                     </div>
                 </div>
             </div>
-            <div class="sheet-content"><p>${post.content}</p></div>
+            <div class="sheet-content">
+                <p>${post.content}</p>
+            </div>
             <div class="sheet-footer">
-                <div class="footer-stat" onclick="handleComment(${post.id})"><i class="fa-regular fa-comment"></i> <span>${post.comments?.length || 0}</span></div>
-                <div class="footer-stat" onclick="handleRepost(${post.id})"><i class="fa-solid fa-arrows-rotate"></i> <span>Repost</span></div>
+                <div class="footer-stat" onclick="handleComment(${post.id})">
+                    <i class="fa-regular fa-comment"></i> 
+                    <span>${post.comments?.length || 0}</span>
+                </div>
+                <div class="footer-stat" onclick="handleRepost(${post.id})">
+                    <i class="fa-solid fa-arrows-rotate"></i> 
+                    <span>Repost</span>
+                </div>
                 <div class="footer-stat" onclick="handleLike(${post.id}, this)">
                     <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" style="${isLiked ? 'color: #FF3E3E' : ''}"></i> 
                     <span class="like-count">${post.likes?.length || 0}</span>
                 </div>
-                <div class="footer-stat" onclick="handleShare(${post.id})"><i class="fa-solid fa-share-nodes"></i> <span>Share</span></div>
+                <div class="footer-stat" onclick="handleShare(${post.id})">
+                    <i class="fa-solid fa-share-nodes"></i> 
+                    <span>Share</span>
+                </div>
             </div>`;
         
         container.appendChild(article);
