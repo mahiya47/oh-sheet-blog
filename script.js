@@ -36,10 +36,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const publishBtn = document.querySelector(".publish-btn");
     const pfpInput = document.getElementById("pfp-input");
     const searchInput = document.getElementById("global-search");
+    const postModal = document.getElementById("post-modal");
+    const followingSidebar = document.getElementById("following-sidebar-container");
+    const followingFeedContainer = document.getElementById("following-feed");
 
     if (mainFeed) fetchMainFeed();
     if (trendingContainer) fetchTrendingSidebar();
     if (profilePage) fetchUserProfile();
+    if (followingFeedContainer) fetchFollowingFeed();
+    if (followingSidebar) fetchFollowingSidebar();
     if (signupForm) signupForm.addEventListener("submit", handleSignUp);
     if (loginForm) loginForm.addEventListener("submit", handleSignIn);
     if (publishBtn) publishBtn.addEventListener("click", createNewPost);
@@ -50,6 +55,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (e.key === "Enter") {
                 const query = e.target.value.trim();
                 query !== "" ? performGlobalSearch(query) : fetchMainFeed();
+            }
+        });
+    }
+
+    if (postModal) {
+        postModal.addEventListener("click", (e) => {
+            if (e.target === postModal) {
+                closePostModal();
             }
         });
     }
@@ -139,18 +152,43 @@ async function fetchUserProfile() {
 
     if (!targetUserId) return;
 
-    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', targetUserId).single();
+    const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', targetUserId)
+        .single();
 
     if (profile) {
         document.getElementById("profile-display-name").innerText = profile.display_name || profile.username;
         document.getElementById("profile-handle").innerText = "@" + profile.username;
         document.getElementById("profile-bio-text").innerText = profile.bio || "No bio yet.";
-        if (profile.avatar_url) document.getElementById("profile-main-pfp").src = profile.avatar_url;
+        if (profile.avatar_url) {
+            document.getElementById("profile-main-pfp").src = profile.avatar_url;
+        }
 
         const actionArea = document.getElementById("profile-actions-area");
+        
         if (session && session.user.id === targetUserId) {
             actionArea.innerHTML = `<button class="profile-edit-btn" onclick="window.location.href='setting.html'">Edit Profile</button>`;
+        } else if (session) {
+            const { data: isFollowing } = await supabaseClient
+                .from('follows')
+                .select('*')
+                .match({ follower_id: session.user.id, following_id: targetUserId })
+                .single();
+
+            const followBtnStyles = isFollowing 
+                ? 'background: #FF3E3E; color: black; border: 2px solid black;' 
+                : 'background: white; color: black; border: 2px solid black;';
+
+            actionArea.innerHTML = `
+                <button class="profile-edit-btn" 
+                        style="${followBtnStyles}" 
+                        onclick="toggleFollow('${targetUserId}', this)">
+                    ${isFollowing ? 'Unfollow' : 'Follow'}
+                </button>`;
         }
+        
         fetchUserPosts(targetUserId);
     }
 }
@@ -295,6 +333,96 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
     });
 }
 
+async function fetchFollowingFeed() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+
+    const { data: followingData } = await supabaseClient
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', session.user.id);
+
+    const followingIds = followingData.map(f => f.following_id);
+
+    if (followingIds.length === 0) {
+        document.getElementById("following-feed").innerHTML = `
+            <div style="color: white; text-align: center; padding: 40px; border: 2px dashed #444;">
+                <p>You aren't following anyone yet!</p>
+                <a href="feed.html" style="color: #3EFF8B;">Go explore posts</a>
+            </div>`;
+        return;
+    }
+
+    const { data: posts, error } = await supabaseClient
+        .from('posts')
+        .select('*, profiles(username, display_name, avatar_url), likes(user_id), comments(id)')
+        .in('user_id', followingIds)
+        .order('created_at', { ascending: false });
+
+    if (!error) {
+        renderFeed(posts, false, "following-feed");
+    }
+}
+
+async function toggleFollow(targetUserId, btnElement) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return alert("Sign in to follow users!");
+    if (session.user.id === targetUserId) return alert("You can't follow yourself!");
+
+    const { data: existing } = await supabaseClient
+        .from('follows')
+        .select('*')
+        .match({ follower_id: session.user.id, following_id: targetUserId })
+        .single();
+
+    if (existing) {
+        await supabaseClient.from('follows').delete().match({ follower_id: session.user.id, following_id: targetUserId });
+        btnElement.innerText = "Follow";
+        btnElement.style.background = "white";
+    } else {
+        await supabaseClient.from('follows').insert([{ follower_id: session.user.id, following_id: targetUserId }]);
+        btnElement.innerText = "Unfollow";
+        btnElement.style.background = "#FF3E3E";
+    }
+}
+
+async function fetchFollowingSidebar() {
+    const container = document.getElementById("following-sidebar-container");
+    if (!container) return;
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+        container.innerHTML = "<p style='padding:15px; color:#888;'>Sign in to see who you follow.</p>";
+        return;
+    }
+
+    const { data: following, error } = await supabaseClient
+        .from('follows')
+        .select('following_id, profiles:following_id(username, display_name, avatar_url)')
+        .eq('follower_id', session.user.id);
+
+    if (error || !following.length) {
+        container.innerHTML = "<p style='padding:15px; color:#888;'>Not following anyone yet.</p>";
+        return;
+    }
+
+    container.innerHTML = "";
+    following.forEach(item => {
+        const p = item.profiles;
+        const div = document.createElement("div");
+        div.className = "trending-row";
+        div.innerHTML = `
+            <a href="profile.html?id=${item.following_id}" style="display:flex; align-items:center; gap:10px; width:100%;">
+                <img src="${p.avatar_url || 'img/dp.jpg'}" style="width:30px; height:30px; border-radius:50%; border:1px solid white;">
+                <div class="trending-content">
+                    <span class="trending-tag">${p.display_name}</span>
+                    <span class="trending-meta">@${p.username}</span>
+                </div>
+            </a>`;
+        container.appendChild(div);
+    });
+}   
+
 async function toggleOptions(postId, postUserId, e) {
     if (e) {
         e.preventDefault();
@@ -330,8 +458,6 @@ async function toggleOptions(postId, postUserId, e) {
         }
     }
 }
-
-window.toggleOptions = toggleOptions;
 
 async function handleLike(postId, element) {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -431,6 +557,8 @@ async function openPostModal(postId) {
     contentDiv.innerHTML = `<div style="text-align:center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="color: #3EFF8B; font-size: 2rem;"></i></div>`;
     commentsList.innerHTML = "";
 
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
     const { data: post, error } = await supabaseClient
         .from('posts')
         .select('*, profiles(username, display_name, avatar_url), likes(user_id)')
@@ -441,6 +569,8 @@ async function openPostModal(postId) {
         contentDiv.innerHTML = "<p style='color:red;'>Error loading post.</p>";
         return;
     }
+
+    const isLiked = session ? post.likes.some(l => l.user_id === session.user.id) : false;
 
     contentDiv.innerHTML = `
         <div class="sheet-header" style="background: white; color: black; margin: -20px -20px 20px -20px; padding: 15px; border-bottom: 2px solid black;">
@@ -457,7 +587,7 @@ async function openPostModal(postId) {
         </div>
         <div class="sheet-footer" style="border-top: 1px solid #333; padding-top: 15px; display: flex; gap: 20px;">
             <div class="footer-stat" onclick="handleLike(${post.id}, this)">
-                <i class="fa-regular fa-heart"></i> 
+                <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" style="${isLiked ? 'color: #FF3E3E' : ''}"></i> 
                 <span class="like-count">${post.likes?.length || 0}</span>
             </div>
             <div class="footer-stat" onclick="handleShare(${post.id})">
@@ -469,27 +599,38 @@ async function openPostModal(postId) {
 
     const { data: comments } = await supabaseClient
         .from('comments')
-        .select('*, profiles(username, avatar_url)')
+        .select('id, content, user_id, profiles(username, avatar_url)')
         .eq('post_id', postId)
         .order('created_at', { ascending: true });
 
     if (comments && comments.length > 0) {
         comments.forEach(comment => {
+            const isMyComment = session && session.user.id === comment.user_id;
             const cDiv = document.createElement("div");
             cDiv.style.padding = "12px 0";
             cDiv.style.borderBottom = "1px solid #222";
+            cDiv.style.display = "flex";
+            cDiv.style.justifyContent = "space-between";
+            cDiv.style.alignItems = "flex-start";
+
             cDiv.innerHTML = `
-                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                <div style="display: flex; gap: 10px;">
                     <img src="${comment.profiles.avatar_url || 'img/dp.jpg'}" style="width: 25px; height: 25px; border-radius: 50%;">
                     <div>
                         <strong style="color: #3EFF8B; font-size: 0.9rem;">@${comment.profiles.username}</strong>
                         <p style="color: white; margin-top: 4px;">${comment.content}</p>
                     </div>
-                </div>`;
+                </div>
+                ${isMyComment ? `
+                    <button onclick="deleteComment(${comment.id}, ${postId})" style="background:transparent; border:none; color:#FF3E3E; cursor:pointer; font-size:0.8rem;">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                ` : ''}
+            `;
             commentsList.appendChild(cDiv);
         });
     } else {
-        commentsList.innerHTML = "<p style='color: #555; padding: 20px 0;'>No comments yet. Be the first to sheet!</p>";
+        commentsList.innerHTML = "<p style='color: #555; padding: 20px 0;'>No comments yet.</p>";
     }
 
     document.getElementById("submit-modal-comment").onclick = () => submitModalComment(postId);
@@ -516,6 +657,21 @@ function closePostModal() {
     document.getElementById("post-modal").style.display = "none"
 }
 
+async function deleteComment(commentId, postId) {
+    if (!confirm("Delete this comment?")) return;
+
+    const { error } = await supabaseClient
+        .from('comments')
+        .delete()
+        .eq('id', commentId);
+
+    if (error) {
+        alert("Error: " + error.message);
+    } else {
+        openPostModal(postId);
+    }
+}
+
 window.toggleOptions = toggleOptions;
 window.handleLike = handleLike;
 window.handleRepost = handleRepost;
@@ -525,3 +681,5 @@ window.handleReport = handleReport;
 window.openPostModal = openPostModal;
 window.submitModalComment = submitModalComment;
 window.closePostModal = closePostModal
+window.deleteComment = deleteComment;
+window.toggleFollow = toggleFollow;
