@@ -47,7 +47,7 @@
             </div>
 
             <div class="nav-profile-wrapper">
-                <a href="profile.html" class="profile-link">
+                <a href="profile.html" class="profile-link active">
                     <img src="img/dp.jpg" alt="PFP" id="nav-user-pfp">
                     <span id="nav-username">Guest</span>
                 </a>
@@ -62,7 +62,6 @@
     </nav>
 
     <aside class="sidebar-left">
-        <div class="sidebar-top">
             <div class="sidebar-top">
                 <div class="icon-wrapper">
                 <a href="following.html"><i class="fa-solid fa-user-group"></i></a>
@@ -140,14 +139,15 @@
     </main>
 
     <aside class="sidebar-right">
+        <section class="trending-card" style="margin-top: 20px;">
+            <h2 class="trending-header">People You Follow</h2>
+            <div id="following-sidebar-container"></div>
+        </section>
+
         <section class="trending-card">
             <h2 class="trending-header">Trending Posts</h2>
             <div id="trending-container"></div>
             <a href="trending-posts.html" class="show-more-link">View all posts</a>
-        </section>
-        <section class="trending-card" style="margin-top: 20px;">
-            <h2 class="trending-header">People You Follow</h2>
-            <div id="following-sidebar-container"></div>
         </section>
 
         <section class="mini-footer">

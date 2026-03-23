@@ -483,43 +483,51 @@ async function fetchFollowingSidebar() {
 
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
-        container.innerHTML = "<p style='padding:15px; color:#888;'>Sign in to see who you follow.</p>";
+        container.innerHTML = "<p style='padding:15px; color:#888;'>Sign in to see following activity.</p>";
         return;
     }
 
-    const { data: following, error } = await supabaseClient
+    const { data: followingData } = await supabaseClient
         .from('follows')
-        .select('following_id, profiles:following_id(username, display_name, avatar_url)')
+        .select('following_id')
         .eq('follower_id', session.user.id);
 
-    if (error) {
-        console.error("Sidebar Error:", error);
-        return;
-    }
+    const followingIds = followingData.map(f => f.following_id);
 
-    if (!following || following.length === 0) {
+    if (followingIds.length === 0) {
         container.innerHTML = "<p style='padding:15px; color:#888;'>Not following anyone yet.</p>";
         return;
     }
 
+    const { data: posts, error } = await supabaseClient
+        .from('posts')
+        .select('content, profiles(username)')
+        .in('user_id', followingIds)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+    if (error) {
+        console.error("Sidebar Following Error:", error);
+        return;
+    }
+
     container.innerHTML = "";
-    following.forEach(item => {
-        const p = item.profiles;
-        if (!p) return;
-        
-        const div = document.createElement("div");
+    if (posts.length === 0) {
+        container.innerHTML = "<p style='padding:15px; color:#888;'>No recent posts from follows.</p>";
+        return;
+    }
+
+    posts.forEach(post => {
+        const div = document.createElement("article");
         div.className = "trending-row";
         div.innerHTML = `
-            <a href="profile.html?id=${item.following_id}" style="display:flex; align-items:center; gap:10px; width:100%;">
-                <img src="${p.avatar_url || 'img/dp.jpg'}" style="width:30px; height:30px; border-radius:50%; border:1px solid white; object-fit: cover;">
-                <div class="trending-content">
-                    <span class="trending-tag" style="color: white; font-weight: bold;">${p.display_name || p.username}</span>
-                    <span class="trending-meta">@${p.username}</span>
-                </div>
-            </a>`;
+            <div class="trending-content">
+                <span class="trending-meta">u/${post.profiles?.username || 'anon'}</span>
+                <p class="trending-tag">${post.content.substring(0, 40)}${post.content.length > 40 ? '...' : ''}</p>
+            </div>`;
         container.appendChild(div);
     });
-}   
+}  
 
 async function toggleOptions(postId, postUserId, e) {
     if (e) {

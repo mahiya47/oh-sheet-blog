@@ -184,6 +184,11 @@ a {
     color: black;
 }
 
+.nav-section-right .active{
+    background-color: white;
+    color: black;
+}
+
 .search-container {
     display: flex;
     align-items: center;
@@ -263,6 +268,15 @@ a {
     background-color: black;
     border: 2px solid white;
     z-index: 100;
+}
+
+.active a {
+    background-color: white;
+    border-color: black;
+}
+
+.active i {
+    color: black;
 }
 
 .sidebar-top, .sidebar-bottom {
@@ -2083,3 +2097,4 @@ input:checked + .slider:before {
     width: 100%;
     padding-bottom: 50px;
 }
+
