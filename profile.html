@@ -105,7 +105,10 @@
             <div class="profile-cover"></div>
             <div class="profile-info-wrapper">
                 <div class="profile-header-main">
-                    <img src="img/dp.jpg" id="profile-main-pfp" class="profile-main-pfp">
+                    <label for="pfp-input" style="cursor: pointer;">
+                        <img src="img/dp.jpg" id="profile-main-pfp" class="profile-main-pfp">
+                        <input type="file" id="pfp-input" style="display: none;" accept="image/*">
+                    </label>
                     <div class="profile-actions" id="profile-actions-area"></div>
                 </div>
                 <div class="profile-details">
@@ -130,7 +133,9 @@
                 <div class="profile-tab active">Sheets</div>
             </div>
 
-            <div id="user-posts-feed"></div>
+            <div id="user-posts-feed">
+                <div id="feed-loader" style="color: white; text-align: center; padding: 20px;">Loading your sheets...</div>
+            </div>
         </section>
     </main>
 

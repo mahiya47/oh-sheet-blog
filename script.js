@@ -39,12 +39,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     const postModal = document.getElementById("post-modal");
     const followingSidebar = document.getElementById("following-sidebar-container");
     const followingFeedContainer = document.getElementById("following-feed");
+    const saveSettingsBtn = document.getElementById("save-settings-btn");
+    const navTabs = document.querySelectorAll(".nav-tab");
 
     if (followingSidebar) fetchFollowingSidebar();
     if (mainFeed) fetchMainFeed();
     if (trendingContainer) fetchTrendingSidebar();
     if (profilePage) fetchUserProfile();
     if (followingFeedContainer) fetchFollowingFeed();
+    
+    if (saveSettingsBtn) {
+        loadSettingsData();
+        saveSettingsBtn.addEventListener("click", updateUserSettings);
+    }
+
+    if (navTabs.length > 0) {
+        navTabs.forEach(tab => {
+            tab.addEventListener("click", (e) => {
+                e.preventDefault();
+                const sectionId = tab.getAttribute("data-section");
+                
+                document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+                document.querySelectorAll(".settings-section").forEach(s => s.classList.remove("active"));
+                
+                tab.classList.add("active");
+                const targetSection = document.getElementById(`${sectionId}-section`);
+                if (targetSection) targetSection.classList.add("active");
+            });
+        });
+    }
+
     if (signupForm) signupForm.addEventListener("submit", handleSignUp);
     if (loginForm) loginForm.addEventListener("submit", handleSignIn);
     if (publishBtn) publishBtn.addEventListener("click", createNewPost);
@@ -70,23 +94,49 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupGlobalInteractions();
 });
 
-async function handleSignUp(e) {
-    e.preventDefault();
-    const email = document.getElementById("signup-email").value;
-    const password = document.getElementById("signup-password").value;
-    const username = document.getElementById("signup-username").value;
+async function updateUserSettings() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
 
-    const { error } = await supabaseClient.auth.signUp({
-        email,
-        password,
-        options: { data: { username: username, display_name: username } }
-    });
+    const displayName = document.getElementById("settings-display-name").value;
+    const bio = document.getElementById("settings-bio").value;
+
+    const { error } = await supabaseClient
+        .from('profiles')
+        .update({
+            display_name: displayName,
+            bio: bio
+        })
+        .eq('id', session.user.id);
 
     if (error) {
-        alert(error.message);
+        alert("Error updating profile: " + error.message);
     } else {
-        alert("Account created! Redirecting to Sign In...");
-        window.location.href = "index.html"; 
+        alert("Settings saved successfully!");
+        window.location.href = "profile.html";
+    }
+}
+
+async function loadSettingsData() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+
+    const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+    if (profile) {
+        const displayNameInput = document.getElementById("settings-display-name");
+        const bioInput = document.getElementById("settings-bio");
+        const emailInput = document.getElementById("settings-email");
+        const pfpPreview = document.getElementById("settings-pfp-preview");
+
+        if (displayNameInput) displayNameInput.value = profile.display_name || "";
+        if (bioInput) bioInput.value = profile.bio || "";
+        if (emailInput) emailInput.value = session.user.email;
+        if (pfpPreview && profile.avatar_url) pfpPreview.src = profile.avatar_url;
     }
 }
 
@@ -137,9 +187,13 @@ async function uploadProfilePicture(e) {
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(filePath);
+        
         await supabaseClient.from('profiles').update({ avatar_url: publicUrl }).eq('id', session.user.id);
+        
+        const settingsPreview = document.getElementById("settings-pfp-preview");
+        if (settingsPreview) settingsPreview.src = publicUrl;
+
         alert("Profile picture updated!");
-        window.location.reload();
     } catch (error) {
         alert("Error: " + error.message);
     }
@@ -260,8 +314,10 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
         return;
     }
 
-    const loader = document.getElementById("feed-loader");
-    if (loader) loader.remove();
+    const loader = container.querySelector("#feed-loader");
+    if (loader) {
+        loader.remove();
+    }
     
     container.innerHTML = isSearch ? `<div style="color: #3EFF8B; padding: 10px; font-weight: bold;">Results: ${posts.length} found</div>` : '';
 
@@ -315,7 +371,7 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
                 <p>${post.content}</p>
             </div>
             <div class="sheet-footer">
-                <div class="footer-stat" onclick="handleComment(${post.id})">
+                <div class="footer-stat" onclick="openPostModal(${post.id})">
                     <i class="fa-regular fa-comment"></i> 
                     <span>${post.comments?.length || 0}</span>
                 </div>
@@ -455,7 +511,7 @@ async function fetchFollowingSidebar() {
             <a href="profile.html?id=${item.following_id}" style="display:flex; align-items:center; gap:10px; width:100%;">
                 <img src="${p.avatar_url || 'img/dp.jpg'}" style="width:30px; height:30px; border-radius:50%; border:1px solid white; object-fit: cover;">
                 <div class="trending-content">
-                    <span class="trending-tag">${p.display_name || p.username}</span>
+                    <span class="trending-tag" style="color: white; font-weight: bold;">${p.display_name || p.username}</span>
                     <span class="trending-meta">@${p.username}</span>
                 </div>
             </a>`;
@@ -506,7 +562,7 @@ async function handleLike(postId, element) {
     const likeCountSpan = element.querySelector('.like-count');
     let count = parseInt(likeCountSpan.innerText);
 
-    const { data: existing } = await supabaseClient.from('likes').select('*').match({ post_id: postId, user_id: session.user.id }).single();
+    const { data: existing } = await supabaseClient.from('likes').select('*').match({ post_id: postId, user_id: session.user.id }).maybeSingle();
 
     if (existing) {
         await supabaseClient.from('likes').delete().match({ post_id: postId, user_id: session.user.id });
@@ -524,11 +580,12 @@ async function handleLike(postId, element) {
 async function handleRepost(postId) {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) return alert("Sign in first!");
+    
     const { data: original } = await supabaseClient.from('posts').select('*').eq('id', postId).single();
+    
     if (original) {
-        // USE BACKTICKS HERE ` `
         await supabaseClient.from('posts').insert([{ 
-            content: `Repost: ${original.content}`, 
+            content: `Repost: ${original.content}`,
             user_id: session.user.id 
         }]);
         alert("Reposted!");
