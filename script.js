@@ -266,7 +266,7 @@ async function fetchUserPosts(userId) {
         console.error("Error fetching user posts:", error);
         return;
     }
-
+    console.log("User posts:", posts.length, posts);
     renderFeed(posts, false, "user-posts-feed");
 }
 
@@ -307,91 +307,45 @@ async function fetchTrendingSidebar() {
     });
 }
 
-async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
-    let container = document.getElementById(containerId);
-    
-    if (!container) {
-        return;
-    }
+function renderFeed(posts, isFollowingFeed, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-    const loader = container.querySelector("#feed-loader");
-    if (loader) {
-        loader.remove();
-    }
-    
-    container.innerHTML = isSearch ? `<div style="color: #3EFF8B; padding: 10px; font-weight: bold;">Results: ${posts.length} found</div>` : '';
+  // clear previous content
+    container.innerHTML = "";
 
+  // if no posts
     if (!posts || posts.length === 0) {
-        container.innerHTML += `
-            <div style="color: white; text-align: center; padding: 40px; border: 2px dashed #444; border-radius: 12px; margin-top: 20px;">
-                <i class="fa-solid fa-sheet-plastic" style="font-size: 2rem; color: #444; margin-bottom: 10px;"></i>
-                <p>No sheets found here yet.</p>
-            </div>`;
-        return;
+    container.innerHTML = `
+        <div style="color: white; text-align: center; padding: 20px;">
+        No sheets found here yet.
+        </div>
+    `;
+    return;
     }
 
-    const { data: { session } } = await supabaseClient.auth.getSession();
+  // show every post
+    posts.forEach(post => {
+    const article = document.createElement("article");
+    article.className = "feed-item";
 
-    posts.forEach((post) => {
-        const isLiked = session ? post.likes.some(l => l.user_id === session.user.id) : false;
-        const color = neobrutalistColors[Math.floor(Math.random() * neobrutalistColors.length)];
-        
-        const article = document.createElement("article");
-        article.className = "sheet-card";
-        
-        article.onclick = (e) => {
-            if (!e.target.closest('.footer-stat') && !e.target.closest('.more-options') && !e.target.closest('a')) {
-                openPostModal(post.id);
-            }
-        };
+    article.innerHTML = `
+        <div class="feed-header">
+            <img src="${post.profiles?.avatar_url || "default-avatar.png"}" class="feed-avatar" />
+            <div class="feed-user-info">
+                <span class="feed-display-name">${post.profiles?.display_name || post.profiles?.username || "Unknown"}</span>
+                <span class="feed-username">@${post.profiles?.username || "user"}</span>
+            </div>
+        </div>
+        <div class="feed-content">
+        ${post.content || ""}
+        </div>
+    `;
 
-        article.innerHTML = `
-            <div class="sheet-header" style="background-color: ${color}">
-                <a href="profile.html?id=${post.user_id}" class="user-meta">
-                    <img src="${post.profiles?.avatar_url || 'img/dp.jpg'}" class="sheet-pfp">
-                    <div class="user-names">
-                        <span class="display-name" style="color:black">${post.profiles?.display_name || 'User'}</span>
-                        <span class="username" style="color:rgba(0,0,0,0.6)">@${post.profiles?.username} • ${formatDate(post.created_at)}</span>
-                    </div>
-                </a>
-                <div class="more-options">
-                    <i class="fa-solid fa-ellipsis"></i>
-                    <div class="dropdown-content">
-                        <a href="profile.html?id=${post.user_id}"><i class="fa-regular fa-user"></i> Visit Profile</a>
-                        <a href="javascript:void(0)" onclick="handleReport(${post.id})"><i class="fa-regular fa-flag"></i> Report</a>
-                        ${session && session.user.id === post.user_id ? 
-                            `<a href="javascript:void(0)" onclick="toggleOptions(${post.id}, '${post.user_id}', event)" style="color: #FF3E3E;">
-                                <i class="fa-regular fa-trash-can"></i> Delete
-                            </a>` 
-                            : ''}
-                    </div>
-                </div>
-            </div>
-            <div class="sheet-content">
-                <p>${post.content}</p>
-            </div>
-            <div class="sheet-footer">
-                <div class="footer-stat" onclick="openPostModal(${post.id})">
-                    <i class="fa-regular fa-comment"></i> 
-                    <span>${post.comments?.length || 0}</span>
-                </div>
-                <div class="footer-stat" onclick="handleRepost(${post.id})">
-                    <i class="fa-solid fa-arrows-rotate"></i> 
-                    <span>Repost</span>
-                </div>
-                <div class="footer-stat" onclick="handleLike(${post.id}, this)">
-                    <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" style="${isLiked ? 'color: #FF3E3E' : ''}"></i> 
-                    <span class="like-count">${post.likes?.length || 0}</span>
-                </div>
-                <div class="footer-stat" onclick="handleShare(${post.id})">
-                    <i class="fa-solid fa-share-nodes"></i> 
-                    <span>Share</span>
-                </div>
-            </div>`;
-        
-        container.appendChild(article);
+    container.appendChild(article);
     });
 }
+
 
 async function fetchFollowingFeed() {
     const { data: { session } } = await supabaseClient.auth.getSession();
