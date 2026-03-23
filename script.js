@@ -162,11 +162,14 @@ async function fetchUserProfile() {
         document.getElementById("profile-display-name").innerText = profile.display_name || profile.username;
         document.getElementById("profile-handle").innerText = "@" + profile.username;
         document.getElementById("profile-bio-text").innerText = profile.bio || "No bio yet.";
+        
         if (profile.avatar_url) {
             document.getElementById("profile-main-pfp").src = profile.avatar_url;
         }
+        fetchFollowCounts(targetUserId);
 
         const actionArea = document.getElementById("profile-actions-area");
+        if (!actionArea) return;
         
         if (session && session.user.id === targetUserId) {
             actionArea.innerHTML = `<button class="profile-edit-btn" onclick="window.location.href='setting.html'">Edit Profile</button>`;
@@ -175,7 +178,7 @@ async function fetchUserProfile() {
                 .from('follows')
                 .select('*')
                 .match({ follower_id: session.user.id, following_id: targetUserId })
-                .single();
+                .maybeSingle();
 
             const followBtnStyles = isFollowing 
                 ? 'background: #FF3E3E; color: black; border: 2px solid black;' 
@@ -187,6 +190,8 @@ async function fetchUserProfile() {
                         onclick="toggleFollow('${targetUserId}', this)">
                     ${isFollowing ? 'Unfollow' : 'Follow'}
                 </button>`;
+        } else {
+            actionArea.innerHTML = `<button class="profile-edit-btn" onclick="alert('Please login to follow users!')">Follow</button>`;
         }
         
         fetchUserPosts(targetUserId);
@@ -373,16 +378,45 @@ async function toggleFollow(targetUserId, btnElement) {
         .from('follows')
         .select('*')
         .match({ follower_id: session.user.id, following_id: targetUserId })
-        .single();
+        .maybeSingle();
 
     if (existing) {
-        await supabaseClient.from('follows').delete().match({ follower_id: session.user.id, following_id: targetUserId });
+        await supabaseClient
+            .from('follows')
+            .delete()
+            .match({ follower_id: session.user.id, following_id: targetUserId });
+        
         btnElement.innerText = "Follow";
         btnElement.style.background = "white";
+        btnElement.style.color = "black";
     } else {
-        await supabaseClient.from('follows').insert([{ follower_id: session.user.id, following_id: targetUserId }]);
+        await supabaseClient
+            .from('follows')
+            .insert([{ follower_id: session.user.id, following_id: targetUserId }]);
+        
         btnElement.innerText = "Unfollow";
         btnElement.style.background = "#FF3E3E";
+        btnElement.style.color = "black";
+    }
+    fetchFollowCounts(targetUserId);
+}
+
+async function fetchFollowCounts(userId) {
+    const { count: followingCount, error: err1 } = await supabaseClient
+        .from('follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('follower_id', userId);
+
+    const { count: followersCount, error: err2 } = await supabaseClient
+        .from('follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('following_id', userId);
+
+    if (!err1 && followingCount !== null) {
+        document.getElementById("following-count").innerText = followingCount;
+    }
+    if (!err2 && followersCount !== null) {
+        document.getElementById("followers-count").innerText = followersCount;
     }
 }
 

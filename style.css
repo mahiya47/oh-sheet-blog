@@ -413,7 +413,9 @@ a {
 
 .stat-item span {
     color: #888;
-    margin-left: 5px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
 }
 
 .skills-section {
