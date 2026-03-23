@@ -311,7 +311,6 @@ a {
     background: black;
     border: 3px solid white;
     border-radius: 16px;
-    overflow: hidden;
     margin-bottom: 20px;
     width: 100%;
     max-width: 900px;

@@ -255,21 +255,6 @@ async function fetchUserProfile() {
     }
 }
 
-async function fetchUserPosts(userId) {
-    const { data: posts, error } = await supabaseClient
-        .from('posts')
-        .select('*, profiles(username, display_name, avatar_url), likes(user_id), comments(id)')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error("Error fetching user posts:", error);
-        return;
-    }
-
-    renderFeed(posts, false, "user-posts-feed");
-}
-
 async function fetchMainFeed() {
     const { data: posts } = await supabaseClient
         .from('posts')
@@ -307,17 +292,30 @@ async function fetchTrendingSidebar() {
     });
 }
 
-async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
-    let container = document.getElementById(containerId);
-    
-    if (!container) {
+async function fetchUserPosts(userId) {
+    const { data: posts, error } = await supabaseClient
+        .from('posts')
+        .select('*, profiles(username, display_name, avatar_url), likes(user_id), comments(id)')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    console.log("Posts found for user:", posts ? posts.length : 0);
+
+    if (error) {
+        console.error("Error fetching user posts:", error);
         return;
     }
 
+    renderFeed(posts, false, "user-posts-feed");
+}
+
+async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
+    let container = document.getElementById(containerId);
+    
+    if (!container) return;
+
     const loader = container.querySelector("#feed-loader");
-    if (loader) {
-        loader.remove();
-    }
+    if (loader) loader.remove();
     
     container.innerHTML = isSearch ? `<div style="color: #3EFF8B; padding: 10px; font-weight: bold;">Results: ${posts.length} found</div>` : '';
 
@@ -333,63 +331,67 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
     const { data: { session } } = await supabaseClient.auth.getSession();
 
     posts.forEach((post) => {
-        const isLiked = session ? post.likes.some(l => l.user_id === session.user.id) : false;
-        const color = neobrutalistColors[Math.floor(Math.random() * neobrutalistColors.length)];
-        
-        const article = document.createElement("article");
-        article.className = "sheet-card";
-        
-        article.onclick = (e) => {
-            if (!e.target.closest('.footer-stat') && !e.target.closest('.more-options') && !e.target.closest('a')) {
-                openPostModal(post.id);
-            }
-        };
+        try {
+            const isLiked = (session && post.likes) ? post.likes.some(l => l.user_id === session.user.id) : false;
+            const color = neobrutalistColors[Math.floor(Math.random() * neobrutalistColors.length)];
+            
+            const article = document.createElement("article");
+            article.className = "sheet-card";
+            
+            article.onclick = (e) => {
+                if (!e.target.closest('.footer-stat') && !e.target.closest('.more-options') && !e.target.closest('a')) {
+                    openPostModal(post.id);
+                }
+            };
 
-        article.innerHTML = `
-            <div class="sheet-header" style="background-color: ${color}">
-                <a href="profile.html?id=${post.user_id}" class="user-meta">
-                    <img src="${post.profiles?.avatar_url || 'img/dp.jpg'}" class="sheet-pfp">
-                    <div class="user-names">
-                        <span class="display-name" style="color:black">${post.profiles?.display_name || 'User'}</span>
-                        <span class="username" style="color:rgba(0,0,0,0.6)">@${post.profiles?.username} • ${formatDate(post.created_at)}</span>
+            article.innerHTML = `
+                <div class="sheet-header" style="background-color: ${color}">
+                    <a href="profile.html?id=${post.user_id}" class="user-meta">
+                        <img src="${post.profiles?.avatar_url || 'img/dp.jpg'}" class="sheet-pfp">
+                        <div class="user-names">
+                            <span class="display-name" style="color:black">${post.profiles?.display_name || 'User'}</span>
+                            <span class="username" style="color:rgba(0,0,0,0.6)">@${post.profiles?.username} • ${formatDate(post.created_at)}</span>
+                        </div>
+                    </a>
+                    <div class="more-options">
+                        <i class="fa-solid fa-ellipsis"></i>
+                        <div class="dropdown-content">
+                            <a href="profile.html?id=${post.user_id}"><i class="fa-regular fa-user"></i> Visit Profile</a>
+                            <a href="javascript:void(0)" onclick="handleReport(${post.id})"><i class="fa-regular fa-flag"></i> Report</a>
+                            ${session && session.user.id === post.user_id ? 
+                                `<a href="javascript:void(0)" onclick="toggleOptions(${post.id}, '${post.user_id}', event)" style="color: #FF3E3E;">
+                                    <i class="fa-regular fa-trash-can"></i> Delete
+                                </a>` 
+                                : ''}
+                        </div>
                     </div>
-                </a>
-                <div class="more-options">
-                    <i class="fa-solid fa-ellipsis"></i>
-                    <div class="dropdown-content">
-                        <a href="profile.html?id=${post.user_id}"><i class="fa-regular fa-user"></i> Visit Profile</a>
-                        <a href="javascript:void(0)" onclick="handleReport(${post.id})"><i class="fa-regular fa-flag"></i> Report</a>
-                        ${session && session.user.id === post.user_id ? 
-                            `<a href="javascript:void(0)" onclick="toggleOptions(${post.id}, '${post.user_id}', event)" style="color: #FF3E3E;">
-                                <i class="fa-regular fa-trash-can"></i> Delete
-                            </a>` 
-                            : ''}
+                </div>
+                <div class="sheet-content">
+                    <p>${post.content}</p>
+                </div>
+                <div class="sheet-footer">
+                    <div class="footer-stat" onclick="handleComment(${post.id})">
+                        <i class="fa-regular fa-comment"></i> 
+                        <span>${post.comments?.length || 0}</span>
                     </div>
-                </div>
-            </div>
-            <div class="sheet-content">
-                <p>${post.content}</p>
-            </div>
-            <div class="sheet-footer">
-                <div class="footer-stat" onclick="handleComment(${post.id})">
-                    <i class="fa-regular fa-comment"></i> 
-                    <span>${post.comments?.length || 0}</span>
-                </div>
-                <div class="footer-stat" onclick="handleRepost(${post.id})">
-                    <i class="fa-solid fa-arrows-rotate"></i> 
-                    <span>Repost</span>
-                </div>
-                <div class="footer-stat" onclick="handleLike(${post.id}, this)">
-                    <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" style="${isLiked ? 'color: #FF3E3E' : ''}"></i> 
-                    <span class="like-count">${post.likes?.length || 0}</span>
-                </div>
-                <div class="footer-stat" onclick="handleShare(${post.id})">
-                    <i class="fa-solid fa-share-nodes"></i> 
-                    <span>Share</span>
-                </div>
-            </div>`;
-        
-        container.appendChild(article);
+                    <div class="footer-stat" onclick="handleRepost(${post.id})">
+                        <i class="fa-solid fa-arrows-rotate"></i> 
+                        <span>Repost</span>
+                    </div>
+                    <div class="footer-stat" onclick="handleLike(${post.id}, this)">
+                        <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" style="${isLiked ? 'color: #FF3E3E' : ''}"></i> 
+                        <span class="like-count">${post.likes?.length || 0}</span>
+                    </div>
+                    <div class="footer-stat" onclick="handleShare(${post.id})">
+                        <i class="fa-solid fa-share-nodes"></i> 
+                        <span>Share</span>
+                    </div>
+                </div>`;
+            
+            container.appendChild(article);
+        } catch (e) {
+            console.error("Error rendering post:", e);
+        }
     });
 }
 
