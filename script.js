@@ -268,16 +268,15 @@ async function fetchTrendingSidebar() {
     const container = document.getElementById("trending-container");
     if (!container) return;
 
-    const { data: trends, error } = await supabaseClient
+    const { data: posts, error } = await supabaseClient
         .from('posts')
-        .select('content, profiles(username)')
-        .limit(3)
-        .order('created_at', { ascending: false });
+        .select('content, profiles(username), likes(user_id)');
 
-    if (error) {
-        console.error("Trending Error:", error);
-        return;
-    }
+    if (error || !posts) return;
+
+    const trends = posts
+        .sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0))
+        .slice(0, 5);
 
     container.innerHTML = "";
     trends.forEach(item => {
@@ -285,8 +284,8 @@ async function fetchTrendingSidebar() {
         div.className = "trending-row";
         div.innerHTML = `
             <div class="trending-content">
-                <span class="trending-meta">u/${item.profiles?.username || 'anon'}</span>
-                <p class="trending-tag">${item.content.substring(0, 30)}...</p>
+                <span class="trending-meta">u/${item.profiles?.username || 'anon'} • ${(item.likes?.length || 0)} likes</span>
+                <p class="trending-tag">${item.content.substring(0, 35)}...</p>
             </div>`;
         container.appendChild(div);
     });
