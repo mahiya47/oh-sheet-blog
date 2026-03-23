@@ -371,7 +371,7 @@ async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
                 <p>${post.content}</p>
             </div>
             <div class="sheet-footer">
-                <div class="footer-stat" onclick="openPostModal(${post.id})">
+                <div class="footer-stat" onclick="handleComment(${post.id})">
                     <i class="fa-regular fa-comment"></i> 
                     <span>${post.comments?.length || 0}</span>
                 </div>
@@ -582,6 +582,7 @@ async function handleRepost(postId) {
     if (!session) return alert("Sign in first!");
     const { data: original } = await supabaseClient.from('posts').select('*').eq('id', postId).single();
     if (original) {
+        // USE BACKTICKS HERE ` `
         await supabaseClient.from('posts').insert([{ 
             content: `Repost: ${original.content}`, 
             user_id: session.user.id 
