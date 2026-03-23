@@ -727,7 +727,7 @@ async function openPostModal(postId) {
                     </div>
                 </div>
                 ${isMyComment ? `
-                    <button onclick="deleteComment(${comment.id}, ${postId})" style="background:transparent; border:none; color:#FF3E3E; cursor:pointer; font-size:0.8rem;">
+                    <button onclick="deleteComment('${comment.id}', '${postId}')" style="background:transparent; border:none; color:#FF3E3E; cursor:pointer; font-size:0.8rem;">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
                 ` : ''}
@@ -765,10 +765,14 @@ function closePostModal() {
 async function deleteComment(commentId, postId) {
     if (!confirm("Delete this comment?")) return;
 
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return alert("You must be logged in.");
+
     const { error } = await supabaseClient
         .from('comments')
         .delete()
-        .eq('id', commentId);
+        .eq('id', commentId)
+        .eq('user_id', session.user.id); 
 
     if (error) {
         alert("Error: " + error.message);
