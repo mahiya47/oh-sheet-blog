@@ -40,11 +40,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const followingSidebar = document.getElementById("following-sidebar-container");
     const followingFeedContainer = document.getElementById("following-feed");
 
+    if (followingSidebar) fetchFollowingSidebar();
     if (mainFeed) fetchMainFeed();
     if (trendingContainer) fetchTrendingSidebar();
     if (profilePage) fetchUserProfile();
     if (followingFeedContainer) fetchFollowingFeed();
-    if (followingSidebar) fetchFollowingSidebar();
     if (signupForm) signupForm.addEventListener("submit", handleSignUp);
     if (loginForm) loginForm.addEventListener("submit", handleSignIn);
     if (publishBtn) publishBtn.addEventListener("click", createNewPost);
@@ -161,16 +161,19 @@ async function fetchUserProfile() {
     if (profile) {
         document.getElementById("profile-display-name").innerText = profile.display_name || profile.username;
         document.getElementById("profile-handle").innerText = "@" + profile.username;
-        document.getElementById("profile-bio-text").innerText = profile.bio || "No bio yet.";
-        
+    
+        const bioText = (profile.bio && profile.bio.trim().length > 0) ? profile.bio : "No bio yet.";
+        document.getElementById("profile-bio-text").innerText = bioText;
+    
         if (profile.avatar_url) {
             document.getElementById("profile-main-pfp").src = profile.avatar_url;
         }
+
         fetchFollowCounts(targetUserId);
 
         const actionArea = document.getElementById("profile-actions-area");
         if (!actionArea) return;
-        
+    
         if (session && session.user.id === targetUserId) {
             actionArea.innerHTML = `<button class="profile-edit-btn" onclick="window.location.href='setting.html'">Edit Profile</button>`;
         } else if (session) {
@@ -193,7 +196,7 @@ async function fetchUserProfile() {
         } else {
             actionArea.innerHTML = `<button class="profile-edit-btn" onclick="alert('Please login to follow users!')">Follow</button>`;
         }
-        
+    
         fetchUserPosts(targetUserId);
     }
 }
@@ -253,10 +256,6 @@ async function fetchTrendingSidebar() {
 async function renderFeed(posts, isSearch = false, containerId = "main-feed") {
     let container = document.getElementById(containerId);
     
-    if (!container && containerId === "main-feed") {
-        container = document.getElementById("user-posts-feed");
-    }
-
     if (!container) {
         return;
     }
@@ -435,7 +434,12 @@ async function fetchFollowingSidebar() {
         .select('following_id, profiles:following_id(username, display_name, avatar_url)')
         .eq('follower_id', session.user.id);
 
-    if (error || !following.length) {
+    if (error) {
+        console.error("Sidebar Error:", error);
+        return;
+    }
+
+    if (!following || following.length === 0) {
         container.innerHTML = "<p style='padding:15px; color:#888;'>Not following anyone yet.</p>";
         return;
     }
@@ -443,13 +447,15 @@ async function fetchFollowingSidebar() {
     container.innerHTML = "";
     following.forEach(item => {
         const p = item.profiles;
+        if (!p) return;
+        
         const div = document.createElement("div");
         div.className = "trending-row";
         div.innerHTML = `
             <a href="profile.html?id=${item.following_id}" style="display:flex; align-items:center; gap:10px; width:100%;">
-                <img src="${p.avatar_url || 'img/dp.jpg'}" style="width:30px; height:30px; border-radius:50%; border:1px solid white;">
+                <img src="${p.avatar_url || 'img/dp.jpg'}" style="width:30px; height:30px; border-radius:50%; border:1px solid white; object-fit: cover;">
                 <div class="trending-content">
-                    <span class="trending-tag">${p.display_name}</span>
+                    <span class="trending-tag">${p.display_name || p.username}</span>
                     <span class="trending-meta">@${p.username}</span>
                 </div>
             </a>`;

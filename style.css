@@ -2060,3 +2060,27 @@ input:checked + .slider:before {
     gap: 20px;
     padding-top: 20px;
 }
+
+#following-sidebar-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.trending-row img {
+    flex-shrink: 0;
+}
+
+.trending-content {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#user-posts-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    padding-bottom: 50px;
+}
