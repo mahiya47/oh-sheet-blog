@@ -7,53 +7,51 @@ async function apiFetch(endpoint, options = {}) {
         "ngrok-skip-browser-warning": "69420",
         "Content-Type": "application/json"
     };
-    if (savedUserId) headers["X-User-ID"] = savedUserId;
+    if (savedUserId && savedUserId !== 'null') {
+        headers["X-User-ID"] = savedUserId;
+    }
 
     return fetch(`${API_BASE}${endpoint}`, {
         ...options,
-        headers: headers
+        headers: { ...headers, ...options.headers }
     });
 }
 
 async function checkUserAuth() {
-    const overlay = document.getElementById("loading-overlay");
     const userId = localStorage.getItem('oh_sheet_user_id');
     const path = window.location.pathname;
-    const currentPage = path.split("/").pop();
-    const publicPages = ["index.html", "create-account.html", ""];
+    const isPublicPage = path.includes("index.html") || path.includes("create-account.html") || path.endsWith("/oh-sheet-blog/") || path.endsWith("/");
 
     if (!userId || userId === 'null') {
-        if (!publicPages.includes(currentPage)) window.location.href = "index.html";
-        if (overlay) overlay.remove();
+        if (!isPublicPage) {
+            window.location.href = "index.html";
+        }
         return;
     }
 
     try {
         const response = await apiFetch('/auth-status');
         const data = await response.json();
-        if (data.isLoggedIn && publicPages.includes(currentPage)) {
+
+        if (data.isLoggedIn && isPublicPage) {
             window.location.href = "feed.html";
-        } else if (!data.isLoggedIn && !publicPages.includes(currentPage)) {
+        } else if (!data.isLoggedIn && !isPublicPage) {
             localStorage.removeItem('oh_sheet_user_id');
             window.location.href = "index.html";
         }
     } catch (error) {
-        console.error("Auth error:", error);
-    } finally {
-        if (overlay) overlay.remove();
+        console.error("Auth sync failed");
     }
 }
-checkUserAuth();
 
 document.addEventListener("DOMContentLoaded", async () => {
+    checkUserAuth();
     initUserNav();
 
     const mainFeed = document.getElementById("main-feed");
     const trendingContainer = document.getElementById("trending-container");
     const profilePage = document.getElementById("profile-page-container");
     const signupForm = document.getElementById("signup-form");
-    const loginForm = document.querySelector(".login-form");
-    const publishBtn = document.querySelector(".publish-btn");
     const pfpInput = document.getElementById("pfp-input");
     const searchInput = document.getElementById("global-search");
     const postModal = document.getElementById("post-modal");
@@ -61,6 +59,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     const followingFeedContainer = document.getElementById("following-feed");
     const saveSettingsBtn = document.getElementById("save-settings-btn");
     const navTabs = document.querySelectorAll(".nav-tab");
+    const loginForm = document.querySelector(".login-form");
+    if (loginForm) loginForm.addEventListener("submit", handleSignIn);
+
+    const publishBtn = document.querySelector(".publish-btn");
+    if (publishBtn) publishBtn.addEventListener("click", createNewPost);
+
+    const logoutLink = document.querySelector(".logout-link");
+    if (logoutLink) {
+        logoutLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            localStorage.removeItem('oh_sheet_user_id');
+            window.location.href = "index.html";
+        });
+    }
+
+    if (document.getElementById("main-feed")) fetchMainFeed();
 
     if (followingSidebar) fetchFollowingSidebar();
     if (mainFeed) fetchMainFeed();
@@ -88,9 +102,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (signupForm) signupForm.addEventListener("submit", handleSignUp);
-    if (loginForm) loginForm.addEventListener("submit", handleSignIn);
     checkUserAuth();
-    if (publishBtn) publishBtn.addEventListener("click", createNewPost);
     if (pfpInput) pfpInput.addEventListener("change", uploadProfilePicture);
 
     if (searchInput) {
@@ -144,16 +156,20 @@ async function handleSignIn(e) {
     const email = e.target.querySelector('input[type="email"]').value;
     const password = e.target.querySelector('input[type="password"]').value;
 
-    const response = await apiFetch('/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password })
-    });
-    const data = await response.json();
-    if (response.ok && data.user) {
-        localStorage.setItem('oh_sheet_user_id', data.user.id);
-        window.location.href = "feed.html";
-    } else {
-        alert("Login failed");
+    try {
+        const response = await apiFetch('/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (response.ok && data.user) {
+            localStorage.setItem('oh_sheet_user_id', data.user.id);
+            window.location.href = "feed.html";
+        } else {
+            alert("Login failed");
+        }
+    } catch (error) {
+        alert("Server unreachable");
     }
 }
 
@@ -204,15 +220,13 @@ async function initUserNav() {
     try {
         const response = await apiFetch('/user/me');
         if (!response.ok) return;
-        const { profile } = await response.json();
-        if (profile) {
+        const data = await response.json();
+        if (data.profile) {
             const navUser = document.getElementById("nav-username");
-            const navPfp = document.getElementById("nav-user-pfp");
-            if (navUser) navUser.innerText = profile.username;
-            if (navPfp && profile.avatar_url) navPfp.src = profile.avatar_url;
+            if (navUser) navUser.innerText = data.profile.username;
         }
     } catch (error) {
-        console.error("Navigation init failed:", error);
+        console.error("Nav error");
     }
 }
 
@@ -267,12 +281,30 @@ async function fetchUserProfile() {
 }
 
 async function fetchMainFeed() {
+    const container = document.getElementById("main-feed");
+    if (!container) return;
     try {
-        const response = await fetch(`${API_BASE}/posts`);
+        const response = await apiFetch('/posts');
         const posts = await response.json();
-        renderFeed(posts, false, "main-feed");
+        container.innerHTML = "";
+        posts.forEach(post => {
+            const color = neobrutalistColors[Math.floor(Math.random() * neobrutalistColors.length)];
+            const div = document.createElement("article");
+            div.className = "sheet-card";
+            div.innerHTML = `
+                <div class="sheet-header" style="background-color: ${color}">
+                    <div class="user-meta">
+                        <img src="img/dp.jpg" class="sheet-pfp">
+                        <div class="user-names">
+                            <span class="display-name">${post.username}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="sheet-content"><p>${post.content}</p></div>`;
+            container.appendChild(div);
+        });
     } catch (error) {
-        console.error(error);
+        console.error("Feed error");
     }
 }
 
@@ -482,19 +514,25 @@ async function handleComment(postId) {
 }
 
 async function createNewPost(e) {
-    e.preventDefault();
-    const content = document.querySelector(".editor-textarea").value;
+    if (e) e.preventDefault();
+    const textArea = document.querySelector(".editor-textarea");
+    if (!textArea) return;
+    
+    const content = textArea.value;
     if (!content) return alert("Sheet cannot be empty!");
+
     try {
-        const response = await fetch(`${API_BASE}/posts`, {
+        const response = await apiFetch('/posts', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({ content })
         });
-        if (response.ok) window.location.href = "feed.html";
+        if (response.ok) {
+            window.location.href = "feed.html";
+        } else {
+            alert("Failed to post");
+        }
     } catch (error) {
-        alert("Post failed.");
+        alert("Error sending post");
     }
 }
 
