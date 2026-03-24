@@ -17,38 +17,30 @@ async function apiFetch(endpoint, options = {}) {
 
 async function checkUserAuth() {
     const overlay = document.getElementById("loading-overlay");
-    try {
-        const response = await fetch(`${API_BASE}/auth-status`, { 
-            credentials: 'include',
-            headers: {
-                "ngrok-skip-browser-warning": "69420"
-            }
-        });
-        const data = await response.json();
-        console.log("Is user logged in?", data.isLoggedIn);
-        const isLoggedIn = data.isLoggedIn;
-        
-        const path = window.location.pathname;
-        const currentPage = path.split("/").pop();
-        const publicPages = ["index.html", "create-account.html"];
+    const userId = localStorage.getItem('oh_sheet_user_id');
+    const path = window.location.pathname;
+    const currentPage = path.split("/").pop();
+    const publicPages = ["index.html", "create-account.html", ""];
 
-        if (!isLoggedIn && !publicPages.includes(currentPage) && currentPage !== "") {
-            window.location.href = "index.html";
-        } 
-        else if (isLoggedIn && (currentPage === "index.html" || currentPage === "create-account.html" || currentPage === "")) {
+    if (!userId || userId === 'null') {
+        if (!publicPages.includes(currentPage)) window.location.href = "index.html";
+        if (overlay) overlay.remove();
+        return;
+    }
+
+    try {
+        const response = await apiFetch('/auth-status');
+        const data = await response.json();
+        if (data.isLoggedIn && publicPages.includes(currentPage)) {
             window.location.href = "feed.html";
-        } else {
-            if (overlay) {
-                overlay.style.opacity = "0";
-                setTimeout(() => overlay.remove(), 300);
-            }
+        } else if (!data.isLoggedIn && !publicPages.includes(currentPage)) {
+            localStorage.removeItem('oh_sheet_user_id');
+            window.location.href = "index.html";
         }
     } catch (error) {
-        console.error("Auth check failed:", error);
-        if (overlay) {
-            overlay.style.opacity = "0";
-            setTimeout(() => overlay.remove(), 300);
-        }
+        console.error("Auth error:", error);
+    } finally {
+        if (overlay) overlay.remove();
     }
 }
 checkUserAuth();
@@ -97,6 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (signupForm) signupForm.addEventListener("submit", handleSignUp);
     if (loginForm) loginForm.addEventListener("submit", handleSignIn);
+    checkUserAuth();
     if (publishBtn) publishBtn.addEventListener("click", createNewPost);
     if (pfpInput) pfpInput.addEventListener("change", uploadProfilePicture);
 
@@ -156,7 +149,7 @@ async function handleSignIn(e) {
         body: JSON.stringify({ email, password })
     });
     const data = await response.json();
-    if (response.ok) {
+    if (response.ok && data.user) {
         localStorage.setItem('oh_sheet_user_id', data.user.id);
         window.location.href = "feed.html";
     } else {
