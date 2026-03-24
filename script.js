@@ -112,7 +112,10 @@ async function handleSignUp(e) {
     try {
         const response = await fetch(`${API_BASE}/register`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                "ngrok-skip-browser-warning": "69420"
+            },
             body: JSON.stringify({ username, email, password })
         });
         const data = await response.json();
@@ -123,7 +126,8 @@ async function handleSignUp(e) {
             alert(data.message);
         }
     } catch (error) {
-        alert("Registration failed.");
+        console.error("Signup error:", error);
+        alert("Registration failed. Check console (F12) for details.");
     }
 }
 
@@ -135,7 +139,11 @@ async function handleSignIn(e) {
     try {
         const response = await fetch(`${API_BASE}/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                "ngrok-skip-browser-warning": "69420"
+            },
+            credentials: 'include',
             body: JSON.stringify({ email, password })
         });
         const data = await response.json();
@@ -145,6 +153,7 @@ async function handleSignIn(e) {
             alert(data.message);
         }
     } catch (error) {
+        console.error("Login error:", error);
         alert("Login failed.");
     }
 }
