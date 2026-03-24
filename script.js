@@ -3,22 +3,16 @@ const neobrutalistColors = ["#FF3E3E", "#3E54FF", "#3EFF8B", "#FFF03E", "#FF3EEF
 
 async function apiFetch(endpoint, options = {}) {
     const savedUserId = localStorage.getItem('oh_sheet_user_id');
-    
-    console.log(`Sending request to ${endpoint} with ID:`, savedUserId);
-
-    const defaultHeaders = {
+    const headers = {
         "ngrok-skip-browser-warning": "69420",
-        "Content-Type": "application/json",
-        "X-User-ID": savedUserId 
+        "Content-Type": "application/json"
     };
+    if (savedUserId) headers["X-User-ID"] = savedUserId;
 
-    const finalOptions = {
+    return fetch(`${API_BASE}${endpoint}`, {
         ...options,
-        headers: { ...defaultHeaders, ...options.headers },
-        credentials: 'include'
-    };
-
-    return fetch(`${API_BASE}${endpoint}`, finalOptions);
+        headers: headers
+    });
 }
 
 async function checkUserAuth() {
@@ -157,20 +151,16 @@ async function handleSignIn(e) {
     const email = e.target.querySelector('input[type="email"]').value;
     const password = e.target.querySelector('input[type="password"]').value;
 
-    try {
-        const response = await apiFetch('/login', {
-            method: 'POST',
-            body: JSON.stringify({ email, password })
-        });
-        const data = await response.json();
-        if (response.ok) {
-            localStorage.setItem('oh_sheet_user_id', data.user.id);
-            window.location.href = "feed.html";
-        } else {
-            alert(data.message);
-        }
-    } catch (error) {
-        alert("Login failed.");
+    const response = await apiFetch('/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password })
+    });
+    const data = await response.json();
+    if (response.ok) {
+        localStorage.setItem('oh_sheet_user_id', data.user.id);
+        window.location.href = "feed.html";
+    } else {
+        alert("Login failed");
     }
 }
 
