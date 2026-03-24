@@ -2,8 +2,14 @@ const API_BASE = 'https://nonpolarizing-chronoscopic-flavia.ngrok-free.dev/api';
 const neobrutalistColors = ["#FF3E3E", "#3E54FF", "#3EFF8B", "#FFF03E", "#FF3EEF", "#3EFAFF", "#FFA53E", "#9D3EFF", "#FF3E96", "#C4FF3E"];
 
 async function checkUserAuth() {
+    const overlay = document.getElementById("loading-overlay");
     try {
-        const response = await fetch(`${API_BASE}/auth-status`, { credentials: 'include' });
+        const response = await fetch(`${API_BASE}/auth-status`, { 
+            credentials: 'include',
+            headers: {
+                "ngrok-skip-browser-warning": "69420"
+            }
+        });
         const data = await response.json();
         const isLoggedIn = data.isLoggedIn;
         
@@ -17,7 +23,6 @@ async function checkUserAuth() {
         else if (isLoggedIn && (currentPage === "index.html" || currentPage === "create-account.html" || currentPage === "")) {
             window.location.href = "feed.html";
         } else {
-            const overlay = document.getElementById("loading-overlay");
             if (overlay) {
                 overlay.style.opacity = "0";
                 setTimeout(() => overlay.remove(), 300);
@@ -25,6 +30,10 @@ async function checkUserAuth() {
         }
     } catch (error) {
         console.error("Auth check failed:", error);
+        if (overlay) {
+            overlay.style.opacity = "0";
+            setTimeout(() => overlay.remove(), 300);
+        }
     }
 }
 checkUserAuth();
