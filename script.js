@@ -1,6 +1,24 @@
 const API_BASE = 'https://nonpolarizing-chronoscopic-flavia.ngrok-free.dev/api';
 const neobrutalistColors = ["#FF3E3E", "#3E54FF", "#3EFF8B", "#FFF03E", "#FF3EEF", "#3EFAFF", "#FFA53E", "#9D3EFF", "#FF3E96", "#C4FF3E"];
 
+async function apiFetch(endpoint, options = {}) {
+    const defaultHeaders = {
+        "ngrok-skip-browser-warning": "69420",
+        "Content-Type": "application/json"
+    };
+
+    const finalOptions = {
+        ...options,
+        headers: {
+            ...defaultHeaders,
+            ...options.headers
+        },
+        credentials: 'include'
+    };
+
+    return fetch(`${API_BASE}${endpoint}`, finalOptions);
+}
+
 async function checkUserAuth() {
     const overlay = document.getElementById("loading-overlay");
     try {
@@ -204,7 +222,7 @@ async function loadSettingsData() {
 
 async function initUserNav() {
     try {
-        const response = await fetch(`${API_BASE}/user/me`, { credentials: 'include' });
+        const response = await apiFetch('/user/me');
         if (!response.ok) return;
         const { profile } = await response.json();
         if (profile) {
@@ -214,7 +232,7 @@ async function initUserNav() {
             if (navPfp && profile.avatar_url) navPfp.src = profile.avatar_url;
         }
     } catch (error) {
-        console.error(error);
+        console.error("Navigation init failed:", error);
     }
 }
 
