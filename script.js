@@ -2,13 +2,14 @@ const API_BASE = 'https://nonpolarizing-chronoscopic-flavia.ngrok-free.dev/api';
 const neobrutalistColors = ["#FF3E3E", "#3E54FF", "#3EFF8B", "#FFF03E", "#FF3EEF", "#3EFAFF", "#FFA53E", "#9D3EFF", "#FF3E96", "#C4FF3E"];
 
 async function apiFetch(endpoint, options = {}) {
-    // We get the saved ID from the browser's "notebook" (localStorage)
     const savedUserId = localStorage.getItem('oh_sheet_user_id');
     
+    console.log(`Sending request to ${endpoint} with ID:`, savedUserId);
+
     const defaultHeaders = {
         "ngrok-skip-browser-warning": "69420",
         "Content-Type": "application/json",
-        "X-User-ID": savedUserId // We send the ID here
+        "X-User-ID": savedUserId 
     };
 
     const finalOptions = {
