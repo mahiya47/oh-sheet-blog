@@ -11,6 +11,7 @@ async function checkUserAuth() {
             }
         });
         const data = await response.json();
+        console.log("Is user logged in?", data.isLoggedIn);
         const isLoggedIn = data.isLoggedIn;
         
         const path = window.location.pathname;
