@@ -2,17 +2,18 @@ const API_BASE = 'https://nonpolarizing-chronoscopic-flavia.ngrok-free.dev/api';
 const neobrutalistColors = ["#FF3E3E", "#3E54FF", "#3EFF8B", "#FFF03E", "#FF3EEF", "#3EFAFF", "#FFA53E", "#9D3EFF", "#FF3E96", "#C4FF3E"];
 
 async function apiFetch(endpoint, options = {}) {
+    // We get the saved ID from the browser's "notebook" (localStorage)
+    const savedUserId = localStorage.getItem('oh_sheet_user_id');
+    
     const defaultHeaders = {
         "ngrok-skip-browser-warning": "69420",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-User-ID": savedUserId // We send the ID here
     };
 
     const finalOptions = {
         ...options,
-        headers: {
-            ...defaultHeaders,
-            ...options.headers
-        },
+        headers: { ...defaultHeaders, ...options.headers },
         credentials: 'include'
     };
 
@@ -156,23 +157,18 @@ async function handleSignIn(e) {
     const password = e.target.querySelector('input[type="password"]').value;
 
     try {
-        const response = await fetch(`${API_BASE}/login`, {
+        const response = await apiFetch('/login', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                "ngrok-skip-browser-warning": "69420"
-            },
-            credentials: 'include',
             body: JSON.stringify({ email, password })
         });
         const data = await response.json();
         if (response.ok) {
+            localStorage.setItem('oh_sheet_user_id', data.user.id);
             window.location.href = "feed.html";
         } else {
             alert(data.message);
         }
     } catch (error) {
-        console.error("Login error:", error);
         alert("Login failed.");
     }
 }
