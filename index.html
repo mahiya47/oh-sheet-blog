@@ -1,57 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Sign In | Oh sheet!</title>
-    <meta name="title" content="Oh Sheet! - Sign In">
-    <meta name="description" content="Log in to Oh Sheet! to share your latest updates, coding tips, and fitness journey.">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Oh Sheet! — share your thoughts instantly</title>
+    <meta
+      name="description"
+      content="A neobrutalist micro-blog for developers. Post sheets, drop fire, and follow your circle."
+    />
 
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://mahiya47.github.io/oh-sheet-blog/">
-    <meta property="og:title" content="Oh Sheet! - Share your thoughts instantly">
-    <meta property="og:description" content="A neobrutalist blog platform for developers. Join the conversation today.">
-    <meta property="og:image" content="https://mahiya47.github.io/oh-sheet-blog/img/full-logo.png">
-
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://mahiya47.github.io/oh-sheet-blog/">
-    <meta property="twitter:title" content="Oh Sheet!">
-    <meta property="twitter:description" content="Share your daily sheets.">
-    <meta property="twitter:image" content="https://mahiya47.github.io/oh-sheet-blog/img/full-logo.png">
-
-    <link rel="icon" type="image/png" href="img/logo.png">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="login-body">
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; color: #3EFF8B; font-family: 'Ubuntu Mono';">
-        <div class="loader-content" style="text-align: center;">
-            <p>Verifying Session...</p>
-        </div>
-    </div>
-
-    <div class="login-container">
-        <div class="login-box">
-            <h1 class="login-logo">Oh sheet!</h1>
-            <p class="login-subtitle" style="text-align: center; color: rgba(0,0,0,0.6); margin-bottom: 20px;">Welcome back!</p>
-            
-            <form class="login-form">
-                <div class="input-group">
-                    <input type="email" placeholder="Email" required>
-                </div>
-                <div class="input-group">
-                    <input type="password" placeholder="Password" required>
-                </div>
-                <button type="submit" class="submit-btn">Sign In</button>
-            </form>
-            
-            <div class="login-footer">
-                <p>New here? <a href="create-account.html">Create an account</a></p>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
-</body>
+    <!-- Identity fonts: Rubik Wet Paint for the wordmark, Ubuntu Mono for everything else -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

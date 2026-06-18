@@ -1,0 +1,23 @@
+{
+  "name": "oh-sheet-react",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Oh Sheet! - a neobrutalist micro-blog for developers, rebuilt in React.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.18.0",
+    "lucide-react": "^0.456.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.2",
+    "vite": "^8.0.16"
+  }
+}
