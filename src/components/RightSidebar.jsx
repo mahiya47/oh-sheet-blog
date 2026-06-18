@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom';
-import { Sheet } from 'lucide-react';
-import { useStore } from '../lib/store.jsx';
-import { useModal } from '../context/ModalContext.jsx';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Sheet } from "lucide-react";
+import { useStore } from "../lib/store.jsx";
+import { useModal } from "../context/ModalContext.jsx";
 
 function MiniRow({ post }) {
   const { openPost } = useModal();
@@ -9,10 +10,15 @@ function MiniRow({ post }) {
     <button
       type="button"
       className="mini-row"
-      style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none' }}
+      style={{
+        width: "100%",
+        textAlign: "left",
+        background: "transparent",
+        border: "none",
+      }}
       onClick={() => openPost(post.id)}
     >
-      <span className="meta">@{post.author?.username || 'anon'}</span>
+      <span className="meta">@{post.author?.username || "anon"}</span>
       <span className="snippet">{post.content}</span>
     </button>
   );
@@ -20,8 +26,16 @@ function MiniRow({ post }) {
 
 export default function RightSidebar() {
   const { currentUser, getFollowingSidebar, getTrending } = useStore();
-  const following = currentUser ? getFollowingSidebar(3) : [];
+  const [following, setFollowing] = useState([]);
   const trending = getTrending(4);
+
+  useEffect(() => {
+    if (currentUser) {
+      getFollowingSidebar(3).then(setFollowing);
+    } else {
+      setFollowing([]);
+    }
+  }, [currentUser]);
 
   return (
     <aside className="rail-right" aria-label="Activity">
@@ -32,7 +46,9 @@ export default function RightSidebar() {
         ) : (
           <p className="empty-note">No recent posts from people you follow.</p>
         )}
-        <Link to="/following" className="more-link">View following feed</Link>
+        <Link to="/following" className="more-link">
+          View following feed
+        </Link>
       </section>
 
       <section className="panel">
@@ -42,7 +58,9 @@ export default function RightSidebar() {
         ) : (
           <p className="empty-note">Nothing trending yet.</p>
         )}
-        <Link to="/trending" className="more-link">View all trending</Link>
+        <Link to="/trending" className="more-link">
+          View all trending
+        </Link>
       </section>
 
       <section className="panel mini-footer">

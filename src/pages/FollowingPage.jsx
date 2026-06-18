@@ -1,20 +1,38 @@
-import { useStore } from '../lib/store.jsx';
-import Feed from '../components/Feed.jsx';
+import { useEffect } from "react";
+import { useStore } from "../lib/store.jsx";
+import Feed from "../components/Feed.jsx";
 
 export default function FollowingPage() {
-  const { getFollowingFeed } = useStore();
-  const posts = getFollowingFeed();
+  const { getFollowingFeed, posts, loading } = useStore();
+
+  useEffect(() => {
+    getFollowingFeed();
+  }, [getFollowingFeed]);
 
   return (
     <>
-      <h1 style={{ textTransform: 'uppercase', fontSize: '1.4rem' }}>Following feed</h1>
-      <Feed
-        posts={posts}
-        emptyTitle="You aren't following anyone yet."
-        emptyHint="Find people whose sheets you like and follow them."
-        emptyTo="/feed"
-        emptyToLabel="Explore sheets"
-      />
+      <h1 style={{ textTransform: "uppercase", fontSize: "1.4rem" }}>
+        Following feed
+      </h1>
+      {loading ? (
+        <p
+          style={{
+            textAlign: "center",
+            padding: "40px",
+            color: "var(--text-dim)",
+          }}
+        >
+          Loading…
+        </p>
+      ) : (
+        <Feed
+          posts={posts}
+          emptyTitle="No sheets from people you follow yet."
+          emptyHint="Follow some people and their sheets will show up here."
+          emptyTo="/feed"
+          emptyToLabel="Explore sheets"
+        />
+      )}
     </>
   );
 }

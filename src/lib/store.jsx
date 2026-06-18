@@ -160,25 +160,31 @@ export function StoreProvider({ children }) {
   // ---- Likes ---------------------------------------------------------------
 
   const toggleLike = async (postId, currentlyLiked) => {
+    // optimistically flip the main feed state
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              likedByMe: !currentlyLiked,
+              likeCount: p.likeCount + (currentlyLiked ? -1 : 1),
+            }
+          : p,
+      ),
+    );
+
     try {
       if (currentlyLiked) {
         await api.delete(`/posts/${postId}/like`);
       } else {
         await api.post(`/posts/${postId}/like`);
       }
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId
-            ? {
-                ...p,
-                likedByMe: !currentlyLiked,
-                likeCount: p.likeCount + (currentlyLiked ? -1 : 1),
-              }
-            : p,
-        ),
-      );
     } catch (err) {
-      console.error(err);
+      // 400 = already in that state on the server; ignore it (UI is already correct).
+      // Any other error: log it.
+      if (err.response?.status !== 400) {
+        console.error(err);
+      }
     }
   };
 
@@ -214,15 +220,56 @@ export function StoreProvider({ children }) {
           new Date(b.createdAt) - new Date(a.createdAt),
       )
       .slice(0, limit);
+  const toggleFollow = async (userId, currentlyFollowing) => {
+    try {
+      if (currentlyFollowing) {
+        await api.delete(`/follows/${userId}`);
+      } else {
+        await api.post(`/follows/${userId}`);
+      }
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+  const getFollowInfo = async (userId) => {
+    try {
+      const res = await api.get(`/follows/${userId}`);
+      return res.data; // { followers, following, isFollowing }
+    } catch (err) {
+      console.error(err);
+      return { followers: 0, following: 0, isFollowing: false };
+    }
+  };
+
+  const getFollowingFeed = useCallback(async () => {
+    try {
+      const res = await api.get("/posts/following");
+      const normalized = res.data.map(normalizePost);
+      setPosts(normalized);
+      return normalized;
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }, []);
+
+  const getFollowingSidebar = async (limit = 3) => {
+    try {
+      const res = await api.get("/posts/following");
+      return res.data.map(normalizePost).slice(0, limit);
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
 
   // ---- Stubs still needing a backend (follow / profile) -------------------
-  const toggleFollow = () => {};
   const updateProfile = () => {};
   const getUserPosts = (userId) => posts.filter((p) => p.author?.id === userId);
-  const getFollowingFeed = () => [];
   const getProfile = (userId) =>
     posts.find((p) => p.author?.id === userId)?.author || null;
-  const getFollowingSidebar = () => [];
   const getFollowCounts = () => ({ following: 0, followers: 0 });
   const isFollowing = () => false;
   const resetDemo = () => {};
@@ -246,6 +293,7 @@ export function StoreProvider({ children }) {
         deleteComment,
         toggleLike,
         toggleFollow,
+        getFollowInfo,
         updateProfile,
         getUserPosts,
         getFollowingFeed,
