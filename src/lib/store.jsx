@@ -47,12 +47,21 @@ export function StoreProvider({ children }) {
       const res = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
       const payload = JSON.parse(atob(res.data.token.split(".")[1]));
-      const username = payload.email?.split("@")[0];
+
+      // fetch the real profile (name, bio) from the backend
+      let name = payload.email?.split("@")[0];
+      try {
+        const profileRes = await api.get(`/users/${payload.userId}`);
+        name = profileRes.data.name || name;
+      } catch {
+        // if it fails, fall back to email-based name
+      }
+
       const user = {
         id: payload.userId,
         email: payload.email,
-        username,
-        displayName: username,
+        username: payload.email?.split("@")[0],
+        displayName: name,
       };
       localStorage.setItem("current-user", JSON.stringify(user));
       setCurrentUser(user);
