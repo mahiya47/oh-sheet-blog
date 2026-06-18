@@ -1,11 +1,6 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 import api from "../api";
+
 const CARD_COLORS = [
   "var(--c1)",
   "var(--c2)",
@@ -20,6 +15,20 @@ const CARD_COLORS = [
 ];
 const randomColor = () =>
   CARD_COLORS[Math.floor(Math.random() * CARD_COLORS.length)];
+
+// Shared helper: turn a raw backend post into the shape the UI expects
+const normalizePost = (post) => ({
+  ...post,
+  color: randomColor(),
+  likeCount: post.likeCount ?? 0,
+  commentCount: post.commentCount ?? 0,
+  likedByMe: post.likedByMe ?? false,
+  author: {
+    ...post.author,
+    username: post.author?.email?.split("@")[0],
+    displayName: post.author?.email?.split("@")[0],
+  },
+});
 
 const StoreContext = createContext(null);
 
@@ -37,7 +46,6 @@ export function StoreProvider({ children }) {
     try {
       const res = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
-      // decode basic info from token payload
       const payload = JSON.parse(atob(res.data.token.split(".")[1]));
       const user = { id: payload.userId, email: payload.email };
       localStorage.setItem("current-user", JSON.stringify(user));
@@ -70,9 +78,7 @@ export function StoreProvider({ children }) {
     setPosts([]);
   };
 
-  const loginAsDemo = async () => {
-    return await login("test@test.com", "test1234");
-  };
+  const loginAsDemo = async () => login("test@test.com", "test1234");
 
   // ---- Posts ---------------------------------------------------------------
 
@@ -80,18 +86,7 @@ export function StoreProvider({ children }) {
     try {
       setLoading(true);
       const res = await api.get("/posts");
-      const normalized = res.data.map((post) => ({
-        ...post,
-        color: randomColor(),
-        likeCount: post.likeCount ?? 0,
-        commentCount: post.commentCount ?? 0,
-        likedByMe: post.likedByMe ?? false,
-        author: {
-          ...post.author,
-          username: post.author?.email?.split("@")[0],
-          displayName: post.author?.email?.split("@")[0],
-        },
-      }));
+      const normalized = res.data.map(normalizePost);
       setPosts(normalized);
       return normalized;
     } catch (err) {
@@ -117,7 +112,7 @@ export function StoreProvider({ children }) {
         title: content.slice(0, 50),
         content,
       });
-      setPosts((prev) => [{ ...res.data, color: randomColor() }, ...prev]);
+      setPosts((prev) => [normalizePost(res.data), ...prev]);
       return res.data.id;
     } catch (err) {
       console.error(err);
@@ -162,6 +157,8 @@ export function StoreProvider({ children }) {
     }
   };
 
+  // ---- Likes ---------------------------------------------------------------
+
   const toggleLike = async (postId, currentlyLiked) => {
     try {
       if (currentlyLiked) {
@@ -169,7 +166,6 @@ export function StoreProvider({ children }) {
       } else {
         await api.post(`/posts/${postId}/like`);
       }
-      // update the post in local state so the UI reacts instantly
       setPosts((prev) =>
         prev.map((p) =>
           p.id === postId
@@ -186,17 +182,49 @@ export function StoreProvider({ children }) {
     }
   };
 
-  // ---- Stubs (keep components working) ------------------------------------
+  // ---- Search (real, uses posts already in state) -------------------------
+
+  const search = (raw) => {
+    const q = (raw || "").trim().toLowerCase();
+    if (!q) return { posts: [], users: [] };
+    const matchedPosts = posts.filter(
+      (p) =>
+        p.content?.toLowerCase().includes(q) ||
+        p.title?.toLowerCase().includes(q),
+    );
+    // de-duplicate authors of matched posts as a simple "users" result
+    const seen = new Set();
+    const users = [];
+    for (const p of matchedPosts) {
+      if (p.author && !seen.has(p.author.id)) {
+        seen.add(p.author.id);
+        users.push(p.author);
+      }
+    }
+    return { posts: matchedPosts, users };
+  };
+
+  // ---- Trending (real, sorts posts by engagement) -------------------------
+
+  const getTrending = (limit = 4) =>
+    [...posts]
+      .sort(
+        (a, b) =>
+          b.likeCount + b.commentCount - (a.likeCount + a.commentCount) ||
+          new Date(b.createdAt) - new Date(a.createdAt),
+      )
+      .slice(0, limit);
+
+  // ---- Stubs still needing a backend (follow / profile) -------------------
   const toggleFollow = () => {};
   const updateProfile = () => {};
-  const getUserPosts = () => [];
+  const getUserPosts = (userId) => posts.filter((p) => p.author?.id === userId);
   const getFollowingFeed = () => [];
-  const getProfile = () => null;
-  const getTrending = () => [];
+  const getProfile = (userId) =>
+    posts.find((p) => p.author?.id === userId)?.author || null;
   const getFollowingSidebar = () => [];
   const getFollowCounts = () => ({ following: 0, followers: 0 });
   const isFollowing = () => false;
-  const search = () => ({ posts: [], users: [] });
   const resetDemo = () => {};
 
   return (
