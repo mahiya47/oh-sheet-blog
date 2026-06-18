@@ -1,50 +1,84 @@
-import { useRef, useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Home, PenLine, Headphones, Search, User, Settings, LogOut, ChevronDown } from 'lucide-react';
-import { useStore } from '../lib/store.jsx';
-import { useToast } from '../context/ToastContext.jsx';
-import { useClickAway } from '../lib/useClickAway.js';
-import Avatar from './Avatar.jsx';
+import { useRef, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import {
+  Home,
+  PenLine,
+  Headphones,
+  Search,
+  User,
+  Settings,
+  LogOut,
+  ChevronDown,
+} from "lucide-react";
+import { useStore } from "../lib/store.jsx";
+import { useToast } from "../context/ToastContext.jsx";
+import { useClickAway } from "../lib/useClickAway.js";
+import Avatar from "./Avatar.jsx";
 
 export default function Navbar() {
   const { currentUser, logout } = useStore();
   const toast = useToast();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const menuRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
   const onSearch = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       const q = query.trim();
-      navigate(q ? `/search?q=${encodeURIComponent(q)}` : '/feed');
+      navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/feed");
     }
   };
 
   const handleLogout = () => {
     setMenuOpen(false);
     logout();
-    toast('Signed out.', 'default');
-    navigate('/login');
+    toast("Signed out.", "default");
+    navigate("/login");
   };
 
   return (
     <nav className="navbar">
       <div className="nav-left">
-        <Link to="/feed" className="nav-logo wordmark" aria-label="Oh Sheet home">
+        <Link
+          to="/feed"
+          className="nav-logo wordmark"
+          aria-label="Oh Sheet home"
+        >
           Oh <span>sheet!</span>
         </Link>
       </div>
 
       <div className="nav-center">
-        <NavLink to="/feed" className={({ isActive }) => `icon-btn tip tip-down ${isActive ? 'active' : ''}`} data-tip="Home" aria-label="Home">
+        <NavLink
+          to="/feed"
+          className={({ isActive }) =>
+            `icon-btn tip tip-down ${isActive ? "active" : ""}`
+          }
+          data-tip="Home"
+          aria-label="Home"
+        >
           <Home size={18} />
         </NavLink>
-        <NavLink to="/create" className={({ isActive }) => `icon-btn tip tip-down ${isActive ? 'active' : ''}`} data-tip="Create a sheet" aria-label="Create a sheet">
+        <NavLink
+          to="/create"
+          className={({ isActive }) =>
+            `icon-btn tip tip-down ${isActive ? "active" : ""}`
+          }
+          data-tip="Create a sheet"
+          aria-label="Create a sheet"
+        >
           <PenLine size={18} />
         </NavLink>
-        <NavLink to="/support" className={({ isActive }) => `icon-btn tip tip-down ${isActive ? 'active' : ''}`} data-tip="Support" aria-label="Support">
+        <NavLink
+          to="/support"
+          className={({ isActive }) =>
+            `icon-btn tip tip-down ${isActive ? "active" : ""}`
+          }
+          data-tip="Support"
+          aria-label="Support"
+        >
           <Headphones size={18} />
         </NavLink>
       </div>
@@ -71,19 +105,34 @@ export default function Navbar() {
             aria-expanded={menuOpen}
           >
             <Avatar user={currentUser} size={28} />
-            <span>{currentUser?.username || 'guest'}</span>
+            <span>
+              {currentUser?.displayName || currentUser?.username || "guest"}
+            </span>
             <ChevronDown size={14} />
           </button>
 
           {menuOpen && (
             <div className="menu" role="menu">
-              <Link to="/profile" role="menuitem" onClick={() => setMenuOpen(false)}>
+              <Link
+                to="/profile"
+                role="menuitem"
+                onClick={() => setMenuOpen(false)}
+              >
                 <User size={16} /> Visit profile
               </Link>
-              <Link to="/settings" role="menuitem" onClick={() => setMenuOpen(false)}>
+              <Link
+                to="/settings"
+                role="menuitem"
+                onClick={() => setMenuOpen(false)}
+              >
                 <Settings size={16} /> Settings
               </Link>
-              <button type="button" className="danger" role="menuitem" onClick={handleLogout}>
+              <button
+                type="button"
+                className="danger"
+                role="menuitem"
+                onClick={handleLogout}
+              >
                 <LogOut size={16} /> Log out
               </button>
             </div>

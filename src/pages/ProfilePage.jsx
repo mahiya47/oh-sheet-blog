@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const {
     currentUser,
     getFeed,
+    posts,
     getProfile,
     getUserPosts,
     getFollowInfo,
@@ -18,30 +19,50 @@ export default function ProfilePage() {
   const toast = useToast();
 
   const targetId = Number(userId) || currentUser?.id;
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState({
     followers: 0,
     following: 0,
     isFollowing: false,
   });
 
-  // make sure posts are loaded so getProfile/getUserPosts have data
+  // load posts (so we can show this user's sheets)
   useEffect(() => {
     getFeed();
   }, [getFeed]);
 
-  // load follow info for this profile
+  // load the profile + follow info whenever the target changes
   useEffect(() => {
-    if (targetId) {
-      getFollowInfo(targetId).then(setCounts);
-    }
+    if (!targetId) return;
+    setLoading(true);
+    Promise.all([getProfile(targetId), getFollowInfo(targetId)]).then(
+      ([prof, info]) => {
+        setProfile(prof);
+        setCounts(info);
+        setLoading(false);
+      },
+    );
   }, [targetId]);
 
-  const profile = getProfile(targetId);
+  if (loading) {
+    return (
+      <p
+        style={{
+          textAlign: "center",
+          padding: "40px",
+          color: "var(--text-dim)",
+        }}
+      >
+        Loading profile…
+      </p>
+    );
+  }
 
   if (!profile) {
     return (
       <div className="empty">
-        <p>That account doesn’t exist, or hasn’t posted yet.</p>
+        <p>That account doesn’t exist.</p>
         <p style={{ marginTop: 12 }}>
           <Link to="/feed">Back to the feed</Link>
         </p>
@@ -49,13 +70,12 @@ export default function ProfilePage() {
     );
   }
 
-  const posts = getUserPosts(profile.id);
+  const userPosts = getUserPosts(profile.id);
   const isMe = currentUser?.id === profile.id;
   const following = counts.isFollowing;
 
   const onFollow = async () => {
     await toggleFollow(profile.id, following);
-    // refresh counts after toggling
     const fresh = await getFollowInfo(profile.id);
     setCounts(fresh);
     toast(
@@ -114,7 +134,7 @@ export default function ProfilePage() {
       </section>
 
       <Feed
-        posts={posts}
+        posts={userPosts}
         emptyTitle={
           isMe
             ? "You haven't posted a sheet yet."

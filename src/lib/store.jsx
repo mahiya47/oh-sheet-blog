@@ -26,7 +26,7 @@ const normalizePost = (post) => ({
   author: {
     ...post.author,
     username: post.author?.email?.split("@")[0],
-    displayName: post.author?.email?.split("@")[0],
+    displayName: post.author?.name || post.author?.email?.split("@")[0],
   },
 });
 
@@ -47,7 +47,13 @@ export function StoreProvider({ children }) {
       const res = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
       const payload = JSON.parse(atob(res.data.token.split(".")[1]));
-      const user = { id: payload.userId, email: payload.email };
+      const username = payload.email?.split("@")[0];
+      const user = {
+        id: payload.userId,
+        email: payload.email,
+        username,
+        displayName: username,
+      };
       localStorage.setItem("current-user", JSON.stringify(user));
       setCurrentUser(user);
       return { ok: true };
@@ -264,12 +270,45 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
+  const updateProfile = async ({ name, bio }) => {
+    try {
+      const res = await api.put("/users/me", { name, bio });
+      // update currentUser locally so the UI reflects the new name
+      const updated = {
+        ...currentUser,
+        ...res.data,
+        username: res.data.email?.split("@")[0],
+        displayName: res.data.name || res.data.email?.split("@")[0],
+      };
+      setCurrentUser(updated);
+      localStorage.setItem("current-user", JSON.stringify(updated));
+      return { ok: true };
+    } catch (err) {
+      console.error(err);
+      return {
+        ok: false,
+        error: err.response?.data?.message || "Update failed",
+      };
+    }
+  };
+
+  const getProfile = async (userId) => {
+    try {
+      const res = await api.get(`/users/${userId}`);
+      const u = res.data;
+      return {
+        ...u,
+        username: u.email?.split("@")[0],
+        displayName: u.name || u.email?.split("@")[0],
+      };
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  };
 
   // ---- Stubs still needing a backend (follow / profile) -------------------
-  const updateProfile = () => {};
   const getUserPosts = (userId) => posts.filter((p) => p.author?.id === userId);
-  const getProfile = (userId) =>
-    posts.find((p) => p.author?.id === userId)?.author || null;
   const getFollowCounts = () => ({ following: 0, followers: 0 });
   const isFollowing = () => false;
   const resetDemo = () => {};

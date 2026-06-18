@@ -1,10 +1,10 @@
-import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Cog, Palette } from 'lucide-react';
-import { useStore } from '../lib/store.jsx';
-import { useTheme } from '../context/ThemeContext.jsx';
-import { useToast } from '../context/ToastContext.jsx';
-import Avatar from '../components/Avatar.jsx';
+import { useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, User, Cog, Palette } from "lucide-react";
+import { useStore } from "../lib/store.jsx";
+import { useTheme } from "../context/ThemeContext.jsx";
+import { useToast } from "../context/ToastContext.jsx";
+import Avatar from "../components/Avatar.jsx";
 
 // Downscale an uploaded image to a small JPEG data URL before storing it.
 // This is the dependency-free version of the original's image compression,
@@ -18,11 +18,11 @@ function fileToAvatarDataUrl(file, max = 256) {
         const scale = Math.min(1, max / Math.max(img.width, img.height));
         const w = Math.round(img.width * scale);
         const h = Math.round(img.height * scale);
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = w;
         canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
       };
       img.onerror = reject;
       img.src = reader.result;
@@ -39,48 +39,53 @@ export default function SettingsPage() {
   const navigate = useNavigate();
   const fileRef = useRef(null);
 
-  const [tab, setTab] = useState('profile');
-  const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
-  const [bio, setBio] = useState(currentUser?.bio || '');
+  const [tab, setTab] = useState("profile");
+  const [displayName, setDisplayName] = useState(
+    currentUser?.displayName || "",
+  );
+  const [bio, setBio] = useState(currentUser?.bio || "");
 
-  const onPickFile = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const dataUrl = await fileToAvatarDataUrl(file);
-      updateProfile({ avatarUrl: dataUrl });
-      toast('Profile photo updated.', 'accent');
-    } catch {
-      toast('Could not read that image.', 'danger');
-    }
+  const onPickFile = () => {
+    toast("Photo upload isn't set up yet.", "default");
   };
 
-  const onSave = () => {
-    updateProfile({ displayName: displayName.trim() || currentUser.displayName, bio });
-    toast('Settings saved.', 'accent');
-    navigate('/profile');
+  const onSave = async () => {
+    const res = await updateProfile({
+      name: displayName.trim() || currentUser.displayName,
+      bio,
+    });
+    if (res.ok) {
+      toast("Settings saved.", "accent");
+      navigate("/profile");
+    } else {
+      toast(res.error || "Could not save.", "danger");
+    }
   };
 
   const onReset = () => {
     resetDemo();
-    toast('Demo data reset.', 'default');
-    navigate('/feed');
+    toast("Demo data reset.", "default");
+    navigate("/feed");
   };
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'account', label: 'Account', icon: Cog },
-    { id: 'appearance', label: 'Appearance', icon: Palette },
+    { id: "profile", label: "Profile", icon: User },
+    { id: "account", label: "Account", icon: Cog },
+    { id: "appearance", label: "Appearance", icon: Palette },
   ];
 
   return (
     <div>
       <nav className="navbar">
         <div className="nav-left">
-          <Link to="/feed" className="nav-logo wordmark">Oh <span>sheet!</span></Link>
+          <Link to="/feed" className="nav-logo wordmark">
+            Oh <span>sheet!</span>
+          </Link>
         </div>
         <div className="nav-right">
-          <Link to="/feed" className="btn btn-ghost"><ArrowLeft size={16} /> Back to feed</Link>
+          <Link to="/feed" className="btn btn-ghost">
+            <ArrowLeft size={16} /> Back to feed
+          </Link>
         </div>
       </nav>
 
@@ -89,7 +94,12 @@ export default function SettingsPage() {
           <h2>Settings</h2>
           <nav>
             {tabs.map(({ id, label, icon: Icon }) => (
-              <button key={id} type="button" className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>
+              <button
+                key={id}
+                type="button"
+                className={`tab ${tab === id ? "active" : ""}`}
+                onClick={() => setTab(id)}
+              >
                 <Icon size={16} /> {label}
               </button>
             ))}
@@ -97,61 +107,93 @@ export default function SettingsPage() {
         </aside>
 
         <main className="settings-main">
-          {tab === 'profile' && (
+          {tab === "profile" && (
             <>
               <h3>Public profile</h3>
               <div className="pfp-row">
                 <Avatar user={currentUser} size={72} />
-                <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPickFile} />
-                <button type="button" className="btn btn-ghost" onClick={() => fileRef.current?.click()}>Change photo</button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={onPickFile}
+                />
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  Change photo
+                </button>
               </div>
               <div className="field">
                 <label htmlFor="dn">Display name</label>
-                <input id="dn" type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" />
+                <input
+                  id="dn"
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Your name"
+                />
               </div>
               <div className="field">
                 <label htmlFor="bio">Bio</label>
-                <textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell the world about yourself…" style={{ minHeight: 110 }} />
+                <textarea
+                  id="bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell the world about yourself…"
+                  style={{ minHeight: 110 }}
+                />
               </div>
               <div className="editor-foot">
-                <button type="button" className="btn btn-accent" onClick={onSave}>Save changes</button>
+                <button
+                  type="button"
+                  className="btn btn-accent"
+                  onClick={onSave}
+                >
+                  Save changes
+                </button>
               </div>
             </>
           )}
 
-          {tab === 'account' && (
+          {tab === "account" && (
             <>
               <h3>Account</h3>
               <div className="field">
                 <label htmlFor="email">Email address</label>
-                <input id="email" type="email" value={currentUser?.email || ''} disabled />
-                <span className="hint">Email can’t be changed in this demo.</span>
-              </div>
-              <div className="field">
-                <label>Demo data</label>
-                <span className="hint">Reset every post, like, comment and follow back to the seeded sample data.</span>
-                <div style={{ marginTop: 8 }}>
-                  <button type="button" className="btn btn-danger" onClick={onReset}>Reset demo data</button>
-                </div>
+                <input
+                  id="email"
+                  type="email"
+                  value={currentUser?.email || ""}
+                  disabled
+                />
+                <span className="hint">
+                  Email can’t be changed in this demo.
+                </span>
               </div>
             </>
           )}
 
-          {tab === 'appearance' && (
+          {tab === "appearance" && (
             <>
               <h3>Appearance</h3>
               <div className="switch">
                 <span>Dark mode</span>
                 <button
                   type="button"
-                  className={`toggle ${theme === 'dark' ? 'on' : ''}`}
+                  className={`toggle ${theme === "dark" ? "on" : ""}`}
                   onClick={toggleTheme}
                   role="switch"
-                  aria-checked={theme === 'dark'}
+                  aria-checked={theme === "dark"}
                   aria-label="Toggle dark mode"
                 />
               </div>
-              <span className="hint">Your theme preference is remembered on this device.</span>
+              <span className="hint">
+                Your theme preference is remembered on this device.
+              </span>
             </>
           )}
         </main>
