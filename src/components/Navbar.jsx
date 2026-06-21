@@ -84,6 +84,14 @@ export default function Navbar() {
       </div>
 
       <div className="nav-right">
+        <NavLink
+          to="/search"
+          className="icon-btn nav-search-mobile"
+          aria-label="Search"
+        >
+          <Search size={18} />
+        </NavLink>
+
         <div className="search">
           <Search size={16} />
           <input
