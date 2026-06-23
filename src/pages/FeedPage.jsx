@@ -1,32 +1,21 @@
 import { useState, useEffect } from "react";
-import { Flame } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import Feed from "../components/Feed.jsx";
+import SortBar from "../components/SortBar.jsx";
 
 export default function FeedPage() {
-  const { getFeed, posts, loading } = useStore();
+  const { getFeed, posts, loading, sortPosts } = useStore();
   const [sort, setSort] = useState("hot");
 
   useEffect(() => {
     getFeed();
   }, [getFeed]);
 
+  const sorted = sortPosts(posts, sort);
+
   return (
     <>
-      <div className="sortbar">
-        <span className="label">
-          <Flame size={16} /> Sort
-        </span>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          aria-label="Sort sheets"
-        >
-          <option value="hot">Hot</option>
-          <option value="new">New</option>
-          <option value="top">Top</option>
-        </select>
-      </div>
+      <SortBar sort={sort} setSort={setSort} />
 
       {loading ? (
         <p
@@ -40,7 +29,7 @@ export default function FeedPage() {
         </p>
       ) : (
         <Feed
-          posts={posts}
+          posts={sorted}
           emptyTitle="No sheets yet."
           emptyHint="Be the first to post one."
           emptyTo="/create"

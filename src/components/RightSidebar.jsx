@@ -25,9 +25,11 @@ function MiniRow({ post }) {
 }
 
 export default function RightSidebar() {
-  const { currentUser, getFollowingSidebar, getTrending } = useStore();
+  const { currentUser, getFollowingSidebar, getTrending, getTrendingTags } =
+    useStore();
   const [following, setFollowing] = useState([]);
   const trending = getTrending(4);
+  const trendingTags = getTrendingTags(6);
 
   useEffect(() => {
     if (currentUser) {
@@ -61,6 +63,28 @@ export default function RightSidebar() {
         <Link to="/trending" className="more-link">
           View all trending
         </Link>
+      </section>
+
+      <section className="panel">
+        <h2 className="panel-head">Trending tags</h2>
+        {trendingTags.length > 0 ? (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              padding: "var(--space-4)",
+            }}
+          >
+            {trendingTags.map((t) => (
+              <Link key={t.name} to={`/tag/${t.name}`} className="tag">
+                #{t.name}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="empty-note">No tags yet.</p>
+        )}
       </section>
 
       <section className="panel mini-footer">

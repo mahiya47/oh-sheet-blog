@@ -236,6 +236,24 @@ export function StoreProvider({ children }) {
     return { posts: matchedPosts, users };
   };
 
+  // ---- Sorting (shared across feed/following/trending/tag pages) ----------
+
+  const sortPosts = (list, sort) => {
+    const arr = [...list];
+    if (sort === "new") {
+      return arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    if (sort === "top") {
+      return arr.sort((a, b) => b.likeCount - a.likeCount);
+    }
+    // hot = likes + comments, then newest
+    return arr.sort(
+      (a, b) =>
+        b.likeCount + b.commentCount - (a.likeCount + a.commentCount) ||
+        new Date(b.createdAt) - new Date(a.createdAt),
+    );
+  };
+
   // ---- Trending (real, sorts posts by engagement) -------------------------
 
   const getTrending = (limit = 4) =>
@@ -246,6 +264,22 @@ export function StoreProvider({ children }) {
           new Date(b.createdAt) - new Date(a.createdAt),
       )
       .slice(0, limit);
+
+  // count tag usage across loaded posts, return the most-used
+  const getTrendingTags = (limit = 5) => {
+    const counts = {};
+    for (const p of posts) {
+      for (const pt of p.tags || []) {
+        const name = pt.tag?.name;
+        if (name) counts[name] = (counts[name] || 0) + 1;
+      }
+    }
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(([name, count]) => ({ name, count }));
+  };
+
   const toggleFollow = async (userId, currentlyFollowing) => {
     try {
       if (currentlyFollowing) {
@@ -371,7 +405,10 @@ export function StoreProvider({ children }) {
         getUserPosts,
         getFollowingFeed,
         getProfile,
+        getPostsByTag,
         getTrending,
+        getTrendingTags,
+        sortPosts,
         getFollowingSidebar,
         getFollowCounts,
         isFollowing,
