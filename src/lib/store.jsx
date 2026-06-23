@@ -332,6 +332,15 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const getPostsByTag = async (name) => {
+    try {
+      const res = await api.get(`/tags/${encodeURIComponent(name)}/posts`);
+      return res.data.map(normalizePost);
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
   // ---- Stubs still needing a backend (follow / profile) -------------------
   const getUserPosts = (userId) => posts.filter((p) => p.author?.id === userId);
   const getFollowCounts = () => ({ following: 0, followers: 0 });

@@ -43,8 +43,8 @@ export default function PostModal({ postId, onClose }) {
       ...c,
       author: {
         ...c.user,
-        username: c.user?.email?.split("@")[0],
-        displayName: c.user?.email?.split("@")[0],
+        username: c.user?.username || c.user?.email?.split("@")[0],
+        displayName: c.user?.name || c.user?.email?.split("@")[0],
       },
     }));
     setComments(normalized);
@@ -111,6 +111,27 @@ export default function PostModal({ postId, onClose }) {
 
         <div className="sheet-body">
           <p style={{ fontSize: "1.2rem" }}>{post.content}</p>
+          {post.tags?.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 6,
+                marginTop: 12,
+              }}
+            >
+              {post.tags.map((pt) => (
+                <Link
+                  key={pt.tag?.id || pt.tag?.name}
+                  to={`/tag/${pt.tag?.name}`}
+                  className="tag"
+                  onClick={onClose}
+                >
+                  #{pt.tag?.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         <footer className="sheet-foot">

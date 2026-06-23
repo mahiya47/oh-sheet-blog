@@ -130,12 +130,22 @@ export default function SheetCard({ post }) {
         <p>{post.content}</p>
         {post.tags?.length > 0 && (
           <div
-            style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 6,
+              marginTop: 12,
+            }}
           >
             {post.tags.map((pt) => (
-              <span key={pt.tag?.id || pt.tag?.name} className="tag">
+              <Link
+                key={pt.tag?.id || pt.tag?.name}
+                to={`/tag/${pt.tag?.name}`}
+                className="tag"
+                onClick={stop}
+              >
                 #{pt.tag?.name}
-              </span>
+              </Link>
             ))}
           </div>
         )}
