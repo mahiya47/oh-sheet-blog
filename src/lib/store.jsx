@@ -25,7 +25,7 @@ const normalizePost = (post) => ({
   likedByMe: post.likedByMe ?? false,
   author: {
     ...post.author,
-    username: post.author?.email?.split("@")[0],
+    username: post.author?.username || post.author?.email?.split("@")[0],
     displayName: post.author?.name || post.author?.email?.split("@")[0],
   },
 });
@@ -51,10 +51,12 @@ export function StoreProvider({ children }) {
       // fetch the real profile (name, bio) from the backend
       let name = payload.email?.split("@")[0];
       let username = payload.email?.split("@")[0];
+      let avatarUrl = null;
       try {
         const profileRes = await api.get(`/users/${payload.userId}`);
         name = profileRes.data.name || name;
         username = profileRes.data.username || username;
+        avatarUrl = profileRes.data.avatarUrl || null;
       } catch {
         // if it fails, fall back to email-based values
       }
@@ -64,6 +66,7 @@ export function StoreProvider({ children }) {
         email: payload.email,
         username,
         displayName: name,
+        avatarUrl,
       };
       localStorage.setItem("current-user", JSON.stringify(user));
       setCurrentUser(user);
@@ -286,10 +289,15 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
-  const updateProfile = async ({ name, bio }) => {
+  const updateProfile = async ({ name, bio, username, avatarUrl }) => {
     try {
-      const res = await api.put("/users/me", { name, bio });
-      // update currentUser locally so the UI reflects the new name
+      const res = await api.put("/users/me", {
+        name,
+        bio,
+        username,
+        avatarUrl,
+      });
+      // update currentUser locally so the UI reflects the new values
       const updated = {
         ...currentUser,
         ...res.data,
@@ -314,7 +322,7 @@ export function StoreProvider({ children }) {
       const u = res.data;
       return {
         ...u,
-        username: u.email?.split("@")[0],
+        username: u.username || u.email?.split("@")[0],
         displayName: u.name || u.email?.split("@")[0],
       };
     } catch (err) {
