@@ -7,8 +7,6 @@ import { useToast } from "../context/ToastContext.jsx";
 import Avatar from "../components/Avatar.jsx";
 
 // Downscale an uploaded image to a small JPEG data URL before storing it.
-// This is the dependency-free version of the original's image compression,
-// and keeps localStorage from filling up with multi-MB photos.
 function fileToAvatarDataUrl(file, max = 256) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -43,16 +41,28 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState(
     currentUser?.displayName || "",
   );
+  const [username, setUsername] = useState(currentUser?.username || "");
   const [bio, setBio] = useState(currentUser?.bio || "");
+  const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || "");
 
-  const onPickFile = () => {
-    toast("Photo upload isn't set up yet.", "default");
+  const onPickFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await fileToAvatarDataUrl(file);
+      setAvatarUrl(dataUrl);
+      toast("Photo ready — hit Save changes.", "accent");
+    } catch {
+      toast("Couldn't load that image.", "danger");
+    }
   };
 
   const onSave = async () => {
     const res = await updateProfile({
       name: displayName.trim() || currentUser.displayName,
+      username: username.trim(),
       bio,
+      avatarUrl,
     });
     if (res.ok) {
       toast("Settings saved.", "accent");
@@ -111,7 +121,7 @@ export default function SettingsPage() {
             <>
               <h3>Public profile</h3>
               <div className="pfp-row">
-                <Avatar user={currentUser} size={72} />
+                <Avatar user={{ ...currentUser, avatarUrl }} size={72} />
                 <input
                   ref={fileRef}
                   type="file"
@@ -136,6 +146,17 @@ export default function SettingsPage() {
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Your name"
                 />
+              </div>
+              <div className="field">
+                <label htmlFor="un">Username</label>
+                <input
+                  id="un"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="username"
+                />
+                <span className="hint">Must be unique.</span>
               </div>
               <div className="field">
                 <label htmlFor="bio">Bio</label>
