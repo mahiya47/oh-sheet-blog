@@ -50,17 +50,19 @@ export function StoreProvider({ children }) {
 
       // fetch the real profile (name, bio) from the backend
       let name = payload.email?.split("@")[0];
+      let username = payload.email?.split("@")[0];
       try {
         const profileRes = await api.get(`/users/${payload.userId}`);
         name = profileRes.data.name || name;
+        username = profileRes.data.username || username;
       } catch {
-        // if it fails, fall back to email-based name
+        // if it fails, fall back to email-based values
       }
 
       const user = {
         id: payload.userId,
         email: payload.email,
-        username: payload.email?.split("@")[0],
+        username,
         displayName: name,
       };
       localStorage.setItem("current-user", JSON.stringify(user));
@@ -76,7 +78,12 @@ export function StoreProvider({ children }) {
 
   const signup = async ({ username, email, password }) => {
     try {
-      await api.post("/auth/register", { name: username, email, password });
+      await api.post("/auth/register", {
+        name: username,
+        username,
+        email,
+        password,
+      });
       return await login(email, password);
     } catch (err) {
       return {
@@ -286,7 +293,7 @@ export function StoreProvider({ children }) {
       const updated = {
         ...currentUser,
         ...res.data,
-        username: res.data.email?.split("@")[0],
+        username: res.data.username || res.data.email?.split("@")[0],
         displayName: res.data.name || res.data.email?.split("@")[0],
       };
       setCurrentUser(updated);
