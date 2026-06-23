@@ -131,11 +131,12 @@ export function StoreProvider({ children }) {
     }
   };
 
-  const createPost = async (content) => {
+  const createPost = async (content, tags = []) => {
     try {
       const res = await api.post("/posts", {
         title: content.slice(0, 50),
         content,
+        tags,
       });
       setPosts((prev) => [normalizePost(res.data), ...prev]);
       return res.data.id;

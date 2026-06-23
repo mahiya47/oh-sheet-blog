@@ -128,6 +128,17 @@ export default function SheetCard({ post }) {
 
       <div className="sheet-body">
         <p>{post.content}</p>
+        {post.tags?.length > 0 && (
+          <div
+            style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}
+          >
+            {post.tags.map((pt) => (
+              <span key={pt.tag?.id || pt.tag?.name} className="tag">
+                #{pt.tag?.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <footer className="sheet-foot">
