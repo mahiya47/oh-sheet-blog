@@ -5,6 +5,7 @@ import { useStore } from "../lib/store.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import Avatar from "../components/Avatar.jsx";
+import AvatarPicker from "../components/AvatarPicker.jsx";
 
 // Downscale an uploaded image to a small JPEG data URL before storing it.
 function fileToAvatarDataUrl(file, max = 256) {
@@ -134,8 +135,20 @@ export default function SettingsPage() {
                   className="btn btn-ghost"
                   onClick={() => fileRef.current?.click()}
                 >
-                  Change photo
+                  Upload photo
                 </button>
+              </div>
+
+              <div className="field">
+                <label>Or choose an avatar</label>
+                <AvatarPicker
+                  value={avatarUrl}
+                  onSelect={setAvatarUrl}
+                  seedBase={
+                    currentUser?.username || currentUser?.email || "user"
+                  }
+                />
+                <span className="hint">Pick one, then hit Save changes.</span>
               </div>
               <div className="field">
                 <label htmlFor="dn">Display name</label>

@@ -1,4 +1,5 @@
 import { colorFor, initials } from "../lib/time.js";
+
 export default function Avatar({ user, size = 40 }) {
   const style = { width: size, height: size, fontSize: Math.round(size * 0.4) };
 
@@ -10,18 +11,19 @@ export default function Avatar({ user, size = 40 }) {
     );
   }
 
+  // Fallback: a DiceBear avatar seeded by the user's identity, so each
+  // person gets a consistent unique avatar even without setting one.
+  const seed = encodeURIComponent(
+    user?.username ||
+      user?.displayName ||
+      user?.email ||
+      String(user?.id || "guest"),
+  );
+  const fallbackUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=${seed}`;
+
   return (
-    <span
-      className="avatar"
-      style={{
-        ...style,
-        background: colorFor(user?.id || "?"),
-        color: "#000",
-        borderColor: "#000",
-      }}
-      aria-hidden="true"
-    >
-      {initials(user?.displayName || user?.username)}
+    <span className="avatar" style={style}>
+      <img src={fallbackUrl} alt={user?.displayName || "avatar"} />
     </span>
   );
 }
