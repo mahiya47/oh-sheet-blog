@@ -13,10 +13,10 @@ export default function Login() {
 
   if (currentUser) return <Navigate to="/feed" replace />;
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const res = login(email, password);
+    const res = await login(email, password);
     if (res.ok) {
       toast("Welcome back!", "accent");
       navigate("/feed");
