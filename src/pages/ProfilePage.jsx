@@ -138,6 +138,22 @@ export default function ProfilePage() {
             {profile.bio?.trim() ? profile.bio : "No bio yet."}
           </p>
 
+          {(profile.gender || profile.orientation) && (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+                marginBottom: "var(--space-4)",
+              }}
+            >
+              {profile.gender && <span className="tag">{profile.gender}</span>}
+              {profile.orientation && (
+                <span className="tag">{profile.orientation}</span>
+              )}
+            </div>
+          )}
+
           <div className="profile-stats">
             <button
               type="button"

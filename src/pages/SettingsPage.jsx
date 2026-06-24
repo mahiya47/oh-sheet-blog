@@ -4,6 +4,7 @@ import { ArrowLeft, User, Cog, Palette } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import { GENDER_OPTIONS, ORIENTATION_OPTIONS } from "../lib/profileOptions.js";
 import Avatar from "../components/Avatar.jsx";
 import AvatarPicker from "../components/AvatarPicker.jsx";
 
@@ -31,6 +32,8 @@ function fileToAvatarDataUrl(file, max = 256) {
   });
 }
 
+const SELF = "Prefer to self-describe";
+
 export default function SettingsPage() {
   const { currentUser, updateProfile, resetDemo } = useStore();
   const { theme, toggleTheme } = useTheme();
@@ -46,6 +49,30 @@ export default function SettingsPage() {
   const [bio, setBio] = useState(currentUser?.bio || "");
   const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || "");
 
+  // Gender — if the stored value isn't one of the presets, treat it as self-described
+  const storedGender = currentUser?.gender || "";
+  const genderIsPreset = GENDER_OPTIONS.includes(storedGender);
+  const [genderChoice, setGenderChoice] = useState(
+    storedGender ? (genderIsPreset ? storedGender : SELF) : "",
+  );
+  const [genderCustom, setGenderCustom] = useState(
+    storedGender && !genderIsPreset ? storedGender : "",
+  );
+  const [showGender, setShowGender] = useState(!!currentUser?.showGender);
+
+  // Orientation — same pattern
+  const storedOri = currentUser?.orientation || "";
+  const oriIsPreset = ORIENTATION_OPTIONS.includes(storedOri);
+  const [oriChoice, setOriChoice] = useState(
+    storedOri ? (oriIsPreset ? storedOri : SELF) : "",
+  );
+  const [oriCustom, setOriCustom] = useState(
+    storedOri && !oriIsPreset ? storedOri : "",
+  );
+  const [showOrientation, setShowOrientation] = useState(
+    !!currentUser?.showOrientation,
+  );
+
   const onPickFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -59,11 +86,18 @@ export default function SettingsPage() {
   };
 
   const onSave = async () => {
+    const gender = genderChoice === SELF ? genderCustom.trim() : genderChoice;
+    const orientation = oriChoice === SELF ? oriCustom.trim() : oriChoice;
+
     const res = await updateProfile({
       name: displayName.trim() || currentUser.displayName,
       username: username.trim(),
       bio,
       avatarUrl,
+      gender,
+      orientation,
+      showGender,
+      showOrientation,
     });
     if (res.ok) {
       toast("Settings saved.", "accent");
@@ -181,6 +215,93 @@ export default function SettingsPage() {
                   style={{ minHeight: 110 }}
                 />
               </div>
+
+              <div className="field">
+                <label htmlFor="gender">Gender</label>
+                <select
+                  id="gender"
+                  value={genderChoice}
+                  onChange={(e) => setGenderChoice(e.target.value)}
+                >
+                  <option value="">Select…</option>
+                  {GENDER_OPTIONS.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </select>
+                {genderChoice === SELF && (
+                  <input
+                    type="text"
+                    value={genderCustom}
+                    onChange={(e) => setGenderCustom(e.target.value)}
+                    placeholder="Describe your gender"
+                    style={{ marginTop: 8 }}
+                  />
+                )}
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginTop: 8,
+                    fontSize: "0.85rem",
+                    textTransform: "none",
+                    fontWeight: 400,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={showGender}
+                    onChange={(e) => setShowGender(e.target.checked)}
+                  />
+                  Show on my profile
+                </label>
+              </div>
+
+              <div className="field">
+                <label htmlFor="orientation">Orientation</label>
+                <select
+                  id="orientation"
+                  value={oriChoice}
+                  onChange={(e) => setOriChoice(e.target.value)}
+                >
+                  <option value="">Select…</option>
+                  {ORIENTATION_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
+                </select>
+                {oriChoice === SELF && (
+                  <input
+                    type="text"
+                    value={oriCustom}
+                    onChange={(e) => setOriCustom(e.target.value)}
+                    placeholder="Describe your orientation"
+                    style={{ marginTop: 8 }}
+                  />
+                )}
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginTop: 8,
+                    fontSize: "0.85rem",
+                    textTransform: "none",
+                    fontWeight: 400,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={showOrientation}
+                    onChange={(e) => setShowOrientation(e.target.checked)}
+                  />
+                  Show on my profile
+                </label>
+              </div>
+
               <div className="editor-foot">
                 <button
                   type="button"

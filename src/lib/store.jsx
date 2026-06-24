@@ -90,11 +90,19 @@ export function StoreProvider({ children }) {
       let name = payload.email?.split("@")[0];
       let username = payload.email?.split("@")[0];
       let avatarUrl = null;
+      let gender = "";
+      let orientation = "";
+      let showGender = false;
+      let showOrientation = false;
       try {
         const profileRes = await api.get(`/users/${payload.userId}`);
         name = profileRes.data.name || name;
         username = profileRes.data.username || username;
         avatarUrl = profileRes.data.avatarUrl || null;
+        gender = profileRes.data.gender || "";
+        orientation = profileRes.data.orientation || "";
+        showGender = profileRes.data.showGender || false;
+        showOrientation = profileRes.data.showOrientation || false;
       } catch {
         // if it fails, fall back to email-based values
       }
@@ -105,6 +113,10 @@ export function StoreProvider({ children }) {
         username,
         displayName: name,
         avatarUrl,
+        gender,
+        orientation,
+        showGender,
+        showOrientation,
       };
       localStorage.setItem("current-user", JSON.stringify(user));
       setCurrentUser(user);
@@ -391,13 +403,26 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
-  const updateProfile = async ({ name, bio, username, avatarUrl }) => {
+  const updateProfile = async ({
+    name,
+    bio,
+    username,
+    avatarUrl,
+    gender,
+    orientation,
+    showGender,
+    showOrientation,
+  }) => {
     try {
       const res = await api.put("/users/me", {
         name,
         bio,
         username,
         avatarUrl,
+        gender,
+        orientation,
+        showGender,
+        showOrientation,
       });
       // update currentUser locally so the UI reflects the new values
       const updated = {
