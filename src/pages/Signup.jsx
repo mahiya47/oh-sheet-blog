@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import { GENDER_OPTIONS, ORIENTATION_OPTIONS } from "../lib/profileOptions.js";
 import Avatar from "../components/Avatar.jsx";
 import AvatarPicker from "../components/AvatarPicker.jsx";
 
@@ -29,6 +30,8 @@ function fileToAvatarDataUrl(file, max = 256) {
   });
 }
 
+const SELF = "Prefer to self-describe";
+
 export default function Signup() {
   const { currentUser, signup, updateProfile } = useStore();
   const toast = useToast();
@@ -39,8 +42,13 @@ export default function Signup() {
     email: "",
     password: "",
     confirm: "",
+    birthday: "",
   });
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [genderChoice, setGenderChoice] = useState("");
+  const [genderCustom, setGenderCustom] = useState("");
+  const [oriChoice, setOriChoice] = useState("");
+  const [oriCustom, setOriCustom] = useState("");
   const [error, setError] = useState("");
 
   if (currentUser) return <Navigate to="/feed" replace />;
@@ -75,13 +83,21 @@ export default function Signup() {
     });
 
     if (res.ok) {
-      // if they picked/uploaded an avatar, save it after signup logs them in
-      if (avatarUrl) {
+      const gender = genderChoice === SELF ? genderCustom.trim() : genderChoice;
+      const orientation = oriChoice === SELF ? oriCustom.trim() : oriChoice;
+
+      // save the optional extras after signup logs them in
+      if (avatarUrl || gender || orientation || form.birthday) {
         await updateProfile({
           name: form.username,
           username: form.username,
           bio: "",
           avatarUrl,
+          gender,
+          orientation,
+          showGender: false,
+          showOrientation: false,
+          birthday: form.birthday || undefined,
         });
       }
       toast("Account created. Welcome to Oh Sheet!", "accent");
@@ -137,6 +153,66 @@ export default function Signup() {
               placeholder="Confirm password"
               autoComplete="new-password"
             />
+          </div>
+
+          <div className="field">
+            <label htmlFor="su-bday">Birthday (optional)</label>
+            <input
+              id="su-bday"
+              type="date"
+              value={form.birthday}
+              onChange={set("birthday")}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="su-gender">Gender (optional)</label>
+            <select
+              id="su-gender"
+              value={genderChoice}
+              onChange={(e) => setGenderChoice(e.target.value)}
+            >
+              <option value="">Select…</option>
+              {GENDER_OPTIONS.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+            {genderChoice === SELF && (
+              <input
+                type="text"
+                value={genderCustom}
+                onChange={(e) => setGenderCustom(e.target.value)}
+                placeholder="Describe your gender"
+                style={{ marginTop: 8 }}
+              />
+            )}
+          </div>
+
+          <div className="field">
+            <label htmlFor="su-ori">Orientation (optional)</label>
+            <select
+              id="su-ori"
+              value={oriChoice}
+              onChange={(e) => setOriChoice(e.target.value)}
+            >
+              <option value="">Select…</option>
+              {ORIENTATION_OPTIONS.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
+            {oriChoice === SELF && (
+              <input
+                type="text"
+                value={oriCustom}
+                onChange={(e) => setOriCustom(e.target.value)}
+                placeholder="Describe your orientation"
+                style={{ marginTop: 8 }}
+              />
+            )}
           </div>
 
           <div className="pfp-row">
