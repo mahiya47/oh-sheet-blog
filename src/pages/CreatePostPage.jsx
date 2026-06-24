@@ -7,7 +7,7 @@ import { useToast } from "../context/ToastContext.jsx";
 const MAX = 500;
 
 // Downscale a large image to a reasonable size before storing/sending.
-function fileToImageDataUrl(file, max = 1080) {
+function fileToImageDataUrl(file, max = 800) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -20,7 +20,7 @@ function fileToImageDataUrl(file, max = 1080) {
         canvas.width = w;
         canvas.height = h;
         canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.8));
+        resolve(canvas.toDataURL("image/jpeg", 0.6));
       };
       img.onerror = reject;
       img.src = reader.result;

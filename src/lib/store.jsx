@@ -94,6 +94,7 @@ export function StoreProvider({ children }) {
       let orientation = "";
       let showGender = false;
       let showOrientation = false;
+      let birthday = null;
       try {
         const profileRes = await api.get(`/users/${payload.userId}`);
         name = profileRes.data.name || name;
@@ -103,10 +104,10 @@ export function StoreProvider({ children }) {
         orientation = profileRes.data.orientation || "";
         showGender = profileRes.data.showGender || false;
         showOrientation = profileRes.data.showOrientation || false;
+        birthday = profileRes.data.birthday || null;
       } catch {
         // if it fails, fall back to email-based values
       }
-
       const user = {
         id: payload.userId,
         email: payload.email,
@@ -117,6 +118,7 @@ export function StoreProvider({ children }) {
         orientation,
         showGender,
         showOrientation,
+        birthday,
       };
       localStorage.setItem("current-user", JSON.stringify(user));
       setCurrentUser(user);
@@ -412,6 +414,7 @@ export function StoreProvider({ children }) {
     orientation,
     showGender,
     showOrientation,
+    birthday,
   }) => {
     try {
       const res = await api.put("/users/me", {
@@ -423,6 +426,7 @@ export function StoreProvider({ children }) {
         orientation,
         showGender,
         showOrientation,
+        birthday,
       });
       // update currentUser locally so the UI reflects the new values
       const updated = {
