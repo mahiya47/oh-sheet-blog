@@ -9,6 +9,7 @@ import {
   Flag,
   Trash2,
   UserRound,
+  Crown,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useModal } from "../context/ModalContext.jsx";
@@ -16,6 +17,7 @@ import { useToast } from "../context/ToastContext.jsx";
 import { useClickAway } from "../lib/useClickAway.js";
 import { colorFor, timeAgo } from "../lib/time.js";
 import Avatar from "./Avatar.jsx";
+import { CREATOR_ID } from "../lib/creator.js";
 
 export default function SheetCard({ post }) {
   const { currentUser, toggleLike, createPost, deletePost } = useStore();
@@ -81,6 +83,11 @@ export default function SheetCard({ post }) {
           <span className="names">
             <span className="display">
               {post.author?.displayName || "User"}
+              {post.author?.id === CREATOR_ID && (
+                <span className="creator-badge">
+                  <Crown size={10} /> Creator
+                </span>
+              )}
             </span>
             <span className="handle">
               @{post.author?.username} · {timeAgo(post.createdAt)}
