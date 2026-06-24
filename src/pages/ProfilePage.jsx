@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Crown } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import { CREATOR_ID } from "../lib/creator.js";
 import Avatar from "../components/Avatar.jsx";
 import Feed from "../components/Feed.jsx";
 
@@ -73,6 +75,7 @@ export default function ProfilePage() {
   const userPosts = getUserPosts(profile.id);
   const isMe = currentUser?.id === profile.id;
   const following = counts.isFollowing;
+  const isCreatorProfile = profile.id === CREATOR_ID;
 
   const onFollow = async () => {
     await toggleFollow(profile.id, following);
@@ -110,7 +113,14 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <h1 className="profile-name">{profile.displayName}</h1>
+          <h1 className="profile-name">
+            {profile.displayName}
+            {isCreatorProfile && (
+              <span className="creator-badge">
+                <Crown size={12} /> Creator
+              </span>
+            )}
+          </h1>
           <p className="profile-handle">@{profile.username}</p>
           <p className="profile-bio">
             {profile.bio?.trim() ? profile.bio : "No bio yet."}

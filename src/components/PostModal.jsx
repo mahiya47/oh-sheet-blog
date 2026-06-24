@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { X, Heart, Share2, Trash2 } from "lucide-react";
+import { X, Heart, Share2, Trash2, Crown } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { colorFor, timeAgo } from "../lib/time.js";
 import Avatar from "./Avatar.jsx";
+import { CREATOR_ID } from "../lib/creator.js";
 
 export default function PostModal({ postId, onClose }) {
   const {
@@ -101,7 +102,14 @@ export default function PostModal({ postId, onClose }) {
           >
             <Avatar user={post.author} size={44} />
             <span className="names">
-              <span className="display">{post.author?.displayName}</span>
+              <span className="display">
+                {post.author?.displayName}
+                {post.author?.id === CREATOR_ID && (
+                  <span className="creator-badge">
+                    <Crown size={10} /> Creator
+                  </span>
+                )}
+              </span>
               <span className="handle">
                 @{post.author?.username} · {timeAgo(post.createdAt)}
               </span>
