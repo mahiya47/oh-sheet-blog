@@ -46,8 +46,8 @@ export default function WelcomeModal({ onClose }) {
           <div>
             <p style={{ fontWeight: 700, marginBottom: 4 }}>📝 Post "sheets"</p>
             <p style={{ color: "var(--text-muted)" }}>
-              Share short thoughts, add up to 5 tags, and attach an image. Click
-              any tag to see related posts.
+              Share short thoughts through sheets. Click any tag to see related
+              posts.
             </p>
           </div>
 
