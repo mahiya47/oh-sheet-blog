@@ -202,7 +202,7 @@ export default function PostModal({ postId, onClose }) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
                 }}
-                placeholder="Write a comment…  (⌘/Ctrl + Enter to post)"
+                placeholder="Write a comment"
                 aria-label="Write a comment"
               />
               <button type="button" className="btn btn-accent" onClick={submit}>

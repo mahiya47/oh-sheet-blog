@@ -56,7 +56,6 @@ export default function Login() {
             Sign in
           </button>
         </form>
-        ----------------------------------------
         <div className="auth-foot">
           New here? <Link to="/signup">Create an account</Link>
         </div>
