@@ -404,6 +404,20 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const getLeaderboard = async () => {
+    try {
+      const res = await api.get("/users/leaderboard");
+      return res.data.map((u) => ({
+        ...u,
+        username: u.username || u.email?.split("@")[0],
+        displayName: u.name || u.email?.split("@")[0],
+      }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
   const getPostsByTag = async (name) => {
     try {
       const res = await api.get(`/tags/${encodeURIComponent(name)}/posts`);
