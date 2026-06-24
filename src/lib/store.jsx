@@ -342,6 +342,34 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const getFollowers = async (userId) => {
+    try {
+      const res = await api.get(`/follows/${userId}/followers`);
+      return res.data.map((u) => ({
+        ...u,
+        username: u.username || u.email?.split("@")[0],
+        displayName: u.name || u.email?.split("@")[0],
+      }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
+  const getFollowingList = async (userId) => {
+    try {
+      const res = await api.get(`/follows/${userId}/following`);
+      return res.data.map((u) => ({
+        ...u,
+        username: u.username || u.email?.split("@")[0],
+        displayName: u.name || u.email?.split("@")[0],
+      }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
   const getFollowingFeed = useCallback(async () => {
     try {
       const res = await api.get("/posts/following");
@@ -454,6 +482,8 @@ export function StoreProvider({ children }) {
         toggleLike,
         toggleFollow,
         getFollowInfo,
+        getFollowers,
+        getFollowingList,
         updateProfile,
         getUserPosts,
         getFollowingFeed,

@@ -6,6 +6,7 @@ import { useToast } from "../context/ToastContext.jsx";
 import { CREATOR_ID } from "../lib/creator.js";
 import Avatar from "../components/Avatar.jsx";
 import Feed from "../components/Feed.jsx";
+import UserListModal from "../components/UserListModal.jsx";
 
 export default function ProfilePage() {
   const { userId } = useParams();
@@ -17,6 +18,8 @@ export default function ProfilePage() {
     getUserPosts,
     getFollowInfo,
     toggleFollow,
+    getFollowers,
+    getFollowingList,
   } = useStore();
   const toast = useToast();
 
@@ -28,13 +31,12 @@ export default function ProfilePage() {
     following: 0,
     isFollowing: false,
   });
+  const [listModal, setListModal] = useState(null); // { title, users } or null
 
-  // load posts (so we can show this user's sheets)
   useEffect(() => {
     getFeed();
   }, [getFeed]);
 
-  // load the profile + follow info whenever the target changes
   useEffect(() => {
     if (!targetId) return;
     setLoading(true);
@@ -89,6 +91,16 @@ export default function ProfilePage() {
     );
   };
 
+  const openFollowers = async () => {
+    const users = await getFollowers(profile.id);
+    setListModal({ title: "Followers", users });
+  };
+
+  const openFollowing = async () => {
+    const users = await getFollowingList(profile.id);
+    setListModal({ title: "Following", users });
+  };
+
   return (
     <>
       <section className="profile">
@@ -127,14 +139,40 @@ export default function ProfilePage() {
           </p>
 
           <div className="profile-stats">
-            <div>
+            <button
+              type="button"
+              onClick={openFollowing}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "inherit",
+                padding: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
               <b>{counts.following}</b>
               <span>Following</span>
-            </div>
-            <div>
+            </button>
+            <button
+              type="button"
+              onClick={openFollowers}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "inherit",
+                padding: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
               <b>{counts.followers}</b>
               <span>Followers</span>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -153,6 +191,14 @@ export default function ProfilePage() {
         emptyTo={isMe ? "/create" : undefined}
         emptyToLabel="Post your first sheet"
       />
+
+      {listModal && (
+        <UserListModal
+          title={listModal.title}
+          users={listModal.users}
+          onClose={() => setListModal(null)}
+        />
+      )}
     </>
   );
 }
