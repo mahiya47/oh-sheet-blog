@@ -178,6 +178,18 @@ export default function SettingsPage() {
               </div>
 
               <div className="field">
+                <label>Or choose an avatar</label>
+                <AvatarPicker
+                  value={avatarUrl}
+                  onSelect={setAvatarUrl}
+                  seedBase={
+                    currentUser?.username || currentUser?.email || "user"
+                  }
+                />
+                <span className="hint">Pick one, then hit Save changes.</span>
+              </div>
+
+              <div className="field">
                 <label htmlFor="bday">Birthday</label>
                 <input
                   id="bday"
