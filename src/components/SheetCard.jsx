@@ -18,7 +18,6 @@ import { useToast } from "../context/ToastContext.jsx";
 import { useClickAway } from "../lib/useClickAway.js";
 import { colorFor, timeAgo } from "../lib/time.js";
 import Avatar from "./Avatar.jsx";
-import { CREATOR_ID } from "../lib/creator.js";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 
 export default function SheetCard({ post }) {
