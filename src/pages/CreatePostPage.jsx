@@ -41,7 +41,7 @@ export default function CreatePostPage() {
   const [imageUrl, setImageUrl] = useState("");
 
   const over = content.length > MAX;
-  const empty = content.trim().length === 0;
+  const empty = content.trim().length === 0 && !imageUrl;
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase();
