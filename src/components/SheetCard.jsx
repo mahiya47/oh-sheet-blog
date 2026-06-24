@@ -135,6 +135,18 @@ export default function SheetCard({ post }) {
 
       <div className="sheet-body">
         <p>{post.content}</p>
+        {post.imageUrl && (
+          <img
+            src={post.imageUrl}
+            alt=""
+            style={{
+              width: "100%",
+              marginTop: 12,
+              borderRadius: "var(--radius)",
+              border: "2px solid var(--border)",
+            }}
+          />
+        )}
         {post.tags?.length > 0 && (
           <div
             style={{

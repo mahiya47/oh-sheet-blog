@@ -119,6 +119,18 @@ export default function PostModal({ postId, onClose }) {
 
         <div className="sheet-body">
           <p style={{ fontSize: "1.2rem" }}>{post.content}</p>
+          {post.imageUrl && (
+            <img
+              src={post.imageUrl}
+              alt=""
+              style={{
+                width: "100%",
+                marginTop: 12,
+                borderRadius: "var(--radius)",
+                border: "2px solid var(--border)",
+              }}
+            />
+          )}
           {post.tags?.length > 0 && (
             <div
               style={{

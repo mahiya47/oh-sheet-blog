@@ -1,18 +1,44 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X } from "lucide-react";
+import { X, ImagePlus } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 
 const MAX = 500;
 
+// Downscale a large image to a reasonable size before storing/sending.
+function fileToImageDataUrl(file, max = 1080) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function CreatePostPage() {
   const { createPost } = useStore();
   const toast = useToast();
   const navigate = useNavigate();
+  const fileRef = useRef(null);
   const [content, setContent] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState([]);
+  const [imageUrl, setImageUrl] = useState("");
 
   const over = content.length > MAX;
   const empty = content.trim().length === 0;
@@ -34,6 +60,18 @@ export default function CreatePostPage() {
 
   const removeTag = (t) => setTags(tags.filter((x) => x !== t));
 
+  const onPickImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await fileToImageDataUrl(file);
+      setImageUrl(dataUrl);
+      toast("Image added.", "accent");
+    } catch {
+      toast("Couldn't load that image.", "danger");
+    }
+  };
+
   const onPost = async () => {
     if (empty) return toast("Your sheet is empty.", "danger");
     if (over)
@@ -41,7 +79,7 @@ export default function CreatePostPage() {
         `Too long — trim ${content.length - MAX} characters.`,
         "danger",
       );
-    const id = await createPost(content, tags);
+    const id = await createPost(content, tags, imageUrl);
     if (id) {
       toast("Sheet posted!", "accent");
       navigate("/feed");
@@ -117,6 +155,48 @@ export default function CreatePostPage() {
               </span>
             ))}
           </div>
+        )}
+      </div>
+
+      <div className="field">
+        <label>Image (optional)</label>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={onPickImage}
+        />
+        {imageUrl ? (
+          <div style={{ position: "relative", display: "inline-block" }}>
+            <img
+              src={imageUrl}
+              alt="preview"
+              style={{
+                maxWidth: "100%",
+                borderRadius: "var(--radius)",
+                border: "2px solid var(--border)",
+              }}
+            />
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setImageUrl("")}
+              style={{ position: "absolute", top: 8, right: 8 }}
+              aria-label="Remove image"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => fileRef.current?.click()}
+            style={{ alignSelf: "flex-start" }}
+          >
+            <ImagePlus size={16} /> Add image
+          </button>
         )}
       </div>
 

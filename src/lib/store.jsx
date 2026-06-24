@@ -169,12 +169,13 @@ export function StoreProvider({ children }) {
     }
   };
 
-  const createPost = async (content, tags = []) => {
+  const createPost = async (content, tags = [], imageUrl = "") => {
     try {
       const res = await api.post("/posts", {
         title: content.slice(0, 50),
         content,
         tags,
+        imageUrl,
       });
       setPosts((prev) => [normalizePost(res.data), ...prev]);
       return res.data.id;
