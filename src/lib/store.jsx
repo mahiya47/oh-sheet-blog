@@ -457,6 +457,7 @@ export function StoreProvider({ children }) {
         getUserPosts,
         getFollowingFeed,
         getProfile,
+        getLeaderboard,
         getPostsByTag,
         getTrending,
         getTrendingTags,
