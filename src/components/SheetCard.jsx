@@ -10,6 +10,7 @@ import {
   Trash2,
   UserRound,
   Crown,
+  Cake,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useModal } from "../context/ModalContext.jsx";
@@ -18,6 +19,7 @@ import { useClickAway } from "../lib/useClickAway.js";
 import { colorFor, timeAgo } from "../lib/time.js";
 import Avatar from "./Avatar.jsx";
 import { CREATOR_ID } from "../lib/creator.js";
+import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 
 export default function SheetCard({ post }) {
   const { currentUser, toggleLike, createPost, deletePost } = useStore();
@@ -87,6 +89,13 @@ export default function SheetCard({ post }) {
                 <span className="creator-badge">
                   <Crown size={10} /> Creator
                 </span>
+              )}
+              {isBirthday(post.author) && (
+                <Cake
+                  size={14}
+                  color="#000"
+                  style={{ marginLeft: 4, verticalAlign: "middle" }}
+                />
               )}
             </span>
             <span className="handle">

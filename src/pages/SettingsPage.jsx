@@ -48,6 +48,9 @@ export default function SettingsPage() {
   const [username, setUsername] = useState(currentUser?.username || "");
   const [bio, setBio] = useState(currentUser?.bio || "");
   const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || "");
+  const [birthday, setBirthday] = useState(
+    currentUser?.birthday ? currentUser.birthday.slice(0, 10) : "",
+  );
 
   // Gender — if the stored value isn't one of the presets, treat it as self-described
   const storedGender = currentUser?.gender || "";
@@ -98,6 +101,7 @@ export default function SettingsPage() {
       orientation,
       showGender,
       showOrientation,
+      birthday: birthday || undefined,
     });
     if (res.ok) {
       toast("Settings saved.", "accent");
@@ -174,15 +178,16 @@ export default function SettingsPage() {
               </div>
 
               <div className="field">
-                <label>Or choose an avatar</label>
-                <AvatarPicker
-                  value={avatarUrl}
-                  onSelect={setAvatarUrl}
-                  seedBase={
-                    currentUser?.username || currentUser?.email || "user"
-                  }
+                <label htmlFor="bday">Birthday</label>
+                <input
+                  id="bday"
+                  type="date"
+                  value={birthday}
+                  onChange={(e) => setBirthday(e.target.value)}
                 />
-                <span className="hint">Pick one, then hit Save changes.</span>
+                <span className="hint">
+                  A cake appears on your posts on your birthday.
+                </span>
               </div>
               <div className="field">
                 <label htmlFor="dn">Display name</label>

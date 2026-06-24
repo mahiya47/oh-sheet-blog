@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Crown } from "lucide-react";
+import { Crown, Cake } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
-import { CREATOR_ID } from "../lib/creator.js";
+import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 import Avatar from "../components/Avatar.jsx";
 import Feed from "../components/Feed.jsx";
 import UserListModal from "../components/UserListModal.jsx";
@@ -131,6 +131,12 @@ export default function ProfilePage() {
               <span className="creator-badge">
                 <Crown size={12} /> Creator
               </span>
+            )}
+            {isBirthday(profile) && (
+              <Cake
+                size={20}
+                style={{ marginLeft: 8, verticalAlign: "middle" }}
+              />
             )}
           </h1>
           <p className="profile-handle">@{profile.username}</p>
