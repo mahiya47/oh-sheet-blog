@@ -64,7 +64,7 @@ export default function ChatPage() {
         )}
         {messages.map((msg) => {
           const isMe = currentUser && msg.userId === currentUser.id;
-          const msgUser = msg.user || currentUser;
+          const msgUser = msg.user || (isMe ? currentUser : null);
 
           return (
             <div
@@ -72,14 +72,19 @@ export default function ChatPage() {
               className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
             >
               <Avatar
-                avatarUrl={msg.user?.avatarUrl || currentUser?.avatarUrl}
-                name={displayName(msgUser)}
+                user={{
+                  name: msgUser?.name,
+                  username: msgUser?.username,
+                  email: msgUser?.email,
+                  avatarUrl: msgUser?.avatarUrl,
+                  id: msgUser?.id,
+                }}
                 size={36}
               />
               <div className="chat-page-bubble-wrap">
                 {!isMe && (
                   <span className="chat-page-author">
-                    {displayName(msg.user)}
+                    {displayName(msgUser)}
                   </span>
                 )}
                 <div className="chat-page-bubble">{msg.content}</div>

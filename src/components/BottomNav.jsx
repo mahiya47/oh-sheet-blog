@@ -1,10 +1,15 @@
 import { NavLink } from "react-router-dom";
-import { Home, Users, Flame, PenLine, User, Trophy } from "lucide-react";
+import {
+  Home,
+  Users,
+  Flame,
+  PenLine,
+  Trophy,
+  MessageCircle,
+} from "lucide-react";
 
 const cls = ({ isActive }) => (isActive ? "active" : undefined);
 
-// Shown only on narrow screens (see .bottom-nav in index.css), since the left
-// rail is hidden there.
 export default function BottomNav() {
   return (
     <nav className="bottom-nav" aria-label="Primary">
@@ -28,9 +33,9 @@ export default function BottomNav() {
         <Trophy size={20} />
         <span>Ranks</span>
       </NavLink>
-      <NavLink to="/profile" className={cls}>
-        <User size={20} />
-        <span>Profile</span>
+      <NavLink to="/chat" className={cls}>
+        <MessageCircle size={20} />
+        <span>Chat</span>
       </NavLink>
     </nav>
   );
