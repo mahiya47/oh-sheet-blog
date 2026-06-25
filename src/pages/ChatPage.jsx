@@ -43,8 +43,10 @@ export default function ChatPage() {
     setSending(false);
   };
 
-  const displayName = (user) =>
-    user.name || user.username || user.email?.split("@")[0] || "User";
+  const displayName = (user) => {
+    if (!user) return "User";
+    return user.name || user.username || user.email?.split("@")[0] || "User";
+  };
 
   return (
     <div className="chat-page">
@@ -56,26 +58,24 @@ export default function ChatPage() {
       </div>
 
       <div className="chat-page-messages">
-        {loading && (
-          <div className="chat-page-empty">Loading messages...</div>
-        )}
+        {loading && <div className="chat-page-empty">Loading messages...</div>}
         {!loading && messages.length === 0 && (
           <div className="chat-page-empty">No messages yet. Say hi! 👋</div>
         )}
         {messages.map((msg) => {
           const isMe = currentUser && msg.userId === currentUser.id;
+          const msgUser = msg.user || currentUser;
+
           return (
             <div
               key={msg.id}
               className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
             >
-              {!isMe && (
-                <Avatar
-                  avatarUrl={msg.user.avatarUrl}
-                  name={displayName(msg.user)}
-                  size={36}
-                />
-              )}
+              <Avatar
+                avatarUrl={msg.user?.avatarUrl || currentUser?.avatarUrl}
+                name={displayName(msgUser)}
+                size={36}
+              />
               <div className="chat-page-bubble-wrap">
                 {!isMe && (
                   <span className="chat-page-author">
@@ -83,17 +83,8 @@ export default function ChatPage() {
                   </span>
                 )}
                 <div className="chat-page-bubble">{msg.content}</div>
-                <span className="chat-page-time">
-                  {timeAgo(msg.createdAt)}
-                </span>
+                <span className="chat-page-time">{timeAgo(msg.createdAt)}</span>
               </div>
-              {isMe && (
-                <Avatar
-                  avatarUrl={currentUser.avatarUrl}
-                  name={displayName(currentUser)}
-                  size={36}
-                />
-              )}
             </div>
           );
         })}
@@ -118,9 +109,7 @@ export default function ChatPage() {
           </button>
         </form>
       ) : (
-        <div className="chat-page-login-prompt">
-          Log in to join the chat
-        </div>
+        <div className="chat-page-login-prompt">Log in to join the chat</div>
       )}
     </div>
   );

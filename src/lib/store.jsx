@@ -54,7 +54,6 @@ const CARD_COLORS = [
 const randomColor = () =>
   CARD_COLORS[Math.floor(Math.random() * CARD_COLORS.length)];
 
-// Shared helper: turn a raw backend post into the shape the UI expects
 const normalizePost = (post) => ({
   ...post,
   color: randomColor(),
@@ -85,8 +84,6 @@ export function StoreProvider({ children }) {
       const res = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
       const payload = JSON.parse(atob(res.data.token.split(".")[1]));
-
-      // fetch the real profile (name, bio) from the backend
       let name = payload.email?.split("@")[0];
       let username = payload.email?.split("@")[0];
       let avatarUrl = null;
@@ -105,9 +102,7 @@ export function StoreProvider({ children }) {
         showGender = profileRes.data.showGender || false;
         showOrientation = profileRes.data.showOrientation || false;
         birthday = profileRes.data.birthday || null;
-      } catch {
-        // if it fails, fall back to email-based values
-      }
+      } catch {}
       const user = {
         id: payload.userId,
         email: payload.email,
@@ -239,7 +234,6 @@ export function StoreProvider({ children }) {
   // ---- Likes ---------------------------------------------------------------
 
   const toggleLike = async (postId, currentlyLiked) => {
-    // optimistically flip the main feed state
     setPosts((prev) =>
       prev.map((p) =>
         p.id === postId
@@ -251,7 +245,6 @@ export function StoreProvider({ children }) {
           : p,
       ),
     );
-
     try {
       if (currentlyLiked) {
         await api.delete(`/posts/${postId}/like`);
@@ -259,15 +252,11 @@ export function StoreProvider({ children }) {
         await api.post(`/posts/${postId}/like`);
       }
     } catch (err) {
-      // 400 = already in that state on the server; ignore it (UI is already correct).
-      // Any other error: log it.
-      if (err.response?.status !== 400) {
-        console.error(err);
-      }
+      if (err.response?.status !== 400) console.error(err);
     }
   };
 
-  // ---- Search (real, uses posts already in state) -------------------------
+  // ---- Search --------------------------------------------------------------
 
   const search = (raw) => {
     const q = (raw || "").trim().toLowerCase();
@@ -277,7 +266,6 @@ export function StoreProvider({ children }) {
         p.content?.toLowerCase().includes(q) ||
         p.title?.toLowerCase().includes(q),
     );
-    // de-duplicate authors of matched posts as a simple "users" result
     const seen = new Set();
     const users = [];
     for (const p of matchedPosts) {
@@ -289,17 +277,13 @@ export function StoreProvider({ children }) {
     return { posts: matchedPosts, users };
   };
 
-  // ---- Sorting (shared across feed/following/trending/tag pages) ----------
+  // ---- Sorting -------------------------------------------------------------
 
   const sortPosts = (list, sort) => {
     const arr = [...list];
-    if (sort === "new") {
+    if (sort === "new")
       return arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-    if (sort === "top") {
-      return arr.sort((a, b) => b.likeCount - a.likeCount);
-    }
-    // hot = likes + comments, then newest
+    if (sort === "top") return arr.sort((a, b) => b.likeCount - a.likeCount);
     return arr.sort(
       (a, b) =>
         b.likeCount + b.commentCount - (a.likeCount + a.commentCount) ||
@@ -307,7 +291,7 @@ export function StoreProvider({ children }) {
     );
   };
 
-  // ---- Trending (real, sorts posts by engagement) -------------------------
+  // ---- Trending ------------------------------------------------------------
 
   const getTrending = (limit = 4) =>
     [...posts]
@@ -318,7 +302,6 @@ export function StoreProvider({ children }) {
       )
       .slice(0, limit);
 
-  // count tag usage across loaded posts, return the most-used
   const getTrendingTags = (limit = 5) => {
     const counts = {};
     for (const p of posts) {
@@ -333,6 +316,8 @@ export function StoreProvider({ children }) {
       .map(([name, count]) => ({ name, count }));
   };
 
+  // ---- Follows -------------------------------------------------------------
+
   const toggleFollow = async (userId, currentlyFollowing) => {
     try {
       if (currentlyFollowing) {
@@ -346,10 +331,11 @@ export function StoreProvider({ children }) {
       return false;
     }
   };
+
   const getFollowInfo = async (userId) => {
     try {
       const res = await api.get(`/follows/${userId}`);
-      return res.data; // { followers, following, isFollowing }
+      return res.data;
     } catch (err) {
       console.error(err);
       return { followers: 0, following: 0, isFollowing: false };
@@ -405,6 +391,9 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
+
+  // ---- Profile -------------------------------------------------------------
+
   const updateProfile = async ({
     name,
     bio,
@@ -428,7 +417,6 @@ export function StoreProvider({ children }) {
         showOrientation,
         birthday,
       });
-      // update currentUser locally so the UI reflects the new values
       const updated = {
         ...currentUser,
         ...res.data,
@@ -486,16 +474,25 @@ export function StoreProvider({ children }) {
     }
   };
 
-  async function getChatMessages() {
-    const res = await api.get("/chat");
-    return res.data;
-  }
+  // ---- Chat ----------------------------------------------------------------
 
-  async function sendChatMessage(content) {
+  const getChatMessages = async () => {
+    try {
+      const res = await api.get("/chat");
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
+  const sendChatMessage = async (content) => {
     const res = await api.post("/chat", { content });
     return res.data;
-  }
-  // ---- Stubs still needing a backend (follow / profile) -------------------
+  };
+
+  // ---- Stubs ---------------------------------------------------------------
+
   const getUserPosts = (userId) => posts.filter((p) => p.author?.id === userId);
   const getFollowCounts = () => ({ following: 0, followers: 0 });
   const isFollowing = () => false;
@@ -537,6 +534,8 @@ export function StoreProvider({ children }) {
         isFollowing,
         search,
         resetDemo,
+        getChatMessages,
+        sendChatMessage,
       }}
     >
       {children}
