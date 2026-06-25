@@ -45,7 +45,7 @@ export default function FeedPage() {
               flex: 1,
               color: "var(--text-muted)",
               padding: "10px 14px",
-              borderRadius: "var(--radius-pill, 999px)",
+              borderRadius: "var(--radius, 10px)",
               border: "2px solid var(--border)",
             }}
           >

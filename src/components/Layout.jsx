@@ -6,7 +6,6 @@ import Navbar from "./Navbar.jsx";
 import LeftSidebar from "./LeftSidebar.jsx";
 import RightSidebar from "./RightSidebar.jsx";
 import BottomNav from "./BottomNav.jsx";
-import BackToTop from "./BackToTop.jsx";
 import PostModal from "./PostModal.jsx";
 import WelcomeModal from "./WelcomeModal.jsx";
 
@@ -50,7 +49,6 @@ export default function Layout() {
         <RightSidebar />
       </div>
       <BottomNav />
-      <BackToTop />
       {modalPostId && <PostModal postId={modalPostId} onClose={closeModal} />}
       {showWelcome && <WelcomeModal onClose={dismissWelcome} />}
     </ModalContext.Provider>
