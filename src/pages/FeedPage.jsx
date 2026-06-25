@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { PenLine } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import Feed from "../components/Feed.jsx";
 import SortBar from "../components/SortBar.jsx";
@@ -39,9 +40,27 @@ export default function FeedPage() {
           }}
         >
           <Avatar user={currentUser} size={40} />
-          <span style={{ color: "var(--text-muted)", flex: 1 }}>
-            What's on your mind,{" "}
-            {currentUser.displayName || currentUser.username}?
+          <span
+            style={{
+              flex: 1,
+              color: "var(--text-muted)",
+              padding: "10px 14px",
+              borderRadius: "var(--radius-pill, 999px)",
+              border: "2px solid var(--border)",
+            }}
+          >
+            Share a sheet, {currentUser.displayName || currentUser.username}…
+          </span>
+          <span
+            className="btn btn-accent"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              pointerEvents: "none",
+            }}
+          >
+            <PenLine size={16} /> Post
           </span>
         </button>
       )}
