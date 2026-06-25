@@ -16,6 +16,8 @@ import TagPage from "./pages/TagPage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import LeaderboardPage from "./pages/LeaderboardPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
+import PostPage from "./pages/PostPage.jsx";
+import NotificationsPage from "./pages/NotificationsPage.jsx";
 
 export default function App() {
   return (
@@ -35,8 +37,10 @@ export default function App() {
           <Route path="/feed" element={<FeedPage />} />
           <Route path="/following" element={<FollowingPage />} />
           <Route path="/trending" element={<TrendingPage />} />
+          <Route path="/post/:id" element={<PostPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/create" element={<CreatePostPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/:userId" element={<ProfilePage />} />

@@ -203,6 +203,26 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const editPost = async (postId, content) => {
+    try {
+      const res = await api.put(`/posts/${postId}`, {
+        content,
+        title: content.slice(0, 50) || "sheet",
+      });
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, content: res.data.content, title: res.data.title }
+            : p,
+        ),
+      );
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
   // ---- Comments ------------------------------------------------------------
 
   const getComments = async (postId) => {
@@ -464,6 +484,41 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const getNotifications = async () => {
+    try {
+      const res = await api.get("/notifications");
+      return res.data.map((n) => ({
+        ...n,
+        actor: {
+          ...n.actor,
+          displayName: n.actor?.name || n.actor?.email?.split("@")[0],
+          username: n.actor?.username || n.actor?.email?.split("@")[0],
+        },
+      }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
+  const getUnreadCount = async () => {
+    try {
+      const res = await api.get("/notifications/unread-count");
+      return res.data.count;
+    } catch (err) {
+      console.error(err);
+      return 0;
+    }
+  };
+
+  const markNotificationsRead = async () => {
+    try {
+      await api.put("/notifications/read");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const getPostsByTag = async (name) => {
     try {
       const res = await api.get(`/tags/${encodeURIComponent(name)}/posts`);
@@ -489,6 +544,29 @@ export function StoreProvider({ children }) {
   const sendChatMessage = async (content) => {
     const res = await api.post("/chat", { content });
     return res.data;
+  };
+
+  const getChatUnread = async () => {
+    try {
+      const res = await api.get("/chat");
+      const messages = res.data || [];
+      if (messages.length === 0) return 0;
+      const lastSeen = localStorage.getItem("chat-last-seen");
+      const lastSeenTime = lastSeen ? new Date(lastSeen).getTime() : 0;
+      // count messages newer than last seen, not sent by me
+      return messages.filter(
+        (m) =>
+          new Date(m.createdAt).getTime() > lastSeenTime &&
+          m.userId !== currentUser?.id,
+      ).length;
+    } catch (err) {
+      console.error(err);
+      return 0;
+    }
+  };
+
+  const markChatSeen = () => {
+    localStorage.setItem("chat-last-seen", new Date().toISOString());
   };
 
   // ---- Stubs ---------------------------------------------------------------
@@ -529,6 +607,8 @@ export function StoreProvider({ children }) {
         getTrending,
         getTrendingTags,
         sortPosts,
+        getChatUnread,
+        markChatSeen,
         getFollowingSidebar,
         getFollowCounts,
         isFollowing,
@@ -536,6 +616,9 @@ export function StoreProvider({ children }) {
         resetDemo,
         getChatMessages,
         sendChatMessage,
+        getNotifications,
+        getUnreadCount,
+        markNotificationsRead,
       }}
     >
       {children}

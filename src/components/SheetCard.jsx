@@ -8,6 +8,7 @@ import {
   MoreHorizontal,
   Flag,
   Trash2,
+  Pencil,
   UserRound,
   Crown,
   Cake,
@@ -21,10 +22,13 @@ import Avatar from "./Avatar.jsx";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 
 export default function SheetCard({ post }) {
-  const { currentUser, toggleLike, createPost, deletePost } = useStore();
+  const { currentUser, toggleLike, createPost, deletePost, editPost } =
+    useStore();
   const { openPost } = useModal();
   const toast = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(post.content);
   const menuRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
@@ -64,14 +68,34 @@ export default function SheetCard({ post }) {
     deletePost(post.id);
     toast("Sheet deleted.", "danger");
   };
+  const onEdit = () => {
+    setMenuOpen(false);
+    setDraft(post.content);
+    setEditing(true);
+  };
+  const onSaveEdit = async (e) => {
+    stop(e);
+    if (!draft.trim()) return toast("Sheet can't be empty.", "danger");
+    const ok = await editPost(post.id, draft.trim());
+    if (ok) {
+      toast("Sheet updated.", "accent");
+      setEditing(false);
+    } else {
+      toast("Could not update.", "danger");
+    }
+  };
+  const onCancelEdit = (e) => {
+    stop(e);
+    setEditing(false);
+  };
 
   return (
     <article
       className="sheet clickable"
       role="button"
       tabIndex={0}
-      onClick={open}
-      onKeyDown={onKey}
+      onClick={editing ? undefined : open}
+      onKeyDown={editing ? undefined : onKey}
       aria-label={`Open sheet by ${post.author?.displayName}`}
     >
       <header className="sheet-head" style={{ "--head": post.color }}>
@@ -127,6 +151,11 @@ export default function SheetCard({ post }) {
                 <Flag size={15} /> Report
               </button>
               {mine && (
+                <button type="button" role="menuitem" onClick={onEdit}>
+                  <Pencil size={15} /> Edit
+                </button>
+              )}
+              {mine && (
                 <button
                   type="button"
                   className="danger"
@@ -142,8 +171,35 @@ export default function SheetCard({ post }) {
       </header>
 
       <div className="sheet-body">
-        <p>{post.content}</p>
-        {post.imageUrl && (
+        {editing ? (
+          <div onClick={stop}>
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              style={{ width: "100%", minHeight: 90 }}
+              autoFocus
+            />
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button
+                type="button"
+                className="btn btn-accent"
+                onClick={onSaveEdit}
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={onCancelEdit}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p>{post.content}</p>
+        )}
+        {post.imageUrl && !editing && (
           <img
             src={post.imageUrl}
             alt=""
@@ -155,7 +211,7 @@ export default function SheetCard({ post }) {
             }}
           />
         )}
-        {post.tags?.length > 0 && (
+        {post.tags?.length > 0 && !editing && (
           <div
             style={{
               display: "flex",

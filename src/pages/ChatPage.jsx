@@ -5,7 +5,8 @@ import Avatar from "../components/Avatar";
 import { timeAgo } from "../lib/time";
 
 export default function ChatPage() {
-  const { getChatMessages, sendChatMessage, currentUser } = useStore();
+  const { getChatMessages, sendChatMessage, currentUser, markChatSeen } =
+    useStore();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -23,7 +24,11 @@ export default function ChatPage() {
 
   useEffect(() => {
     load();
-    pollRef.current = setInterval(load, 8000);
+    markChatSeen();
+    pollRef.current = setInterval(() => {
+      load();
+      markChatSeen();
+    }, 8000);
     return () => clearInterval(pollRef.current);
   }, []);
 
@@ -39,6 +44,7 @@ export default function ChatPage() {
       const msg = await sendChatMessage(input.trim());
       setMessages((prev) => [...prev, msg]);
       setInput("");
+      markChatSeen();
     } catch {}
     setSending(false);
   };

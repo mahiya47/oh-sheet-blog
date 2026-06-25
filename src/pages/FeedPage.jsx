@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store.jsx";
 import Feed from "../components/Feed.jsx";
 import SortBar from "../components/SortBar.jsx";
+import Avatar from "../components/Avatar.jsx";
 
 export default function FeedPage() {
-  const { getFeed, posts, loading, sortPosts } = useStore();
+  const { getFeed, posts, loading, sortPosts, currentUser } = useStore();
   const [sort, setSort] = useState("new");
+  const navigate = useNavigate();
 
   useEffect(() => {
     getFeed();
@@ -16,6 +19,32 @@ export default function FeedPage() {
   return (
     <>
       <SortBar sort={sort} setSort={setSort} />
+
+      {currentUser && (
+        <button
+          type="button"
+          onClick={() => navigate("/create")}
+          className="panel"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: 14,
+            width: "100%",
+            textAlign: "left",
+            cursor: "pointer",
+            border: "2px solid var(--border)",
+            borderRadius: "var(--radius)",
+            background: "var(--surface, transparent)",
+          }}
+        >
+          <Avatar user={currentUser} size={40} />
+          <span style={{ color: "var(--text-muted)", flex: 1 }}>
+            What's on your mind,{" "}
+            {currentUser.displayName || currentUser.username}?
+          </span>
+        </button>
+      )}
 
       {loading ? (
         <p

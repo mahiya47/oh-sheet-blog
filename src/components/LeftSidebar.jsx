@@ -1,4 +1,5 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   Users,
   Flame,
@@ -9,15 +10,58 @@ import {
   Settings,
   Trophy,
   MessageCircle,
+  Bell,
 } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useStore } from "../lib/store.jsx";
 
 const linkClass = ({ isActive }) => `icon-btn tip ${isActive ? "active" : ""}`;
+
+const badgeStyle = {
+  position: "absolute",
+  top: 2,
+  right: 2,
+  minWidth: 16,
+  height: 16,
+  padding: "0 4px",
+  borderRadius: 8,
+  background: "var(--danger, #ff3e3e)",
+  color: "#fff",
+  fontSize: "0.6rem",
+  fontWeight: 700,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  lineHeight: 1,
+};
 
 export default function LeftSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { getUnreadCount, getChatUnread, currentUser } = useStore();
+  const [unread, setUnread] = useState(0);
+  const [chatUnread, setChatUnread] = useState(0);
+
   const isChatActive = location.pathname === "/chat";
+
+  // poll unread counts (notifications + chat)
+  useEffect(() => {
+    if (!currentUser) return;
+    let active = true;
+    const load = async () => {
+      const c = await getUnreadCount();
+      const cc = await getChatUnread();
+      if (active) {
+        setUnread(c);
+        setChatUnread(cc);
+      }
+    };
+    load();
+    const t = setInterval(load, 15000);
+    return () => {
+      active = false;
+      clearInterval(t);
+    };
+  }, [currentUser, location.pathname]);
 
   return (
     <aside className="rail-left" aria-label="Secondary navigation">
@@ -39,6 +83,18 @@ export default function LeftSidebar() {
           <Flame size={18} />
         </NavLink>
         <NavLink
+          to="/notifications"
+          className={linkClass}
+          data-tip="Notifications"
+          aria-label="Notifications"
+          style={{ position: "relative" }}
+        >
+          <Bell size={18} />
+          {unread > 0 && (
+            <span style={badgeStyle}>{unread > 9 ? "9+" : unread}</span>
+          )}
+        </NavLink>
+        <NavLink
           to="/leaderboard"
           className={linkClass}
           data-tip="Leaderboard"
@@ -51,8 +107,12 @@ export default function LeftSidebar() {
           data-tip="Global Chat"
           aria-label="Global Chat"
           onClick={() => navigate("/chat")}
+          style={{ position: "relative" }}
         >
           <MessageCircle size={18} />
+          {chatUnread > 0 && (
+            <span style={badgeStyle}>{chatUnread > 9 ? "9+" : chatUnread}</span>
+          )}
         </button>
         <div className="rail-sep" />
         <NavLink
