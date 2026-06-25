@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Users,
   Flame,
@@ -10,12 +10,14 @@ import {
   Trophy,
   MessageCircle,
 } from "lucide-react";
-import { useChat } from "../context/ChatContext";
+import { useLocation } from "react-router-dom";
 
 const linkClass = ({ isActive }) => `icon-btn tip ${isActive ? "active" : ""}`;
 
 export default function LeftSidebar() {
-  const { chatOpen, setChatOpen } = useChat();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isChatActive = location.pathname === "/chat";
 
   return (
     <aside className="rail-left" aria-label="Secondary navigation">
@@ -45,10 +47,10 @@ export default function LeftSidebar() {
           <Trophy size={18} />
         </NavLink>
         <button
-          className={`icon-btn tip ${chatOpen ? "active" : ""}`}
+          className={`icon-btn tip ${isChatActive ? "active" : ""}`}
           data-tip="Global Chat"
           aria-label="Global Chat"
-          onClick={() => setChatOpen((o) => !o)}
+          onClick={() => navigate("/chat")}
         >
           <MessageCircle size={18} />
         </button>

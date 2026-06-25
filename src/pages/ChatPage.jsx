@@ -1,16 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, X } from "lucide-react";
+import { Send } from "lucide-react";
 import { useStore } from "../lib/store";
-import { useChat } from "../context/ChatContext";
-import Avatar from "./Avatar";
+import Avatar from "../components/Avatar";
 import { timeAgo } from "../lib/time";
 
-export default function ChatRoom() {
+export default function ChatPage() {
   const { getChatMessages, sendChatMessage, currentUser } = useStore();
-  const { chatOpen, setChatOpen } = useChat();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
   const bottomRef = useRef(null);
   const pollRef = useRef(null);
 
@@ -19,21 +18,18 @@ export default function ChatRoom() {
       const data = await getChatMessages();
       setMessages(data);
     } catch {}
+    setLoading(false);
   };
 
   useEffect(() => {
-    if (chatOpen) {
-      load();
-      pollRef.current = setInterval(load, 8000);
-    } else {
-      clearInterval(pollRef.current);
-    }
+    load();
+    pollRef.current = setInterval(load, 8000);
     return () => clearInterval(pollRef.current);
-  }, [chatOpen]);
+  }, []);
 
   useEffect(() => {
-    if (chatOpen) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, chatOpen]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const send = async (e) => {
     e.preventDefault();
@@ -50,43 +46,54 @@ export default function ChatRoom() {
   const displayName = (user) =>
     user.name || user.username || user.email?.split("@")[0] || "User";
 
-  if (!chatOpen) return null;
-
   return (
-    <div className="chat-panel">
-      <div className="chat-header">
-        <span>🌐 Global Chat</span>
-        <span className="chat-subtitle">Messages last 24 hrs · max 1000</span>
-        <button onClick={() => setChatOpen(false)} aria-label="Close chat">
-          <X size={16} />
-        </button>
+    <div className="chat-page">
+      <div className="chat-page-header">
+        <h1>🌐 Global Chat</h1>
+        <span className="chat-page-subtitle">
+          Messages disappear after 24 hrs · max 1000
+        </span>
       </div>
 
-      <div className="chat-messages">
-        {messages.length === 0 && (
-          <div className="chat-empty">No messages yet. Say hi! 👋</div>
+      <div className="chat-page-messages">
+        {loading && (
+          <div className="chat-page-empty">Loading messages...</div>
+        )}
+        {!loading && messages.length === 0 && (
+          <div className="chat-page-empty">No messages yet. Say hi! 👋</div>
         )}
         {messages.map((msg) => {
           const isMe = currentUser && msg.userId === currentUser.id;
           return (
             <div
               key={msg.id}
-              className={`chat-msg ${isMe ? "chat-msg--me" : ""}`}
+              className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
             >
               {!isMe && (
                 <Avatar
                   avatarUrl={msg.user.avatarUrl}
                   name={displayName(msg.user)}
-                  size={28}
+                  size={36}
                 />
               )}
-              <div className="chat-bubble-wrap">
+              <div className="chat-page-bubble-wrap">
                 {!isMe && (
-                  <span className="chat-author">{displayName(msg.user)}</span>
+                  <span className="chat-page-author">
+                    {displayName(msg.user)}
+                  </span>
                 )}
-                <div className="chat-bubble">{msg.content}</div>
-                <span className="chat-time">{timeAgo(msg.createdAt)}</span>
+                <div className="chat-page-bubble">{msg.content}</div>
+                <span className="chat-page-time">
+                  {timeAgo(msg.createdAt)}
+                </span>
               </div>
+              {isMe && (
+                <Avatar
+                  avatarUrl={currentUser.avatarUrl}
+                  name={displayName(currentUser)}
+                  size={36}
+                />
+              )}
             </div>
           );
         })}
@@ -94,11 +101,11 @@ export default function ChatRoom() {
       </div>
 
       {currentUser ? (
-        <form className="chat-input-row" onSubmit={send}>
+        <form className="chat-page-input-row" onSubmit={send}>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Say something..."
+            placeholder="Say something to everyone..."
             maxLength={300}
             autoComplete="off"
           />
@@ -107,11 +114,13 @@ export default function ChatRoom() {
             disabled={sending || !input.trim()}
             aria-label="Send"
           >
-            <Send size={16} />
+            <Send size={18} />
           </button>
         </form>
       ) : (
-        <div className="chat-login-prompt">Log in to join the chat</div>
+        <div className="chat-page-login-prompt">
+          Log in to join the chat
+        </div>
       )}
     </div>
   );

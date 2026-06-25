@@ -9,7 +9,6 @@ import BottomNav from "./BottomNav.jsx";
 import BackToTop from "./BackToTop.jsx";
 import PostModal from "./PostModal.jsx";
 import WelcomeModal from "./WelcomeModal.jsx";
-import ChatRoom from "./ChatRoom.jsx";
 
 const mainStyle = {
   display: "flex",
@@ -54,7 +53,6 @@ export default function Layout() {
       <BackToTop />
       {modalPostId && <PostModal postId={modalPostId} onClose={closeModal} />}
       {showWelcome && <WelcomeModal onClose={dismissWelcome} />}
-      <ChatRoom /> {/* 👈 added here */}
     </ModalContext.Provider>
   );
 }
