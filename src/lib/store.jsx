@@ -485,6 +485,16 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
+
+  async function getChatMessages() {
+    const res = await api.get("/chat");
+    return res.data;
+  }
+
+  async function sendChatMessage(content) {
+    const res = await api.post("/chat", { content });
+    return res.data;
+  }
   // ---- Stubs still needing a backend (follow / profile) -------------------
   const getUserPosts = (userId) => posts.filter((p) => p.author?.id === userId);
   const getFollowCounts = () => ({ following: 0, followers: 0 });

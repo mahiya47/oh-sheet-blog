@@ -5,7 +5,7 @@ import SortBar from "../components/SortBar.jsx";
 
 export default function FollowingPage() {
   const { getFollowingFeed, posts, loading, sortPosts } = useStore();
-  const [sort, setSort] = useState("hot");
+  const [sort, setSort] = useState("new");
 
   useEffect(() => {
     getFollowingFeed();

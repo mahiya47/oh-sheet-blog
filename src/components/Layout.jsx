@@ -9,6 +9,7 @@ import BottomNav from "./BottomNav.jsx";
 import BackToTop from "./BackToTop.jsx";
 import PostModal from "./PostModal.jsx";
 import WelcomeModal from "./WelcomeModal.jsx";
+import ChatRoom from "./ChatRoom.jsx";
 
 const mainStyle = {
   display: "flex",
@@ -17,7 +18,6 @@ const mainStyle = {
   minWidth: 0,
 };
 
-// The three-column shell shared by every signed-in page.
 export default function Layout() {
   const { currentUser } = useStore();
   const [modalPostId, setModalPostId] = useState(null);
@@ -25,7 +25,6 @@ export default function Layout() {
   const openPost = useCallback((id) => setModalPostId(id), []);
   const closeModal = useCallback(() => setModalPostId(null), []);
 
-  // Show the welcome popup once per user.
   useEffect(() => {
     if (!currentUser?.id) return;
     const key = `welcomed-${currentUser.id}`;
@@ -55,6 +54,7 @@ export default function Layout() {
       <BackToTop />
       {modalPostId && <PostModal postId={modalPostId} onClose={closeModal} />}
       {showWelcome && <WelcomeModal onClose={dismissWelcome} />}
+      <ChatRoom /> {/* 👈 added here */}
     </ModalContext.Provider>
   );
 }

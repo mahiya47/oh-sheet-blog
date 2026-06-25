@@ -8,11 +8,15 @@ import {
   FileText,
   Settings,
   Trophy,
+  MessageCircle,
 } from "lucide-react";
+import { useChat } from "../context/ChatContext";
 
 const linkClass = ({ isActive }) => `icon-btn tip ${isActive ? "active" : ""}`;
 
 export default function LeftSidebar() {
+  const { chatOpen, setChatOpen } = useChat();
+
   return (
     <aside className="rail-left" aria-label="Secondary navigation">
       <div className="rail-group">
@@ -40,6 +44,14 @@ export default function LeftSidebar() {
         >
           <Trophy size={18} />
         </NavLink>
+        <button
+          className={`icon-btn tip ${chatOpen ? "active" : ""}`}
+          data-tip="Global Chat"
+          aria-label="Global Chat"
+          onClick={() => setChatOpen((o) => !o)}
+        >
+          <MessageCircle size={18} />
+        </button>
         <div className="rail-sep" />
         <NavLink
           to="/about"
