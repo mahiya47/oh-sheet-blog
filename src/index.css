@@ -1534,6 +1534,9 @@ select {
     grid-template-columns: minmax(0, 1fr);
     padding: var(--space-4) var(--space-4) 96px;
   }
+  .shell--chat {
+    grid-template-columns: auto 1fr;
+  }
   .rail-left {
     display: none;
   }

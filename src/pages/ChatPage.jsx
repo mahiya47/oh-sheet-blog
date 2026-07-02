@@ -15,6 +15,7 @@ export default function ChatPage() {
     getConversations,
     getDmThread,
     sendDm,
+    getFollowingList,
   } = useStore();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,6 +24,7 @@ export default function ChatPage() {
   const [tab, setTab] = useState(dmUserId ? "dms" : "global");
   const [messages, setMessages] = useState([]);
   const [conversations, setConversations] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [thread, setThread] = useState([]);
   const [activeUser, setActiveUser] = useState(null);
   const [input, setInput] = useState("");
@@ -42,6 +44,7 @@ export default function ChatPage() {
   const loadConversations = async () => {
     try {
       setConversations(await getConversations());
+      if (currentUser) setFollowing(await getFollowingList(currentUser.id));
     } catch {}
     setLoading(false);
   };
@@ -118,7 +121,13 @@ export default function ChatPage() {
 
   const displayName = (user) => {
     if (!user) return "User";
-    return user.name || user.username || user.email?.split("@")[0] || "User";
+    return (
+      user.displayName ||
+      user.name ||
+      user.username ||
+      user.email?.split("@")[0] ||
+      "User"
+    );
   };
 
   const switchTab = (t) => {
@@ -126,6 +135,11 @@ export default function ChatPage() {
     setTab(t);
     setLoading(true);
   };
+
+  // people you follow that you have no conversation with yet
+  const newPeople = following.filter(
+    (u) => !conversations.some((c) => c.user.id === u.id),
+  );
 
   // ---- render ----
   return (
@@ -208,15 +222,16 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* ---- DMS TAB: conversation list ---- */}
+      {/* ---- DMS TAB: conversation list + people you follow ---- */}
       {tab === "dms" && !dmUserId && (
         <div className="chat-page-messages">
           {loading && <div className="chat-page-empty">Loading...</div>}
-          {!loading && conversations.length === 0 && (
+          {!loading && conversations.length === 0 && newPeople.length === 0 && (
             <div className="chat-page-empty">
-              No conversations yet. Visit someone's profile to message them!
+              No conversations yet. Follow people to message them!
             </div>
           )}
+
           {conversations.map((conv) => (
             <button
               key={conv.user.id}
@@ -264,6 +279,42 @@ export default function ChatPage() {
               </div>
             </button>
           ))}
+
+          {!loading && newPeople.length > 0 && (
+            <>
+              <div
+                className="chat-page-subtitle"
+                style={{ margin: "16px 0 8px", opacity: 0.7 }}
+              >
+                People you follow
+              </div>
+              {newPeople.map((u) => (
+                <button
+                  key={u.id}
+                  type="button"
+                  className="chat-page-msg"
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    cursor: "pointer",
+                    background: "none",
+                    border: "none",
+                    padding: "10px 0",
+                  }}
+                  onClick={() => openThread(u.id)}
+                >
+                  <Avatar user={u} size={40} />
+                  <div className="chat-page-bubble-wrap">
+                    <span className="chat-page-author">
+                      {displayName(u)}
+                      {u.emailVerified && <VerifiedBadge size={12} />}
+                    </span>
+                    <span className="chat-page-time">Start a conversation</span>
+                  </div>
+                </button>
+              ))}
+            </>
+          )}
           <div ref={bottomRef} />
         </div>
       )}

@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { ModalContext } from "../context/ModalContext.jsx";
 import { useStore } from "../lib/store.jsx";
 import Navbar from "./Navbar.jsx";
@@ -18,6 +18,8 @@ const mainStyle = {
 
 export default function Layout() {
   const { currentUser } = useStore();
+  const location = useLocation();
+  const isChat = location.pathname.startsWith("/chat");
   const [modalPostId, setModalPostId] = useState(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const openPost = useCallback((id) => setModalPostId(id), []);
@@ -41,12 +43,12 @@ export default function Layout() {
   return (
     <ModalContext.Provider value={{ openPost }}>
       <Navbar />
-      <div className="shell">
+      <div className={`shell ${isChat ? "shell--chat" : ""}`}>
         <LeftSidebar />
         <main style={mainStyle}>
           <Outlet />
         </main>
-        <RightSidebar />
+        {!isChat && <RightSidebar />}
       </div>
       <BottomNav />
       {modalPostId && <PostModal postId={modalPostId} onClose={closeModal} />}
