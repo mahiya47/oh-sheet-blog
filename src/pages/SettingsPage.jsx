@@ -5,6 +5,7 @@ import { useStore } from "../lib/store.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { GENDER_OPTIONS, ORIENTATION_OPTIONS } from "../lib/profileOptions.js";
+import { COVERS } from "../lib/covers.js";
 import Avatar from "../components/Avatar.jsx";
 import AvatarPicker from "../components/AvatarPicker.jsx";
 
@@ -32,6 +33,30 @@ function fileToAvatarDataUrl(file, max = 256) {
   });
 }
 
+// Covers are wider — allow up to 1200px width.
+function fileToCoverDataUrl(file, maxW = 1200) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxW / img.width);
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 const SELF = "Prefer to self-describe";
 
 export default function SettingsPage() {
@@ -41,6 +66,7 @@ export default function SettingsPage() {
   const toast = useToast();
   const navigate = useNavigate();
   const fileRef = useRef(null);
+  const coverFileRef = useRef(null);
 
   const [tab, setTab] = useState("profile");
   const [sendingVerify, setSendingVerify] = useState(false);
@@ -50,6 +76,7 @@ export default function SettingsPage() {
   const [username, setUsername] = useState(currentUser?.username || "");
   const [bio, setBio] = useState(currentUser?.bio || "");
   const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || "");
+  const [coverUrl, setCoverUrl] = useState(currentUser?.coverUrl || "");
   const [birthday, setBirthday] = useState(
     currentUser?.birthday ? currentUser.birthday.slice(0, 10) : "",
   );
@@ -90,6 +117,18 @@ export default function SettingsPage() {
     }
   };
 
+  const onPickCover = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await fileToCoverDataUrl(file);
+      setCoverUrl(dataUrl);
+      toast("Cover ready — hit Save changes.", "accent");
+    } catch {
+      toast("Couldn't load that image.", "danger");
+    }
+  };
+
   const onSave = async () => {
     const gender = genderChoice === SELF ? genderCustom.trim() : genderChoice;
     const orientation = oriChoice === SELF ? oriCustom.trim() : oriChoice;
@@ -99,6 +138,7 @@ export default function SettingsPage() {
       username: username.trim(),
       bio,
       avatarUrl,
+      coverUrl,
       gender,
       orientation,
       showGender,
@@ -129,6 +169,9 @@ export default function SettingsPage() {
     toast("Demo data reset.", "default");
     navigate("/feed");
   };
+
+  const isImageCover =
+    coverUrl?.startsWith("data:") || coverUrl?.startsWith("http");
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
@@ -200,6 +243,69 @@ export default function SettingsPage() {
                   }
                 />
                 <span className="hint">Pick one, then hit Save changes.</span>
+              </div>
+
+              <div className="field">
+                <label>Profile cover</label>
+
+                {/* preview */}
+                <div
+                  style={{
+                    height: 80,
+                    borderRadius: 8,
+                    border: "2px solid var(--border, #333)",
+                    marginBottom: 8,
+                    background: isImageCover
+                      ? `url(${coverUrl}) center/cover no-repeat`
+                      : coverUrl || COVERS[0],
+                  }}
+                />
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(5, 1fr)",
+                    gap: 8,
+                  }}
+                >
+                  {COVERS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setCoverUrl(c)}
+                      aria-label="Select cover"
+                      style={{
+                        background: c,
+                        height: 40,
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        border:
+                          coverUrl === c
+                            ? "3px solid var(--accent, #3eff8b)"
+                            : "2px solid var(--border, #333)",
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <input
+                  ref={coverFileRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={onPickCover}
+                />
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  style={{ marginTop: 8 }}
+                  onClick={() => coverFileRef.current?.click()}
+                >
+                  Upload your own cover
+                </button>
+                <span className="hint">
+                  Pick a preset or upload a photo, then hit Save changes.
+                </span>
               </div>
 
               <div className="field">

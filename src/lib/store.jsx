@@ -87,6 +87,7 @@ export function StoreProvider({ children }) {
       let name = payload.email?.split("@")[0];
       let username = payload.email?.split("@")[0];
       let avatarUrl = null;
+      let coverUrl = null;
       let gender = "";
       let orientation = "";
       let showGender = false;
@@ -117,6 +118,7 @@ export function StoreProvider({ children }) {
         showOrientation,
         birthday,
         emailVerified,
+        coverUrl,
       };
       localStorage.setItem("current-user", JSON.stringify(user));
       setCurrentUser(user);
@@ -422,6 +424,7 @@ export function StoreProvider({ children }) {
     bio,
     username,
     avatarUrl,
+    coverUrl,
     gender,
     orientation,
     showGender,
@@ -434,6 +437,7 @@ export function StoreProvider({ children }) {
         bio,
         username,
         avatarUrl,
+        coverUrl,
         gender,
         orientation,
         showGender,
@@ -474,6 +478,7 @@ export function StoreProvider({ children }) {
     try {
       const res = await api.get(`/users/${userId}`);
       const u = res.data;
+      coverUrl = profileRes.data.coverUrl || null;
       return {
         ...u,
         username: u.username || u.email?.split("@")[0],

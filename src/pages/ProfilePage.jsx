@@ -4,6 +4,7 @@ import { Crown, Cake } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
+import { DEFAULT_COVER } from "../lib/covers.js";
 import Avatar from "../components/Avatar.jsx";
 import Feed from "../components/Feed.jsx";
 import UserListModal from "../components/UserListModal.jsx";
@@ -80,6 +81,10 @@ export default function ProfilePage() {
   const following = counts.isFollowing;
   const isCreatorProfile = profile.id === CREATOR_ID;
 
+  const isImageCover =
+    profile.coverUrl?.startsWith("http") ||
+    profile.coverUrl?.startsWith("data:");
+
   const onFollow = async () => {
     await toggleFollow(profile.id, following);
     const fresh = await getFollowInfo(profile.id);
@@ -105,7 +110,14 @@ export default function ProfilePage() {
   return (
     <>
       <section className="profile">
-        <div className="profile-cover" />
+        <div
+          className="profile-cover"
+          style={{
+            background: isImageCover
+              ? `url(${profile.coverUrl}) center/cover no-repeat`
+              : profile.coverUrl || DEFAULT_COVER,
+          }}
+        />
         <div className="profile-info">
           <div className="profile-top">
             <Avatar user={profile} size={104} />
