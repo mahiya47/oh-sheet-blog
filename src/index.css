@@ -1481,15 +1481,13 @@ select {
 }
 
 /* ---- chat messenger layout ---- */
+
 .chat-shell {
   display: grid;
   grid-template-columns: 1fr 280px;
   gap: var(--space-5);
   min-width: 0;
-}
-
-.chat-main {
-  min-width: 0;
+  height: 75vh;
 }
 
 .chat-list {
@@ -1497,8 +1495,14 @@ select {
   border-radius: var(--radius, 12px);
   padding: 8px;
   overflow-y: auto;
-  max-height: 75vh;
-  align-self: start;
+  height: 100%;
+}
+
+.chat-main {
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-list-item {

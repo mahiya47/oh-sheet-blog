@@ -101,10 +101,6 @@ export default function ChatPage() {
     return () => clearInterval(sidePollRef.current);
   }, []);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, thread]);
-
   // ---- actions ----
   const send = async (e) => {
     e.preventDefault();
