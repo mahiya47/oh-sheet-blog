@@ -207,6 +207,8 @@ export default function SheetCard({ post }) {
             alt=""
             style={{
               width: "100%",
+              aspectRatio: "16 / 10",
+              objectFit: "cover",
               marginTop: 12,
               borderRadius: "var(--radius)",
               border: "2px solid var(--border)",
