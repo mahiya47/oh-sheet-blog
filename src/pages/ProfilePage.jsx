@@ -7,6 +7,7 @@ import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 import Avatar from "../components/Avatar.jsx";
 import Feed from "../components/Feed.jsx";
 import UserListModal from "../components/UserListModal.jsx";
+import VerifiedBadge from "../components/VerifiedBadge.jsx";
 
 export default function ProfilePage() {
   const { userId } = useParams();
@@ -127,6 +128,7 @@ export default function ProfilePage() {
 
           <h1 className="profile-name">
             {profile.displayName}
+            {profile?.emailVerified && <VerifiedBadge size={18} />}
             {isCreatorProfile && (
               <span className="creator-badge">
                 <Crown size={12} /> Creator
