@@ -544,6 +544,42 @@ export function StoreProvider({ children }) {
     }
   };
 
+  // ---- DMs -------------------------------------------------------------
+
+  const getConversations = async () => {
+    try {
+      const res = await api.get("/dms");
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
+  const getDmThread = async (userId) => {
+    try {
+      const res = await api.get(`/dms/${userId}`);
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
+  const sendDm = async (userId, content) => {
+    const res = await api.post(`/dms/${userId}`, { content });
+    return res.data;
+  };
+
+  const getDmUnread = async () => {
+    try {
+      const res = await api.get("/dms/unread-count");
+      return res.data.count;
+    } catch {
+      return 0;
+    }
+  };
+
   // ---- Chat ----------------------------------------------------------------
 
   const getChatMessages = async () => {
@@ -635,6 +671,10 @@ export function StoreProvider({ children }) {
         getNotifications,
         getUnreadCount,
         markNotificationsRead,
+        getConversations,
+        getDmThread,
+        sendDm,
+        getDmUnread,
       }}
     >
       {children}
