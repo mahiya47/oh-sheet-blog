@@ -100,6 +100,7 @@ export function StoreProvider({ children }) {
         emailVerified = profileRes.data.emailVerified || false;
         username = profileRes.data.username || username;
         avatarUrl = profileRes.data.avatarUrl || null;
+        coverUrl = profileRes.data.coverUrl || null;
         gender = profileRes.data.gender || "";
         orientation = profileRes.data.orientation || "";
         showGender = profileRes.data.showGender || false;
@@ -112,13 +113,13 @@ export function StoreProvider({ children }) {
         username,
         displayName: name,
         avatarUrl,
+        coverUrl,
         gender,
         orientation,
         showGender,
         showOrientation,
         birthday,
         emailVerified,
-        coverUrl,
       };
       localStorage.setItem("current-user", JSON.stringify(user));
       setCurrentUser(user);
@@ -478,7 +479,6 @@ export function StoreProvider({ children }) {
     try {
       const res = await api.get(`/users/${userId}`);
       const u = res.data;
-      coverUrl = profileRes.data.coverUrl || null;
       return {
         ...u,
         username: u.username || u.email?.split("@")[0],
@@ -646,6 +646,7 @@ export function StoreProvider({ children }) {
         getPost,
         createPost,
         deletePost,
+        editPost,
         getComments,
         addComment,
         deleteComment,
