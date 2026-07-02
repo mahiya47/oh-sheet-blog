@@ -35,13 +35,15 @@ function fileToAvatarDataUrl(file, max = 256) {
 const SELF = "Prefer to self-describe";
 
 export default function SettingsPage() {
-  const { currentUser, updateProfile, resetDemo } = useStore();
+  const { currentUser, updateProfile, resetDemo, resendVerification } =
+    useStore();
   const { theme, toggleTheme } = useTheme();
   const toast = useToast();
   const navigate = useNavigate();
   const fileRef = useRef(null);
 
   const [tab, setTab] = useState("profile");
+  const [sendingVerify, setSendingVerify] = useState(false);
   const [displayName, setDisplayName] = useState(
     currentUser?.displayName || "",
   );
@@ -109,6 +111,17 @@ export default function SettingsPage() {
     } else {
       toast(res.error || "Could not save.", "danger");
     }
+  };
+
+  const onVerifyEmail = async () => {
+    if (sendingVerify) return;
+    setSendingVerify(true);
+    const res = await resendVerification();
+    toast(
+      res.ok ? "Verification email sent — check your inbox." : res.error,
+      res.ok ? "accent" : "danger",
+    );
+    setSendingVerify(false);
   };
 
   const onReset = () => {
@@ -345,6 +358,27 @@ export default function SettingsPage() {
                 <span className="hint">
                   Email can’t be changed in this demo.
                 </span>
+              </div>
+
+              <div className="field">
+                <label>Email verification</label>
+                {currentUser?.emailVerified ? (
+                  <span className="hint">✅ Your email is verified.</span>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-accent"
+                      onClick={onVerifyEmail}
+                      disabled={sendingVerify}
+                    >
+                      {sendingVerify ? "Sending…" : "Verify email"}
+                    </button>
+                    <span className="hint">
+                      Get a blue tick by verifying your email address.
+                    </span>
+                  </>
+                )}
               </div>
             </>
           )}

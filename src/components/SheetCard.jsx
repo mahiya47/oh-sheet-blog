@@ -20,6 +20,7 @@ import { useClickAway } from "../lib/useClickAway.js";
 import { colorFor, timeAgo } from "../lib/time.js";
 import Avatar from "./Avatar.jsx";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
+import VerifiedBadge from "./VerifiedBadge.jsx";
 
 export default function SheetCard({ post }) {
   const { currentUser, toggleLike, createPost, deletePost, editPost } =
@@ -108,6 +109,7 @@ export default function SheetCard({ post }) {
           <span className="names">
             <span className="display">
               {post.author?.displayName || "User"}
+              {post.author?.emailVerified && <VerifiedBadge />}
               {post.author?.id === CREATOR_ID && (
                 <span className="creator-badge">
                   <Crown size={10} /> Creator

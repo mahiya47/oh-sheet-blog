@@ -3,6 +3,7 @@ import { Send } from "lucide-react";
 import { useStore } from "../lib/store";
 import Avatar from "../components/Avatar";
 import { timeAgo } from "../lib/time";
+import VerifiedBadge from "../components/VerifiedBadge.jsx";
 
 export default function ChatPage() {
   const { getChatMessages, sendChatMessage, currentUser, markChatSeen } =
@@ -91,6 +92,7 @@ export default function ChatPage() {
                 {!isMe && (
                   <span className="chat-page-author">
                     {displayName(msgUser)}
+                    {msgUser?.emailVerified && <VerifiedBadge size={12} />}
                   </span>
                 )}
                 <div className="chat-page-bubble">{msg.content}</div>

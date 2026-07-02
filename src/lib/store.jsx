@@ -92,9 +92,11 @@ export function StoreProvider({ children }) {
       let showGender = false;
       let showOrientation = false;
       let birthday = null;
+      let emailVerified = false;
       try {
         const profileRes = await api.get(`/users/${payload.userId}`);
         name = profileRes.data.name || name;
+        emailVerified = profileRes.data.emailVerified || false;
         username = profileRes.data.username || username;
         avatarUrl = profileRes.data.avatarUrl || null;
         gender = profileRes.data.gender || "";
@@ -114,6 +116,7 @@ export function StoreProvider({ children }) {
         showGender,
         showOrientation,
         birthday,
+        emailVerified,
       };
       localStorage.setItem("current-user", JSON.stringify(user));
       setCurrentUser(user);
@@ -455,6 +458,18 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const resendVerification = async () => {
+    try {
+      await api.post("/auth/resend-verification");
+      return { ok: true };
+    } catch (err) {
+      return {
+        ok: false,
+        error: err.response?.data?.message || "Could not send email",
+      };
+    }
+  };
+
   const getProfile = async (userId) => {
     try {
       const res = await api.get(`/users/${userId}`);
@@ -600,6 +615,7 @@ export function StoreProvider({ children }) {
         getFollowingList,
         updateProfile,
         getUserPosts,
+        resendVerification,
         getFollowingFeed,
         getProfile,
         getLeaderboard,

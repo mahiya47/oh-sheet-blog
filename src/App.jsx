@@ -18,6 +18,7 @@ import LeaderboardPage from "./pages/LeaderboardPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import PostPage from "./pages/PostPage.jsx";
 import NotificationsPage from "./pages/NotificationsPage.jsx";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
       {/* Public */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/verify/:token" element={<VerifyEmailPage />} />
 
       {/* Everything below requires a signed-in user */}
       <Route element={<ProtectedRoute />}>

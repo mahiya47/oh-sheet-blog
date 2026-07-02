@@ -11,8 +11,6 @@ export default function Avatar({ user, size = 40 }) {
     );
   }
 
-  // Fallback: a DiceBear avatar seeded by the user's identity, so each
-  // person gets a consistent unique avatar even without setting one.
   const seed = encodeURIComponent(
     user?.username ||
       user?.displayName ||
