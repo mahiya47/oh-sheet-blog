@@ -202,18 +202,30 @@ export default function SheetCard({ post }) {
           <p>{post.content}</p>
         )}
         {post.imageUrl && !editing && (
-          <img
-            src={post.imageUrl}
-            alt=""
+          <div
             style={{
               width: "100%",
               aspectRatio: "16 / 10",
-              objectFit: "cover",
               marginTop: 12,
               borderRadius: "var(--radius)",
               border: "2px solid var(--border)",
+              background: "rgba(128, 128, 128, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
             }}
-          />
+          >
+            <img
+              src={post.imageUrl}
+              alt=""
+              style={{
+                maxWidth: "100%",
+                maxHeight: "100%",
+                objectFit: "contain",
+              }}
+            />
+          </div>
         )}
         {post.tags?.length > 0 && !editing && (
           <div
