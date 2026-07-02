@@ -1480,6 +1480,121 @@ select {
   color: var(--muted);
 }
 
+/* ---- chat messenger layout ---- */
+.chat-shell {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.chat-main {
+  min-width: 0;
+}
+
+.chat-list {
+  border: 2px solid var(--border, #333);
+  border-radius: var(--radius, 12px);
+  padding: 8px;
+  overflow-y: auto;
+  max-height: 75vh;
+  align-self: start;
+}
+
+.chat-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 8px;
+  background: none;
+  border: none;
+  border-radius: var(--radius, 12px);
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
+.chat-list-item:hover {
+  background: rgba(128, 128, 128, 0.12);
+}
+
+.chat-list-item--active {
+  background: rgba(62, 255, 139, 0.12);
+}
+
+.chat-list-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chat-list-globe {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--border, #333);
+  flex-shrink: 0;
+}
+
+.chat-list-divider {
+  border-bottom: 2px solid var(--border, #333);
+  margin: 8px 0;
+}
+
+.chat-list-label {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+  margin: 12px 8px 6px;
+}
+
+.chat-unread-badge {
+  margin-left: 6px;
+  background: var(--accent, #3eff8b);
+  color: #000;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* back button only exists on mobile */
+.chat-back {
+  display: none;
+}
+
+/* ---- mobile: list is full screen, chat opens on tap ---- */
+@media (max-width: 768px) {
+  .chat-shell {
+    display: block;
+  }
+  .chat-back {
+    display: inline-flex;
+  }
+  /* default: show list, hide chat */
+  .chat-shell .chat-main {
+    display: none;
+  }
+  .chat-shell .chat-list {
+    display: block;
+    max-height: none;
+    border: none;
+    padding: 0;
+  }
+  /* chat open: show chat, hide list */
+  .chat-shell--open .chat-main {
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-shell--open .chat-list {
+    display: none;
+  }
+}
+
 /* =========================================================================
    Responsive
    ========================================================================= */
