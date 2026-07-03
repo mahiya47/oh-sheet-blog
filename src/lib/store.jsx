@@ -256,9 +256,12 @@ export function StoreProvider({ children }) {
     }
   };
 
-  const addComment = async (postId, content) => {
+  const addComment = async (postId, content, parentId = null) => {
     try {
-      const res = await api.post(`/posts/${postId}/comments`, { content });
+      const res = await api.post(`/posts/${postId}/comments`, {
+        content,
+        parentId,
+      });
       return res.data;
     } catch (err) {
       console.error(err);
@@ -319,6 +322,14 @@ export function StoreProvider({ children }) {
     return { posts: matchedPosts, users };
   };
 
+  const searchLive = async (q) => {
+    try {
+      const res = await api.get(`/users/search?q=${encodeURIComponent(q)}`);
+      return res.data; // { users, tags }
+    } catch {
+      return { users: [], tags: [] };
+    }
+  };
   // ---- Sorting -------------------------------------------------------------
 
   const sortPosts = (list, sort) => {

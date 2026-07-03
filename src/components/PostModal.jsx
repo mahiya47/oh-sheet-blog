@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { X, Heart, Share2, Trash2, Crown } from "lucide-react";
+import { X, Heart, Share2, Trash2, Crown, CornerDownRight } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { colorFor, timeAgo } from "../lib/time.js";
 import Avatar from "./Avatar.jsx";
+import VerifiedBadge from "./VerifiedBadge.jsx";
 import { CREATOR_ID } from "../lib/creator.js";
 
 export default function PostModal({ postId, onClose }) {
@@ -20,6 +21,7 @@ export default function PostModal({ postId, onClose }) {
   const [text, setText] = useState("");
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
+  const [replyTo, setReplyTo] = useState(null); // { id, username } or null
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -38,23 +40,30 @@ export default function PostModal({ postId, onClose }) {
     loadComments();
   }, [postId, posts]);
 
+  const normalizeUser = (u) => ({
+    ...u,
+    username: u?.username || u?.email?.split("@")[0],
+    displayName: u?.name || u?.email?.split("@")[0],
+  });
+
   const loadComments = async () => {
     const data = await getComments(postId);
     const normalized = data.map((c) => ({
       ...c,
-      author: {
-        ...c.user,
-        username: c.user?.username || c.user?.email?.split("@")[0],
-        displayName: c.user?.name || c.user?.email?.split("@")[0],
-      },
+      author: normalizeUser(c.user),
+      replies: (c.replies || []).map((r) => ({
+        ...r,
+        author: normalizeUser(r.user),
+      })),
     }));
     setComments(normalized);
   };
 
   const submit = async () => {
     if (!text.trim()) return;
-    await addComment(postId, text);
+    await addComment(postId, text, replyTo?.id || null);
     setText("");
+    setReplyTo(null);
     loadComments();
   };
 
@@ -70,7 +79,69 @@ export default function PostModal({ postId, onClose }) {
     loadComments();
   };
 
+  const startReply = (comment) => {
+    setReplyTo({ id: comment.id, username: comment.author?.username });
+  };
+
   if (!post) return null;
+
+  const totalComments = comments.reduce(
+    (sum, c) => sum + 1 + (c.replies?.length || 0),
+    0,
+  );
+
+  const renderComment = (c, isReply = false) => (
+    <div
+      className="comment"
+      key={c.id}
+      style={isReply ? { marginLeft: 38 } : undefined}
+    >
+      <div style={{ display: "flex", gap: 10 }}>
+        <Avatar user={c.author} size={28} />
+        <div>
+          <Link
+            to={`/profile/${c.author?.id}`}
+            className="who"
+            onClick={onClose}
+          >
+            @{c.author?.username}
+            {c.author?.emailVerified && <VerifiedBadge size={12} />}
+          </Link>
+          <p className="what">{c.content}</p>
+          {currentUser && !isReply && (
+            <button
+              type="button"
+              onClick={() => startReply(c)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--text-muted)",
+                fontSize: "0.75rem",
+                padding: 0,
+                marginTop: 4,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <CornerDownRight size={12} /> Reply
+            </button>
+          )}
+        </div>
+      </div>
+      {currentUser && c.userId === currentUser.id && (
+        <button
+          type="button"
+          className="del"
+          onClick={() => onDeleteComment(c.id)}
+          aria-label="Delete comment"
+        >
+          <Trash2 size={15} />
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <div
@@ -104,6 +175,7 @@ export default function PostModal({ postId, onClose }) {
             <span className="names">
               <span className="display">
                 {post.author?.displayName}
+                {post.author?.emailVerified && <VerifiedBadge size={14} />}
                 {post.author?.id === CREATOR_ID && (
                   <span className="creator-badge">
                     <Crown size={10} /> Creator
@@ -170,7 +242,7 @@ export default function PostModal({ postId, onClose }) {
         </footer>
 
         <div className="comments">
-          <h3>Comments ({comments.length})</h3>
+          <h3>Comments ({totalComments})</h3>
 
           {comments.length === 0 && (
             <p style={{ color: "var(--text-dim)", padding: "8px 0" }}>
@@ -179,47 +251,65 @@ export default function PostModal({ postId, onClose }) {
           )}
 
           {comments.map((c) => (
-            <div className="comment" key={c.id}>
-              <div style={{ display: "flex", gap: 10 }}>
-                <Avatar user={c.author} size={28} />
-                <div>
-                  <Link
-                    to={`/profile/${c.author?.id}`}
-                    className="who"
-                    onClick={onClose}
-                  >
-                    @{c.author?.username}
-                  </Link>
-                  <p className="what">{c.content}</p>
-                </div>
-              </div>
-              {currentUser && c.userId === currentUser.id && (
-                <button
-                  type="button"
-                  className="del"
-                  onClick={() => onDeleteComment(c.id)}
-                  aria-label="Delete comment"
-                >
-                  <Trash2 size={15} />
-                </button>
-              )}
+            <div key={c.id}>
+              {renderComment(c)}
+              {c.replies?.map((r) => renderComment(r, true))}
             </div>
           ))}
 
           {currentUser ? (
-            <div className="comment-form">
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
-                }}
-                placeholder="Write a comment"
-                aria-label="Write a comment"
-              />
-              <button type="button" className="btn btn-accent" onClick={submit}>
-                Post
-              </button>
+            <div>
+              {replyTo && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    fontSize: "0.8rem",
+                    color: "var(--text-muted)",
+                    marginBottom: 6,
+                  }}
+                >
+                  <CornerDownRight size={13} />
+                  Replying to @{replyTo.username}
+                  <button
+                    type="button"
+                    onClick={() => setReplyTo(null)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "var(--danger, #ff3e3e)",
+                      fontSize: "0.8rem",
+                      padding: 0,
+                    }}
+                  >
+                    ✕ cancel
+                  </button>
+                </div>
+              )}
+              <div className="comment-form">
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
+                  }}
+                  placeholder={
+                    replyTo
+                      ? `Reply to @${replyTo.username}…`
+                      : "Write a comment"
+                  }
+                  aria-label="Write a comment"
+                />
+                <button
+                  type="button"
+                  className="btn btn-accent"
+                  onClick={submit}
+                >
+                  {replyTo ? "Reply" : "Post"}
+                </button>
+              </div>
             </div>
           ) : (
             <p style={{ color: "var(--text-dim)", marginTop: 12 }}>

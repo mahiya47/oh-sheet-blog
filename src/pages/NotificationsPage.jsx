@@ -10,12 +10,14 @@ const ICON = {
   comment: MessageCircle,
   follow: UserPlus,
   dm: Mail,
+  reply: MessageCircle,
 };
 const TEXT = {
   like: "liked your sheet",
   comment: "commented on your sheet",
   follow: "started following you",
   dm: "sent you a message",
+  reply: "replied to your comment",
 };
 
 export default function NotificationsPage() {
