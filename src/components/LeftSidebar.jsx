@@ -37,22 +37,24 @@ const badgeStyle = {
 export default function LeftSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { getUnreadCount, getChatUnread, currentUser } = useStore();
+  const { getUnreadCount, getChatUnread, getDmUnread, currentUser } =
+    useStore();
   const [unread, setUnread] = useState(0);
   const [chatUnread, setChatUnread] = useState(0);
 
   const isChatActive = location.pathname === "/chat";
 
-  // poll unread counts (notifications + chat)
+  // poll unread counts (notifications + chat + DMs)
   useEffect(() => {
     if (!currentUser) return;
     let active = true;
     const load = async () => {
       const c = await getUnreadCount();
       const cc = await getChatUnread();
+      const dm = await getDmUnread();
       if (active) {
         setUnread(c);
-        setChatUnread(cc);
+        setChatUnread(cc + dm);
       }
     };
     load();
@@ -104,8 +106,8 @@ export default function LeftSidebar() {
         </NavLink>
         <button
           className={`icon-btn tip ${isChatActive ? "active" : ""}`}
-          data-tip="Global Chat"
-          aria-label="Global Chat"
+          data-tip="Chat"
+          aria-label="Chat"
           onClick={() => navigate("/chat")}
           style={{ position: "relative" }}
         >

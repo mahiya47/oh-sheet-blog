@@ -26,7 +26,8 @@ const badgeStyle = {
 
 export default function BottomNav() {
   const location = useLocation();
-  const { getUnreadCount, getChatUnread, currentUser } = useStore();
+  const { getUnreadCount, getChatUnread, getDmUnread, currentUser } =
+    useStore();
   const [unread, setUnread] = useState(0);
   const [chatUnread, setChatUnread] = useState(0);
 
@@ -36,9 +37,10 @@ export default function BottomNav() {
     const load = async () => {
       const c = await getUnreadCount();
       const cc = await getChatUnread();
+      const dm = await getDmUnread();
       if (active) {
         setUnread(c);
-        setChatUnread(cc);
+        setChatUnread(cc + dm);
       }
     };
     load();

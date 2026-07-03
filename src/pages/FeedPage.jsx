@@ -5,6 +5,7 @@ import { useStore } from "../lib/store.jsx";
 import Feed from "../components/Feed.jsx";
 import SortBar from "../components/SortBar.jsx";
 import Avatar from "../components/Avatar.jsx";
+import SkeletonCard from "../components/SkeletonCard.jsx";
 
 export default function FeedPage() {
   const { getFeed, posts, loading, sortPosts, currentUser, loadMorePosts } =
@@ -67,15 +68,11 @@ export default function FeedPage() {
       )}
 
       {loading ? (
-        <p
-          style={{
-            textAlign: "center",
-            padding: "40px",
-            color: "var(--text-dim)",
-          }}
-        >
-          Loading sheets…
-        </p>
+        <div className="feed-col">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
       ) : (
         <Feed
           posts={sorted}
