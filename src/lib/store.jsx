@@ -698,6 +698,8 @@ export function StoreProvider({ children }) {
         getFollowCounts,
         isFollowing,
         search,
+        searchLive,
+        loadMorePosts,
         resetDemo,
         getChatMessages,
         sendChatMessage,
