@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Home,
@@ -9,26 +9,52 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  Hash,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { useClickAway } from "../lib/useClickAway.js";
 import Avatar from "./Avatar.jsx";
+import VerifiedBadge from "./VerifiedBadge.jsx";
 
 export default function Navbar() {
-  const { currentUser, logout } = useStore();
+  const { currentUser, logout, searchLive } = useStore();
   const toast = useToast();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [results, setResults] = useState(null); // { users, tags } or null
   const menuRef = useRef(null);
+  const searchRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
+  useClickAway(searchRef, () => setResults(null), !!results);
+
+  // live search — debounced 300ms
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults(null);
+      return;
+    }
+    const t = setTimeout(async () => {
+      const data = await searchLive(q);
+      setResults(data);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const closeSearch = () => {
+    setResults(null);
+    setQuery("");
+  };
 
   const onSearch = (e) => {
     if (e.key === "Enter") {
       const q = query.trim();
+      closeSearch();
       navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/feed");
     }
+    if (e.key === "Escape") setResults(null);
   };
 
   const handleLogout = () => {
@@ -37,6 +63,12 @@ export default function Navbar() {
     toast("Signed out.", "default");
     navigate("/login");
   };
+
+  const displayName = (u) =>
+    u?.name || u?.username || u?.email?.split("@")[0] || "User";
+
+  const hasResults =
+    results && (results.users?.length > 0 || results.tags?.length > 0);
 
   return (
     <nav className="navbar">
@@ -92,7 +124,11 @@ export default function Navbar() {
           <Search size={18} />
         </NavLink>
 
-        <div className="search">
+        <div
+          className="search"
+          ref={searchRef}
+          style={{ position: "relative" }}
+        >
           <Search size={16} />
           <input
             type="text"
@@ -102,6 +138,56 @@ export default function Navbar() {
             placeholder="Search sheets or people…"
             aria-label="Search"
           />
+
+          {results && (
+            <div className="search-dropdown">
+              {!hasResults && (
+                <div className="search-dropdown-empty">No matches found.</div>
+              )}
+
+              {results.users?.length > 0 && (
+                <>
+                  <div className="search-dropdown-label">People</div>
+                  {results.users.map((u) => (
+                    <Link
+                      key={u.id}
+                      to={`/profile/${u.id}`}
+                      className="search-dropdown-item"
+                      onClick={closeSearch}
+                    >
+                      <Avatar user={u} size={30} />
+                      <span className="search-dropdown-name">
+                        {displayName(u)}
+                        {u.emailVerified && <VerifiedBadge size={12} />}
+                        <span className="search-dropdown-handle">
+                          @{u.username || u.email?.split("@")[0]}
+                        </span>
+                      </span>
+                    </Link>
+                  ))}
+                </>
+              )}
+
+              {results.tags?.length > 0 && (
+                <>
+                  <div className="search-dropdown-label">Tags</div>
+                  {results.tags.map((t) => (
+                    <Link
+                      key={t.id}
+                      to={`/tag/${t.name}`}
+                      className="search-dropdown-item"
+                      onClick={closeSearch}
+                    >
+                      <span className="search-dropdown-tagicon">
+                        <Hash size={14} />
+                      </span>
+                      <span className="search-dropdown-name">#{t.name}</span>
+                    </Link>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="profile-menu" ref={menuRef}>
