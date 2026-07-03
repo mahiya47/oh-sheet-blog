@@ -29,6 +29,8 @@ export default function SheetCard({ post }) {
   const toast = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [reposting, setReposting] = useState(false);
+  const [repostText, setRepostText] = useState("");
   const [draft, setDraft] = useState(post.content);
   const menuRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
@@ -50,7 +52,15 @@ export default function SheetCard({ post }) {
   };
   const onRepost = (e) => {
     stop(e);
-    createPost(`Repost from @${post.author?.username}:\n${post.content}`);
+    setRepostText("");
+    setReposting(true);
+  };
+
+  const onConfirmRepost = async (e) => {
+    stop(e);
+    const originalId = post.repostOfId || post.id;
+    await createPost(repostText.trim(), [], "", originalId);
+    setReposting(false);
     toast("Reposted to your profile.", "accent");
   };
   const onShare = (e) => {
@@ -171,6 +181,42 @@ export default function SheetCard({ post }) {
           )}
         </div>
       </header>
+      {reposting && (
+        <div
+          onClick={stop}
+          style={{
+            padding: "12px 16px",
+            borderBottom: "2px solid var(--border)",
+          }}
+        >
+          <textarea
+            value={repostText}
+            onChange={(e) => setRepostText(e.target.value)}
+            placeholder="Add a comment (optional)…"
+            style={{ width: "100%", minHeight: 60 }}
+            autoFocus
+          />
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <button
+              type="button"
+              className="btn btn-accent"
+              onClick={onConfirmRepost}
+            >
+              Repost
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={(e) => {
+                stop(e);
+                setReposting(false);
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="sheet-body">
         {editing ? (
@@ -225,6 +271,67 @@ export default function SheetCard({ post }) {
                 objectFit: "contain",
               }}
             />
+          </div>
+        )}
+        {post.repostOf && !editing && (
+          <Link
+            to={`/post/${post.repostOf.id}`}
+            onClick={stop}
+            style={{
+              display: "block",
+              marginTop: 12,
+              padding: 12,
+              border: "2px solid var(--border)",
+              borderRadius: "var(--radius)",
+              color: "inherit",
+              textDecoration: "none",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 6,
+              }}
+            >
+              <Avatar user={post.repostOf.author} size={24} />
+              <b style={{ fontSize: "0.85rem" }}>
+                {post.repostOf.author?.name || post.repostOf.author?.username}
+              </b>
+              <span style={{ fontSize: "0.75rem", opacity: 0.6 }}>
+                @{post.repostOf.author?.username} ·{" "}
+                {timeAgo(post.repostOf.createdAt)}
+              </span>
+            </div>
+            <p style={{ fontSize: "0.9rem" }}>{post.repostOf.content}</p>
+            {post.repostOf.imageUrl && (
+              <img
+                src={post.repostOf.imageUrl}
+                alt=""
+                style={{
+                  width: "100%",
+                  aspectRatio: "16 / 10",
+                  objectFit: "cover",
+                  marginTop: 8,
+                  borderRadius: "var(--radius)",
+                }}
+              />
+            )}
+          </Link>
+        )}
+        {post.repostOfId && !post.repostOf && !editing && (
+          <div
+            style={{
+              marginTop: 12,
+              padding: 12,
+              border: "2px dashed var(--border)",
+              borderRadius: "var(--radius)",
+              opacity: 0.6,
+              fontSize: "0.85rem",
+            }}
+          >
+            This sheet was deleted.
           </div>
         )}
         {post.tags?.length > 0 && !editing && (
