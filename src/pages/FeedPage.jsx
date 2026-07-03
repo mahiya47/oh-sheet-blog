@@ -7,7 +7,8 @@ import SortBar from "../components/SortBar.jsx";
 import Avatar from "../components/Avatar.jsx";
 
 export default function FeedPage() {
-  const { getFeed, posts, loading, sortPosts, currentUser } = useStore();
+  const { getFeed, posts, loading, sortPosts, currentUser, loadMorePosts } =
+    useStore();
   const [sort, setSort] = useState("new");
   const navigate = useNavigate();
 
@@ -78,6 +79,7 @@ export default function FeedPage() {
       ) : (
         <Feed
           posts={sorted}
+          onLoadMore={loadMorePosts}
           emptyTitle="No sheets yet."
           emptyHint="Be the first to post one."
           emptyTo="/create"

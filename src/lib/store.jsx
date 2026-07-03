@@ -160,12 +160,15 @@ export function StoreProvider({ children }) {
 
   // ---- Posts ---------------------------------------------------------------
 
+  const [nextCursor, setNextCursor] = useState(null);
+
   const getFeed = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get("/posts");
-      const normalized = res.data.map(normalizePost);
+      const normalized = res.data.posts.map(normalizePost);
       setPosts(normalized);
+      setNextCursor(res.data.nextCursor);
       return normalized;
     } catch (err) {
       console.error(err);
@@ -175,6 +178,19 @@ export function StoreProvider({ children }) {
     }
   }, []);
 
+  const loadMorePosts = useCallback(async () => {
+    if (!nextCursor) return false;
+    try {
+      const res = await api.get(`/posts?cursor=${nextCursor}`);
+      const normalized = res.data.posts.map(normalizePost);
+      setPosts((prev) => [...prev, ...normalized]);
+      setNextCursor(res.data.nextCursor);
+      return !!res.data.nextCursor;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }, [nextCursor]);
   const getPost = async (id) => {
     try {
       const res = await api.get(`/posts/${id}`);
