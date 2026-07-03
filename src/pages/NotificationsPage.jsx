@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Heart, MessageCircle, UserPlus } from "lucide-react";
+import { Bell, Heart, MessageCircle, UserPlus, Mail } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { timeAgo } from "../lib/time.js";
 import Avatar from "../components/Avatar.jsx";
 
-const ICON = { like: Heart, comment: MessageCircle, follow: UserPlus };
+const ICON = {
+  like: Heart,
+  comment: MessageCircle,
+  follow: UserPlus,
+  dm: Mail,
+};
 const TEXT = {
   like: "liked your sheet",
   comment: "commented on your sheet",
   follow: "started following you",
+  dm: "sent you a message",
 };
 
 export default function NotificationsPage() {
@@ -52,10 +58,14 @@ export default function NotificationsPage() {
         <div className="panel">
           {items.map((n) => {
             const Icon = ICON[n.type] || Bell;
+            const to =
+              n.type === "dm"
+                ? `/chat?dm=${n.actor?.id}`
+                : `/profile/${n.actor?.id}`;
             return (
               <Link
                 key={n.id}
-                to={`/profile/${n.actor?.id}`}
+                to={to}
                 className="mini-row"
                 style={{
                   display: "flex",
