@@ -562,43 +562,58 @@ select {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  width: 180px;
-  background: var(--surface);
-  border: var(--border-w) solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 5px 5px 0 var(--shadow-strong);
-  overflow: hidden;
+  min-width: 180px;
+  background: var(--surface, #111);
+  border: 2px solid var(--border, #333);
+  border-radius: var(--radius, 12px);
+  padding: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   z-index: 50;
 }
+
+.more-menu a,
 .more-menu button {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 10px;
   width: 100%;
-  padding: 10px 12px;
-  background: transparent;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: none;
   border: none;
-  border-bottom: 1px solid var(--border-soft);
-  color: var(--text);
-  font-size: 0.8rem;
-  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text, #fff);
   text-align: left;
-}
-.more-menu button:last-child {
-  border-bottom: none;
-}
-.more-menu button:hover {
-  background: var(--text);
-  color: var(--surface);
-}
-.more-menu button.danger {
-  color: var(--danger);
-}
-.more-menu button.danger:hover {
-  background: var(--danger);
-  color: var(--danger-ink);
+  text-decoration: none;
 }
 
+.more-menu a:hover,
+.more-menu button:hover {
+  background: rgba(128, 128, 128, 0.12);
+}
+
+.more-menu svg {
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+/* visual break before destructive action */
+.more-menu .danger {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border, #333);
+  color: var(--danger, #ff4d4d);
+}
+
+.more-menu .danger:hover {
+  background: rgba(255, 62, 62, 0.12);
+}
+
+.more-menu .danger svg {
+  opacity: 1;
+}
 /* =========================================================================
    Sort bar
    ========================================================================= */
