@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Send, ArrowLeft, Globe } from "lucide-react";
+import { Send, ArrowLeft, Globe, Check, CheckCheck } from "lucide-react";
 import { useStore } from "../lib/store";
 import Avatar from "../components/Avatar";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
 import { timeAgo } from "../lib/time";
-import { Send, ArrowLeft, Globe, Check, CheckCheck } from "lucide-react";
+
 export default function ChatPage() {
   const {
     getChatMessages,
@@ -228,7 +228,9 @@ export default function ChatPage() {
               <div className="chat-page-empty">No messages yet. Say hi! 👋</div>
             ) : (
               thread.map((msg) => {
-                const isMe = currentUser && msg.senderId === currentUser.id;
+                const isMe =
+                  currentUser &&
+                  Number(msg.senderId) === Number(currentUser.id);
                 return (
                   <div
                     key={msg.id}
