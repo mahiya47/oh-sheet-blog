@@ -332,7 +332,11 @@ export function StoreProvider({ children }) {
   const searchLive = async (q) => {
     try {
       const res = await api.get(`/users/search?q=${encodeURIComponent(q)}`);
-      return res.data; // { users, tags, posts }
+      return {
+        users: res.data.users || [],
+        tags: res.data.tags || [],
+        posts: (res.data.posts || []).map(normalizePost),
+      };
     } catch {
       return { users: [], tags: [], posts: [] };
     }
