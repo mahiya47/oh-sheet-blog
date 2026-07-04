@@ -191,6 +191,7 @@ export function StoreProvider({ children }) {
       return false;
     }
   }, [nextCursor]);
+
   const getPost = async (id) => {
     try {
       const res = await api.get(`/posts/${id}`);
@@ -200,13 +201,19 @@ export function StoreProvider({ children }) {
     }
   };
 
-  const createPost = async (content, tags = [], imageUrl = "") => {
+  const createPost = async (
+    content,
+    tags = [],
+    imageUrl = "",
+    repostOfId = null,
+  ) => {
     try {
       const res = await api.post("/posts", {
         title: content.slice(0, 50),
         content,
         tags,
         imageUrl,
+        repostOfId,
       });
       setPosts((prev) => [normalizePost(res.data), ...prev]);
       return res.data.id;
@@ -325,11 +332,12 @@ export function StoreProvider({ children }) {
   const searchLive = async (q) => {
     try {
       const res = await api.get(`/users/search?q=${encodeURIComponent(q)}`);
-      return res.data; // { users, tags }
+      return res.data; // { users, tags, posts }
     } catch {
-      return { users: [], tags: [] };
+      return { users: [], tags: [], posts: [] };
     }
   };
+
   // ---- Sorting -------------------------------------------------------------
 
   const sortPosts = (list, sort) => {
