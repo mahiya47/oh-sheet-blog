@@ -5,7 +5,7 @@ import { useStore } from "../lib/store";
 import Avatar from "../components/Avatar";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
 import { timeAgo } from "../lib/time";
-
+import { Send, ArrowLeft, Globe, Check, CheckCheck } from "lucide-react";
 export default function ChatPage() {
   const {
     getChatMessages,
@@ -237,8 +237,21 @@ export default function ChatPage() {
                     <Avatar user={msg.sender} size={36} />
                     <div className="chat-page-bubble-wrap">
                       <div className="chat-page-bubble">{msg.content}</div>
-                      <span className="chat-page-time">
+                      <span
+                        className="chat-page-time"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
                         {timeAgo(msg.createdAt)}
+                        {isMe &&
+                          (msg.read ? (
+                            <CheckCheck size={13} color="#1d9bf0" />
+                          ) : (
+                            <Check size={13} style={{ opacity: 0.6 }} />
+                          ))}
                       </span>
                     </div>
                   </div>
