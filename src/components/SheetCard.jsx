@@ -19,8 +19,8 @@ import { useToast } from "../context/ToastContext.jsx";
 import { useClickAway } from "../lib/useClickAway.js";
 import { colorFor, timeAgo } from "../lib/time.js";
 import Avatar from "./Avatar.jsx";
-import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 import VerifiedBadge from "./VerifiedBadge.jsx";
+import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 
 export default function SheetCard({ post }) {
   const { currentUser, toggleLike, createPost, deletePost, editPost } =
@@ -29,9 +29,9 @@ export default function SheetCard({ post }) {
   const toast = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(post.content);
   const [reposting, setReposting] = useState(false);
   const [repostText, setRepostText] = useState("");
-  const [draft, setDraft] = useState(post.content);
   const menuRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
@@ -50,6 +50,7 @@ export default function SheetCard({ post }) {
     stop(e);
     toggleLike(post.id, post.likedByMe);
   };
+
   const onRepost = (e) => {
     stop(e);
     setRepostText("");
@@ -63,6 +64,7 @@ export default function SheetCard({ post }) {
     setReposting(false);
     toast("Reposted to your profile.", "accent");
   };
+
   const onShare = (e) => {
     stop(e);
     navigator.clipboard?.writeText(window.location.href).then(
@@ -105,8 +107,8 @@ export default function SheetCard({ post }) {
       className="sheet clickable"
       role="button"
       tabIndex={0}
-      onClick={editing ? undefined : open}
-      onKeyDown={editing ? undefined : onKey}
+      onClick={editing || reposting ? undefined : open}
+      onKeyDown={editing || reposting ? undefined : onKey}
       aria-label={`Open sheet by ${post.author?.displayName}`}
     >
       <header className="sheet-head" style={{ "--head": post.color }}>
@@ -181,6 +183,7 @@ export default function SheetCard({ post }) {
           )}
         </div>
       </header>
+
       {reposting && (
         <div
           onClick={stop}
@@ -247,6 +250,7 @@ export default function SheetCard({ post }) {
         ) : (
           <p>{post.content}</p>
         )}
+
         {post.imageUrl && !editing && (
           <div
             style={{
@@ -273,18 +277,19 @@ export default function SheetCard({ post }) {
             />
           </div>
         )}
+
         {post.repostOf && !editing && (
-          <Link
-            to={`/post/${post.repostOf.id}`}
-            onClick={stop}
+          <div
+            onClick={(e) => {
+              stop(e);
+              openPost(post.repostOf.id);
+            }}
             style={{
-              display: "block",
               marginTop: 12,
               padding: 12,
               border: "2px solid var(--border)",
               borderRadius: "var(--radius)",
-              color: "inherit",
-              textDecoration: "none",
+              cursor: "pointer",
             }}
           >
             <div
@@ -306,20 +311,33 @@ export default function SheetCard({ post }) {
             </div>
             <p style={{ fontSize: "0.9rem" }}>{post.repostOf.content}</p>
             {post.repostOf.imageUrl && (
-              <img
-                src={post.repostOf.imageUrl}
-                alt=""
+              <div
                 style={{
                   width: "100%",
                   aspectRatio: "16 / 10",
-                  objectFit: "cover",
                   marginTop: 8,
                   borderRadius: "var(--radius)",
+                  background: "rgba(128, 128, 128, 0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
                 }}
-              />
+              >
+                <img
+                  src={post.repostOf.imageUrl}
+                  alt=""
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+              </div>
             )}
-          </Link>
+          </div>
         )}
+
         {post.repostOfId && !post.repostOf && !editing && (
           <div
             style={{
@@ -334,6 +352,7 @@ export default function SheetCard({ post }) {
             This sheet was deleted.
           </div>
         )}
+
         {post.tags?.length > 0 && !editing && (
           <div
             style={{
