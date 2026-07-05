@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Heart, MessageCircle, UserPlus, Mail } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { timeAgo } from "../lib/time.js";
 import Avatar from "../components/Avatar.jsx";
+
+import {
+  Bell,
+  Heart,
+  MessageCircle,
+  UserPlus,
+  Mail,
+  BadgeCheck,
+  X,
+} from "lucide-react";
 
 const ICON = {
   like: Heart,
@@ -11,6 +20,7 @@ const ICON = {
   follow: UserPlus,
   dm: Mail,
   reply: MessageCircle,
+  verified: BadgeCheck,
 };
 const TEXT = {
   like: "liked your sheet",
@@ -18,10 +28,12 @@ const TEXT = {
   follow: "started following you",
   dm: "sent you a message",
   reply: "replied to your comment",
+  verified: "🎉 You're verified! Enjoy your blue tick.",
 };
 
 export default function NotificationsPage() {
-  const { getNotifications, markNotificationsRead } = useStore();
+  const { getNotifications, markNotificationsRead, deleteNotification } =
+    useStore();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,6 +44,15 @@ export default function NotificationsPage() {
       markNotificationsRead(); // mark read when the page is opened
     });
   }, []);
+
+  const onRemove = async (e, id) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const ok = await deleteNotification(id);
+    if (ok) {
+      setItems((prev) => prev.filter((n) => n.id !== id));
+    }
+  };
 
   return (
     <div className="feed-col">
@@ -63,7 +84,9 @@ export default function NotificationsPage() {
             const to =
               n.type === "dm"
                 ? `/chat?dm=${n.actor?.id}`
-                : `/profile/${n.actor?.id}`;
+                : n.type === "verified"
+                  ? "/settings"
+                  : `/profile/${n.actor?.id}`;
             return (
               <Link
                 key={n.id}
@@ -80,7 +103,14 @@ export default function NotificationsPage() {
               >
                 <Avatar user={n.actor} size={40} />
                 <span style={{ flex: 1 }}>
-                  <b>{n.actor?.displayName}</b> {TEXT[n.type] || "interacted"}
+                  {n.type === "verified" ? (
+                    TEXT.verified
+                  ) : (
+                    <>
+                      <b>{n.actor?.displayName}</b>{" "}
+                      {TEXT[n.type] || "interacted"}
+                    </>
+                  )}
                   <span
                     style={{
                       display: "block",
@@ -92,6 +122,22 @@ export default function NotificationsPage() {
                   </span>
                 </span>
                 <Icon size={18} />
+                <button
+                  type="button"
+                  onClick={(e) => onRemove(e, n.id)}
+                  aria-label="Remove notification"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--text-muted)",
+                    padding: 4,
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <X size={16} />
+                </button>
               </Link>
             );
           })}

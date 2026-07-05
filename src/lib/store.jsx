@@ -543,6 +543,8 @@ export function StoreProvider({ children }) {
     }
   };
 
+  // ---- Notifications ---------------------------------------------------
+
   const getNotifications = async () => {
     try {
       const res = await api.get("/notifications");
@@ -575,6 +577,16 @@ export function StoreProvider({ children }) {
       await api.put("/notifications/read");
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const deleteNotification = async (id) => {
+    try {
+      await api.delete(`/notifications/${id}`);
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
     }
   };
 
@@ -648,7 +660,6 @@ export function StoreProvider({ children }) {
       if (messages.length === 0) return 0;
       const lastSeen = localStorage.getItem("chat-last-seen");
       const lastSeenTime = lastSeen ? new Date(lastSeen).getTime() : 0;
-      // count messages newer than last seen, not sent by me
       return messages.filter(
         (m) =>
           new Date(m.createdAt).getTime() > lastSeenTime &&
@@ -718,6 +729,7 @@ export function StoreProvider({ children }) {
         getNotifications,
         getUnreadCount,
         markNotificationsRead,
+        deleteNotification,
         getConversations,
         getDmThread,
         sendDm,
