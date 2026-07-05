@@ -7,22 +7,18 @@ import {
   Instagram,
   Linkedin,
   Twitter,
-  Award,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 import { DEFAULT_COVER } from "../lib/covers.js";
-import {
-  getAccountAgeBadge,
-  getScoreBadge,
-  TIER_COLORS,
-} from "../lib/badges.js";
+import { getAccountAgeBadge, getScoreBadge } from "../lib/badges.js";
 import Avatar from "../components/Avatar.jsx";
 import Feed from "../components/Feed.jsx";
 import UserListModal from "../components/UserListModal.jsx";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
 import Lightbox from "../components/Lightbox.jsx";
+import Badge from "../components/Badge.jsx";
 
 export default function ProfilePage() {
   const { userId } = useParams();
@@ -238,34 +234,8 @@ export default function ProfilePage() {
                 marginBottom: "var(--space-4)",
               }}
             >
-              {ageBadge && (
-                <span
-                  className="tag"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    borderColor: TIER_COLORS[ageBadge.tier],
-                    color: TIER_COLORS[ageBadge.tier],
-                  }}
-                >
-                  <Cake size={12} /> {ageBadge.label}
-                </span>
-              )}
-              {scoreBadge && (
-                <span
-                  className="tag"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    borderColor: TIER_COLORS[scoreBadge.tier],
-                    color: TIER_COLORS[scoreBadge.tier],
-                  }}
-                >
-                  <Award size={12} /> {scoreBadge.label}
-                </span>
-              )}
+              <Badge badge={ageBadge} />
+              <Badge badge={scoreBadge} />
             </div>
           )}
 
