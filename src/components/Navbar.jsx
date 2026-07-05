@@ -10,15 +10,18 @@ import {
   LogOut,
   ChevronDown,
   Hash,
+  Menu,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { useClickAway } from "../lib/useClickAway.js";
 import Avatar from "./Avatar.jsx";
 import VerifiedBadge from "./VerifiedBadge.jsx";
+import MobileDrawer from "./MobileDrawer.jsx";
 
 export default function Navbar() {
   const { currentUser, logout, searchLive } = useStore();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const toast = useToast();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -73,6 +76,14 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="nav-left">
+        <button
+          type="button"
+          className="nav-hamburger"
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Open menu"
+        >
+          <Menu size={22} />
+        </button>
         <Link
           to="/feed"
           className="nav-logo wordmark"
@@ -233,6 +244,8 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
+      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </nav>
   );
 }

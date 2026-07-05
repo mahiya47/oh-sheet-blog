@@ -1,7 +1,8 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Home, Users, Flame, Bell, Trophy, MessageCircle } from "lucide-react";
+import { Home, PenLine, Bell, MessageCircle } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
+import Avatar from "./Avatar.jsx";
 
 const cls = ({ isActive }) => (isActive ? "active" : undefined);
 
@@ -57,13 +58,16 @@ export default function BottomNav() {
         <Home size={20} />
         <span>Home</span>
       </NavLink>
-      <NavLink to="/following" className={cls}>
-        <Users size={20} />
-        <span>Following</span>
+      <NavLink to="/create" className={cls}>
+        <PenLine size={20} />
+        <span>Create</span>
       </NavLink>
-      <NavLink to="/trending" className={cls}>
-        <Flame size={20} />
-        <span>Trending</span>
+      <NavLink to="/chat" className={cls} style={{ position: "relative" }}>
+        <MessageCircle size={20} />
+        {chatUnread > 0 && (
+          <span style={badgeStyle}>{chatUnread > 9 ? "9+" : chatUnread}</span>
+        )}
+        <span>Chat</span>
       </NavLink>
       <NavLink
         to="/notifications"
@@ -76,16 +80,17 @@ export default function BottomNav() {
         )}
         <span>Alerts</span>
       </NavLink>
-      <NavLink to="/leaderboard" className={cls}>
-        <Trophy size={20} />
-        <span>Ranks</span>
-      </NavLink>
-      <NavLink to="/chat" className={cls} style={{ position: "relative" }}>
-        <MessageCircle size={20} />
-        {chatUnread > 0 && (
-          <span style={badgeStyle}>{chatUnread > 9 ? "9+" : chatUnread}</span>
-        )}
-        <span>Chat</span>
+      <NavLink
+        to="/profile"
+        className={cls}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Avatar user={currentUser} size={20} />
+        <span>Profile</span>
       </NavLink>
     </nav>
   );

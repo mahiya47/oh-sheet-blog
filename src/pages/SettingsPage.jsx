@@ -1,6 +1,15 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Cog, Palette } from "lucide-react";
+import {
+  ArrowLeft,
+  User,
+  Cog,
+  Palette,
+  Github,
+  Instagram,
+  Linkedin,
+  Twitter,
+} from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -81,6 +90,16 @@ export default function SettingsPage() {
     currentUser?.birthday ? currentUser.birthday.slice(0, 10) : "",
   );
 
+  // Social links
+  const [githubUrl, setGithubUrl] = useState(currentUser?.githubUrl || "");
+  const [instagramUrl, setInstagramUrl] = useState(
+    currentUser?.instagramUrl || "",
+  );
+  const [linkedinUrl, setLinkedinUrl] = useState(
+    currentUser?.linkedinUrl || "",
+  );
+  const [twitterUrl, setTwitterUrl] = useState(currentUser?.twitterUrl || "");
+
   // Gender — if the stored value isn't one of the presets, treat it as self-described
   const storedGender = currentUser?.gender || "";
   const genderIsPreset = GENDER_OPTIONS.includes(storedGender);
@@ -144,6 +163,10 @@ export default function SettingsPage() {
       showGender,
       showOrientation,
       birthday: birthday || undefined,
+      githubUrl,
+      instagramUrl,
+      linkedinUrl,
+      twitterUrl,
     });
     if (res.ok) {
       toast("Settings saved.", "accent");
@@ -248,7 +271,6 @@ export default function SettingsPage() {
               <div className="field">
                 <label>Profile cover</label>
 
-                {/* preview */}
                 <div
                   style={{
                     height: 80,
@@ -350,6 +372,73 @@ export default function SettingsPage() {
                   placeholder="Tell the world about yourself…"
                   style={{ minHeight: 110 }}
                 />
+              </div>
+
+              <div className="field">
+                <label>Social links</label>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <Github size={18} style={{ flexShrink: 0, opacity: 0.7 }} />
+                  <input
+                    type="url"
+                    value={githubUrl}
+                    onChange={(e) => setGithubUrl(e.target.value)}
+                    placeholder="https://github.com/yourusername"
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <Twitter size={18} style={{ flexShrink: 0, opacity: 0.7 }} />
+                  <input
+                    type="url"
+                    value={twitterUrl}
+                    onChange={(e) => setTwitterUrl(e.target.value)}
+                    placeholder="https://x.com/yourusername"
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <Linkedin size={18} style={{ flexShrink: 0, opacity: 0.7 }} />
+                  <input
+                    type="url"
+                    value={linkedinUrl}
+                    onChange={(e) => setLinkedinUrl(e.target.value)}
+                    placeholder="https://linkedin.com/in/yourusername"
+                  />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Instagram
+                    size={18}
+                    style={{ flexShrink: 0, opacity: 0.7 }}
+                  />
+                  <input
+                    type="url"
+                    value={instagramUrl}
+                    onChange={(e) => setInstagramUrl(e.target.value)}
+                    placeholder="https://instagram.com/yourusername"
+                  />
+                </div>
+                <span className="hint">
+                  Leave blank to hide any icon from your profile.
+                </span>
               </div>
 
               <div className="field">

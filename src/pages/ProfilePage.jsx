@@ -1,14 +1,28 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Crown, Cake } from "lucide-react";
+import {
+  Crown,
+  Cake,
+  Github,
+  Instagram,
+  Linkedin,
+  Twitter,
+  Award,
+} from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 import { DEFAULT_COVER } from "../lib/covers.js";
+import {
+  getAccountAgeBadge,
+  getScoreBadge,
+  TIER_COLORS,
+} from "../lib/badges.js";
 import Avatar from "../components/Avatar.jsx";
 import Feed from "../components/Feed.jsx";
 import UserListModal from "../components/UserListModal.jsx";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
+import Lightbox from "../components/Lightbox.jsx";
 
 export default function ProfilePage() {
   const { userId } = useParams();
@@ -34,6 +48,7 @@ export default function ProfilePage() {
     isFollowing: false,
   });
   const [listModal, setListModal] = useState(null); // { title, users } or null
+  const [lightboxSrc, setLightboxSrc] = useState(null);
 
   useEffect(() => {
     getFeed();
@@ -85,6 +100,16 @@ export default function ProfilePage() {
     profile.coverUrl?.startsWith("http") ||
     profile.coverUrl?.startsWith("data:");
 
+  const ageBadge = getAccountAgeBadge(profile.createdAt);
+  const scoreBadge = getScoreBadge(profile.score);
+
+  const socialLinks = [
+    { url: profile.githubUrl, Icon: Github, label: "GitHub" },
+    { url: profile.twitterUrl, Icon: Twitter, label: "Twitter/X" },
+    { url: profile.linkedinUrl, Icon: Linkedin, label: "LinkedIn" },
+    { url: profile.instagramUrl, Icon: Instagram, label: "Instagram" },
+  ].filter((s) => s.url);
+
   const onFollow = async () => {
     await toggleFollow(profile.id, following);
     const fresh = await getFollowInfo(profile.id);
@@ -120,7 +145,21 @@ export default function ProfilePage() {
         />
         <div className="profile-info">
           <div className="profile-top">
-            <Avatar user={profile} size={104} />
+            <button
+              type="button"
+              onClick={() =>
+                profile.avatarUrl && setLightboxSrc(profile.avatarUrl)
+              }
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: profile.avatarUrl ? "zoom-in" : "default",
+              }}
+              aria-label="View profile photo"
+            >
+              <Avatar user={profile} size={104} />
+            </button>
             <div>
               {isMe ? (
                 <Link to="/settings" className="btn">
@@ -157,6 +196,78 @@ export default function ProfilePage() {
           <p className="profile-bio">
             {profile.bio?.trim() ? profile.bio : "No bio yet."}
           </p>
+
+          {socialLinks.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                marginBottom: "var(--space-4)",
+              }}
+            >
+              {socialLinks.map(({ url, Icon, label }) => (
+                <a
+                  key={label}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  style={{
+                    width: 34,
+                    height: 34,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "50%",
+                    border: "2px solid var(--border, #333)",
+                    color: "inherit",
+                  }}
+                >
+                  <Icon size={16} />
+                </a>
+              ))}
+            </div>
+          )}
+
+          {(ageBadge || scoreBadge) && (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+                marginBottom: "var(--space-4)",
+              }}
+            >
+              {ageBadge && (
+                <span
+                  className="tag"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    borderColor: TIER_COLORS[ageBadge.tier],
+                    color: TIER_COLORS[ageBadge.tier],
+                  }}
+                >
+                  <Cake size={12} /> {ageBadge.label}
+                </span>
+              )}
+              {scoreBadge && (
+                <span
+                  className="tag"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    borderColor: TIER_COLORS[scoreBadge.tier],
+                    color: TIER_COLORS[scoreBadge.tier],
+                  }}
+                >
+                  <Award size={12} /> {scoreBadge.label}
+                </span>
+              )}
+            </div>
+          )}
 
           {(profile.gender || profile.orientation) && (
             <div
@@ -235,6 +346,8 @@ export default function ProfilePage() {
           onClose={() => setListModal(null)}
         />
       )}
+
+      <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
     </>
   );
 }

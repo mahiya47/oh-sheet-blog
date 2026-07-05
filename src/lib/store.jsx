@@ -94,6 +94,12 @@ export function StoreProvider({ children }) {
       let showOrientation = false;
       let birthday = null;
       let emailVerified = false;
+      let createdAt = null;
+      let score = 0;
+      let githubUrl = null;
+      let instagramUrl = null;
+      let linkedinUrl = null;
+      let twitterUrl = null;
       try {
         const profileRes = await api.get(`/users/${payload.userId}`);
         name = profileRes.data.name || name;
@@ -106,6 +112,12 @@ export function StoreProvider({ children }) {
         showGender = profileRes.data.showGender || false;
         showOrientation = profileRes.data.showOrientation || false;
         birthday = profileRes.data.birthday || null;
+        createdAt = profileRes.data.createdAt || null;
+        score = profileRes.data.score || 0;
+        githubUrl = profileRes.data.githubUrl || null;
+        instagramUrl = profileRes.data.instagramUrl || null;
+        linkedinUrl = profileRes.data.linkedinUrl || null;
+        twitterUrl = profileRes.data.twitterUrl || null;
       } catch {}
       const user = {
         id: payload.userId,
@@ -120,6 +132,12 @@ export function StoreProvider({ children }) {
         showOrientation,
         birthday,
         emailVerified,
+        createdAt,
+        score,
+        githubUrl,
+        instagramUrl,
+        linkedinUrl,
+        twitterUrl,
       };
       localStorage.setItem("current-user", JSON.stringify(user));
       setCurrentUser(user);
@@ -470,6 +488,10 @@ export function StoreProvider({ children }) {
     showGender,
     showOrientation,
     birthday,
+    githubUrl,
+    instagramUrl,
+    linkedinUrl,
+    twitterUrl,
   }) => {
     try {
       const res = await api.put("/users/me", {
@@ -483,6 +505,10 @@ export function StoreProvider({ children }) {
         showGender,
         showOrientation,
         birthday,
+        githubUrl,
+        instagramUrl,
+        linkedinUrl,
+        twitterUrl,
       });
       const updated = {
         ...currentUser,
