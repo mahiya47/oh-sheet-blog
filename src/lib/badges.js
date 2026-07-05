@@ -3,7 +3,7 @@ export function getAccountAgeBadge(createdAt) {
   if (!createdAt) return null;
   const days = Math.floor((Date.now() - new Date(createdAt)) / 86400000);
 
-  if (days < 30) return { label: "New Sheeper", tier: "new", icon: "Sprout" };
+  if (days < 30) return { label: "New Sheeter", tier: "new", icon: "Sprout" };
   if (days < 180) return { label: "1 Month+", tier: "bronze", icon: "Medal" };
   if (days < 365) return { label: "6 Months+", tier: "silver", icon: "Medal" };
   if (days < 730) return { label: "1 Year+", tier: "gold", icon: "Trophy" };
