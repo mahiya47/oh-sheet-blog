@@ -1831,6 +1831,9 @@ select {
   .nav-hamburger {
     display: flex;
   }
+  .profile-menu-desktop {
+    display: none;
+  }
   .nav-center {
     display: none;
   }

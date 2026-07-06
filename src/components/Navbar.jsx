@@ -76,14 +76,6 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="nav-left">
-        <button
-          type="button"
-          className="nav-hamburger"
-          onClick={() => setDrawerOpen(true)}
-          aria-label="Open menu"
-        >
-          <Menu size={22} />
-        </button>
         <Link
           to="/feed"
           className="nav-logo wordmark"
@@ -201,7 +193,7 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="profile-menu" ref={menuRef}>
+        <div className="profile-menu profile-menu-desktop" ref={menuRef}>
           <button
             type="button"
             className="profile-trigger"
@@ -243,6 +235,14 @@ export default function Navbar() {
             </div>
           )}
         </div>
+        <button
+          type="button"
+          className="nav-hamburger"
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Open menu"
+        >
+          <Menu size={22} />
+        </button>
       </div>
 
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
