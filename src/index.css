@@ -179,12 +179,22 @@ select {
   background: transparent;
   border-color: var(--border-soft);
   color: var(--text-muted);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
 }
 .btn-ghost:hover {
   color: var(--text);
   border-color: var(--border);
-  box-shadow: none;
-  transform: none;
+  transform: translateY(-2px);
+  box-shadow: 3px 3px 0 var(--shadow-strong);
+}
+.btn-ghost:active {
+  transform: translateY(0);
+  box-shadow: 1px 1px 0 var(--shadow-strong);
 }
 .btn-block {
   width: 100%;
@@ -199,7 +209,6 @@ select {
   font-size: 0.78rem;
   color: var(--text);
 }
-
 /* =========================================================================
    App shell: sticky nav + centered 3-column grid (scrolls naturally,
    unlike the original's three independently-fixed panels)
@@ -1252,6 +1261,20 @@ select {
   margin: 0 auto var(--space-3);
   animation: spin 0.7s linear infinite;
 }
+
+.social-icon-btn {
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.social-icon-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+  background: var(--accent);
+  border-color: var(--border);
+  color: var(--accent-ink);
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

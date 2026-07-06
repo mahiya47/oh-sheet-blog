@@ -444,6 +444,7 @@ export default function ProfilePage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={label}
+                      className="social-icon-btn"
                       style={{
                         width: 34,
                         height: 34,
