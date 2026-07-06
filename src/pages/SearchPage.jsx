@@ -4,6 +4,8 @@ import { Hash, Search } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import Avatar from "../components/Avatar.jsx";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
+import { getVerifiedVariant } from "../lib/verifiedVariant.js";
+import { CREATOR_ID } from "../lib/creator.js";
 import Feed from "../components/Feed.jsx";
 
 export default function SearchPage() {
@@ -128,7 +130,12 @@ export default function SearchPage() {
                       }}
                     >
                       {displayName(u)}
-                      {u.emailVerified && <VerifiedBadge size={13} />}
+                      {u.emailVerified && (
+                        <VerifiedBadge
+                          size={13}
+                          variant={getVerifiedVariant(u, u.id === CREATOR_ID)}
+                        />
+                      )}
                     </span>
                     <span className="meta">
                       @{u.username || u.email?.split("@")[0]}

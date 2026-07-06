@@ -4,6 +4,8 @@ import { Send, ArrowLeft, Globe, Check, CheckCheck } from "lucide-react";
 import { useStore } from "../lib/store";
 import Avatar from "../components/Avatar";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
+import { getVerifiedVariant } from "../lib/verifiedVariant.js";
+import { CREATOR_ID } from "../lib/creator.js";
 import { timeAgo } from "../lib/time";
 
 export default function ChatPage() {
@@ -177,7 +179,15 @@ export default function ChatPage() {
                 <Avatar user={activeUser} size={28} />
                 <strong>
                   {displayName(activeUser)}
-                  {activeUser?.emailVerified && <VerifiedBadge size={14} />}
+                  {activeUser?.emailVerified && (
+                    <VerifiedBadge
+                      size={14}
+                      variant={getVerifiedVariant(
+                        activeUser,
+                        activeUser?.id === CREATOR_ID,
+                      )}
+                    />
+                  )}
                 </strong>
               </>
             )}
@@ -207,7 +217,13 @@ export default function ChatPage() {
                         <span className="chat-page-author">
                           {displayName(msgUser)}
                           {msgUser?.emailVerified && (
-                            <VerifiedBadge size={12} />
+                            <VerifiedBadge
+                              size={12}
+                              variant={getVerifiedVariant(
+                                msgUser,
+                                msgUser?.id === CREATOR_ID,
+                              )}
+                            />
                           )}
                         </span>
                       )}
@@ -327,7 +343,15 @@ export default function ChatPage() {
             <div className="chat-list-info">
               <span className="chat-page-author">
                 {displayName(conv.user)}
-                {conv.user?.emailVerified && <VerifiedBadge size={12} />}
+                {conv.user?.emailVerified && (
+                  <VerifiedBadge
+                    size={12}
+                    variant={getVerifiedVariant(
+                      conv.user,
+                      conv.user?.id === CREATOR_ID,
+                    )}
+                  />
+                )}
                 {conv.unread > 0 && (
                   <span className="chat-unread-badge">{conv.unread}</span>
                 )}
@@ -357,7 +381,12 @@ export default function ChatPage() {
                 <div className="chat-list-info">
                   <span className="chat-page-author">
                     {displayName(u)}
-                    {u.emailVerified && <VerifiedBadge size={12} />}
+                    {u.emailVerified && (
+                      <VerifiedBadge
+                        size={12}
+                        variant={getVerifiedVariant(u, u.id === CREATOR_ID)}
+                      />
+                    )}
                   </span>
                   <span className="chat-page-time">Start a conversation</span>
                 </div>

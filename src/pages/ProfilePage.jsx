@@ -20,9 +20,9 @@ import Avatar from "../components/Avatar.jsx";
 import Feed from "../components/Feed.jsx";
 import UserListModal from "../components/UserListModal.jsx";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
+import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import Lightbox from "../components/Lightbox.jsx";
 import AchievementsModal from "../components/AchievementsModal.jsx";
-import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 
 export default function ProfilePage() {
   const { userId } = useParams();
@@ -220,31 +220,15 @@ export default function ProfilePage() {
             {profile.bio?.trim() ? profile.bio : "No bio yet."}
           </p>
 
+          {/* Following / Followers row */}
           <div
             style={{
               display: "flex",
               flexWrap: "wrap",
               gap: 8,
-              marginBottom: "var(--space-4)",
+              marginBottom: 8,
             }}
           >
-            {earnedBadges.length > 0 && (
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setShowAchievements(true)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 5,
-                  fontSize: "0.7rem",
-                  padding: "6px 10px",
-                }}
-              >
-                <Award size={12} /> Achievements
-              </button>
-            )}
-
             <button
               type="button"
               onClick={openFollowing}
@@ -274,6 +258,28 @@ export default function ProfilePage() {
               <b>{counts.followers}</b> Followers
             </button>
           </div>
+
+          {/* Achievements — its own row, icon-only, only if earned */}
+          {earnedBadges.length > 0 && (
+            <div style={{ marginBottom: "var(--space-4)" }}>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setShowAchievements(true)}
+                aria-label="View achievements"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 38,
+                  height: 38,
+                  padding: 0,
+                }}
+              >
+                <Award size={16} />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="profile-tabs">

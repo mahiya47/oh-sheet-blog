@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { useStore } from "../lib/store.jsx";
 import { timeAgo } from "../lib/time.js";
 import Avatar from "../components/Avatar.jsx";
+import VerifiedBadge from "../components/VerifiedBadge.jsx";
+import { getVerifiedVariant } from "../lib/verifiedVariant.js";
+import { CREATOR_ID } from "../lib/creator.js";
 
 import {
   Bell,
@@ -107,7 +110,18 @@ export default function NotificationsPage() {
                     TEXT.verified
                   ) : (
                     <>
-                      <b>{n.actor?.displayName}</b>{" "}
+                      <b>
+                        {n.actor?.displayName}
+                        {n.actor?.emailVerified && (
+                          <VerifiedBadge
+                            size={12}
+                            variant={getVerifiedVariant(
+                              n.actor,
+                              n.actor?.id === CREATOR_ID,
+                            )}
+                          />
+                        )}
+                      </b>{" "}
                       {TEXT[n.type] || "interacted"}
                     </>
                   )}
