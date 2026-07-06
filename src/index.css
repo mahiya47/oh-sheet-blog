@@ -1806,6 +1806,21 @@ select {
   margin: 8px 4px;
 }
 
+.wordmark-mobile {
+  display: none;
+  height: 28px;
+  width: 28px;
+}
+
+@media (max-width: 768px) {
+  .wordmark-desktop {
+    display: none;
+  }
+  .wordmark-mobile {
+    display: block;
+  }
+}
+
 /* keep LeftSidebar (desktop rail) hidden on mobile if not already */
 @media (max-width: 768px) {
   .rail-left {
