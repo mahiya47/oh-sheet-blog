@@ -20,6 +20,7 @@ import { useClickAway } from "../lib/useClickAway.js";
 import { colorFor, timeAgo } from "../lib/time.js";
 import Avatar from "./Avatar.jsx";
 import VerifiedBadge from "./VerifiedBadge.jsx";
+import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 
 export default function SheetCard({ post }) {
@@ -121,10 +122,13 @@ export default function SheetCard({ post }) {
           <span className="names">
             <span className="display">
               {post.author?.displayName || "User"}
-              {author?.emailVerified && (
+              {post.author?.emailVerified && (
                 <VerifiedBadge
-                  size={x}
-                  variant={getVerifiedVariant(author, author.id === CREATOR_ID)}
+                  size={14}
+                  variant={getVerifiedVariant(
+                    post.author,
+                    post.author?.id === CREATOR_ID,
+                  )}
                 />
               )}
               {isBirthday(post.author) && (

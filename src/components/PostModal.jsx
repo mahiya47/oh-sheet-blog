@@ -6,6 +6,7 @@ import { useToast } from "../context/ToastContext.jsx";
 import { colorFor, timeAgo } from "../lib/time.js";
 import Avatar from "./Avatar.jsx";
 import VerifiedBadge from "./VerifiedBadge.jsx";
+import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID } from "../lib/creator.js";
 
 export default function PostModal({ postId, onClose }) {
@@ -105,7 +106,15 @@ export default function PostModal({ postId, onClose }) {
             onClick={onClose}
           >
             @{c.author?.username}
-            {c.author?.emailVerified && <VerifiedBadge size={12} />}
+            {c.author?.emailVerified && (
+              <VerifiedBadge
+                size={12}
+                variant={getVerifiedVariant(
+                  c.author,
+                  c.author?.id === CREATOR_ID,
+                )}
+              />
+            )}
           </Link>
           <p className="what">{c.content}</p>
           {currentUser && !isReply && (
@@ -175,12 +184,12 @@ export default function PostModal({ postId, onClose }) {
             <span className="names">
               <span className="display">
                 {post.author?.displayName}
-                {author?.emailVerified && (
+                {post.author?.emailVerified && (
                   <VerifiedBadge
-                    size={x}
+                    size={14}
                     variant={getVerifiedVariant(
-                      author,
-                      author.id === CREATOR_ID,
+                      post.author,
+                      post.author?.id === CREATOR_ID,
                     )}
                   />
                 )}
