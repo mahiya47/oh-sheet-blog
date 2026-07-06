@@ -84,11 +84,12 @@ export default function Navbar() {
         >
           <Menu size={22} />
         </button>
-        <Link to="/feed" className="nav-logo" aria-label="Oh Sheet home">
-          <span className="wordmark-desktop wordmark">
-            Oh <span>sheet!</span>
-          </span>
-          <img src="/favicon.svg" alt="Oh sheet!" className="wordmark-mobile" />
+        <Link
+          to="/feed"
+          className="nav-logo wordmark"
+          aria-label="Oh Sheet home"
+        >
+          Oh <span>sheet!</span>
         </Link>
       </div>
 
@@ -135,7 +136,7 @@ export default function Navbar() {
         </NavLink>
 
         <div
-          className="search"
+          className="search search-desktop-only"
           ref={searchRef}
           style={{ position: "relative" }}
         >

@@ -219,6 +219,8 @@ select {
 }
 .nav-left {
   flex: 1;
+  display: flex;
+  align-items: center;
 }
 .nav-logo {
   font-size: 1.5rem;
@@ -1608,6 +1610,16 @@ select {
   pointer-events: none;
 }
 
+@keyframes skel-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
 /* ---- navbar live search dropdown ---- */
 .search-dropdown {
   position: absolute;
@@ -1687,15 +1699,6 @@ select {
   cursor: pointer;
   padding: 6px;
   margin-right: 4px;
-}
-
-@media (max-width: 768px) {
-  .nav-hamburger {
-    display: flex;
-  }
-  .nav-center {
-    display: none; /* redundant now that bottom nav covers these */
-  }
 }
 
 /* ---- mobile drawer ---- */
@@ -1806,73 +1809,9 @@ select {
   margin: 8px 4px;
 }
 
-.wordmark-mobile {
-  display: none;
-  height: 28px;
-  width: 28px;
-}
-
-@media (max-width: 768px) {
-  .wordmark-desktop {
-    display: none;
-  }
-  .wordmark-mobile {
-    display: block;
-  }
-}
-@media (max-width: 768px) {
-  .feed-composer-btn {
-    display: none;
-  }
-}
-
-/* keep LeftSidebar (desktop rail) hidden on mobile if not already */
-@media (max-width: 768px) {
-  .rail-left {
-    display: none;
-  }
-}
-
-@keyframes skel-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.45;
-  }
-}
-
-/* ---- mobile: list is full screen, chat opens on tap ---- */
-@media (max-width: 768px) {
-  .chat-shell {
-    display: block;
-  }
-  .chat-back {
-    display: inline-flex;
-  }
-  /* default: show list, hide chat */
-  .chat-shell .chat-main {
-    display: none;
-  }
-  .chat-shell .chat-list {
-    display: block;
-    max-height: none;
-    border: none;
-    padding: 0;
-  }
-  /* chat open: show chat, hide list */
-  .chat-shell--open .chat-main {
-    display: flex;
-    flex-direction: column;
-  }
-  .chat-shell--open .chat-list {
-    display: none;
-  }
-}
-
 /* =========================================================================
-   Responsive
+   Responsive — consolidated. Two breakpoints: 1080px (drop right rail)
+   and 768px (mobile: hamburger nav, bottom nav, icon-only search, etc.)
    ========================================================================= */
 @media (max-width: 1080px) {
   .shell {
@@ -1883,10 +1822,14 @@ select {
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
+  /* navbar */
   .navbar {
     padding: 0 var(--space-4);
     gap: var(--space-3);
+  }
+  .nav-hamburger {
+    display: flex;
   }
   .nav-center {
     display: none;
@@ -1903,11 +1846,15 @@ select {
   .nav-logo {
     font-size: 1.2rem;
   }
-  .search {
-    flex: 1;
-    width: auto;
-    min-width: 0;
-  } /* search bar back & typeable */
+
+  /* search collapses to an icon; full search lives on /search */
+  .search-desktop-only {
+    display: none;
+  }
+  .nav-search-mobile {
+    display: flex;
+  }
+
   .profile-menu {
     flex: 0 0 auto;
   }
@@ -1921,12 +1868,11 @@ select {
     padding: 4px;
     gap: 0;
   }
+
+  /* layout */
   .shell {
     grid-template-columns: minmax(0, 1fr);
     padding: var(--space-4) var(--space-4) 96px;
-  }
-  .shell--chat {
-    grid-template-columns: auto 1fr;
   }
   .rail-left {
     display: none;
@@ -1944,5 +1890,33 @@ select {
   .callout {
     flex-direction: column;
     text-align: center;
+  }
+
+  .feed-composer-btn {
+    display: none !important;
+  }
+
+  /* chat: list is full screen, chat opens on tap */
+  .chat-shell {
+    display: block;
+  }
+  .chat-back {
+    display: inline-flex;
+  }
+  .chat-shell .chat-main {
+    display: none;
+  }
+  .chat-shell .chat-list {
+    display: block;
+    max-height: none;
+    border: none;
+    padding: 0;
+  }
+  .chat-shell--open .chat-main {
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-shell--open .chat-list {
+    display: none;
   }
 }
