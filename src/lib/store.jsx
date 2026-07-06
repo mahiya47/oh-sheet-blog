@@ -488,10 +488,14 @@ export function StoreProvider({ children }) {
     showGender,
     showOrientation,
     birthday,
+    pronouns,
     githubUrl,
     instagramUrl,
     linkedinUrl,
     twitterUrl,
+    currentCity,
+    work,
+    education,
   }) => {
     try {
       const res = await api.put("/users/me", {
@@ -505,11 +509,14 @@ export function StoreProvider({ children }) {
         showGender,
         showOrientation,
         birthday,
+        pronouns,
         githubUrl,
         instagramUrl,
         linkedinUrl,
         twitterUrl,
-        pronouns,
+        currentCity,
+        work,
+        education,
       });
       const updated = {
         ...currentUser,
@@ -528,7 +535,6 @@ export function StoreProvider({ children }) {
       };
     }
   };
-
   const resendVerification = async () => {
     try {
       await api.post("/auth/resend-verification");
