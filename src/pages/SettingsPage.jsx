@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -89,6 +89,7 @@ export default function SettingsPage() {
   const coverFileRef = useRef(null);
 
   const [tab, setTab] = useState("profile");
+  const [dirty, setDirty] = useState(false);
   const [sendingVerify, setSendingVerify] = useState(false);
   const [displayName, setDisplayName] = useState(
     currentUser?.displayName || "",
@@ -140,6 +141,39 @@ export default function SettingsPage() {
   const [showOrientation, setShowOrientation] = useState(
     !!currentUser?.showOrientation,
   );
+  useEffect(() => {
+    setDirty(true);
+  }, [
+    displayName,
+    username,
+    bio,
+    avatarUrl,
+    coverUrl,
+    birthday,
+    pronouns,
+    currentCity,
+    work,
+    education,
+    githubUrl,
+    instagramUrl,
+    linkedinUrl,
+    twitterUrl,
+    genderChoice,
+    genderCustom,
+    showGender,
+    oriChoice,
+    oriCustom,
+    showOrientation,
+  ]);
+  useEffect(() => {
+    const handler = (e) => {
+      if (!dirty) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty]);
 
   const onPickFile = async (e) => {
     const file = e.target.files?.[0];
@@ -197,6 +231,7 @@ export default function SettingsPage() {
       education,
     });
     if (res.ok) {
+      setDirty(false);
       toast("Settings saved.", "accent");
       navigate("/profile");
     } else {
@@ -239,9 +274,21 @@ export default function SettingsPage() {
           </Link>
         </div>
         <div className="nav-right">
-          <Link to="/feed" className="btn btn-ghost">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => {
+              if (
+                dirty &&
+                !window.confirm("You have unsaved changes. Leave anyway?")
+              ) {
+                return;
+              }
+              navigate("/feed");
+            }}
+          >
             <ArrowLeft size={16} /> Back to feed
-          </Link>
+          </button>
         </div>
       </nav>
 
