@@ -25,6 +25,7 @@ import VerifiedBadge from "../components/VerifiedBadge.jsx";
 import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import Lightbox from "../components/Lightbox.jsx";
 import AchievementsModal from "../components/AchievementsModal.jsx";
+import ProfileSkeleton from "../components/ProfileSkeleton.jsx";
 
 export default function ProfilePage() {
   const { userId } = useParams();
@@ -71,17 +72,7 @@ export default function ProfilePage() {
   }, [targetId]);
 
   if (loading) {
-    return (
-      <p
-        style={{
-          textAlign: "center",
-          padding: "40px",
-          color: "var(--text-dim)",
-        }}
-      >
-        Loading profile…
-      </p>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (!profile) {
@@ -171,6 +162,7 @@ export default function ProfilePage() {
             background: isImageCover
               ? `url(${profile.coverUrl}) center/cover no-repeat`
               : profile.coverUrl || DEFAULT_COVER,
+            animation: "fadeIn 0.4s ease",
           }}
         />
         <div className="profile-info">
@@ -185,6 +177,7 @@ export default function ProfilePage() {
                 border: "none",
                 padding: 0,
                 cursor: profile.avatarUrl ? "zoom-in" : "default",
+                animation: "fadeIn 0.4s ease 0.1s both",
               }}
               aria-label="View profile photo"
             >

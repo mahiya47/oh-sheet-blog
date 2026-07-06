@@ -69,6 +69,16 @@ function fileToCoverDataUrl(file, maxW = 1200) {
 
 const SELF = "Prefer to self-describe";
 
+function isValidUrl(value) {
+  if (!value) return true;
+  try {
+    const u = new URL(value);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export default function SettingsPage() {
   const { currentUser, updateProfile, resetDemo, resendVerification } =
     useStore();
@@ -156,30 +166,15 @@ export default function SettingsPage() {
   };
 
   const onSave = async () => {
+    const urls = { githubUrl, twitterUrl, linkedinUrl, instagramUrl };
+    const hasInvalidUrl = Object.values(urls).some((u) => !isValidUrl(u));
+    if (hasInvalidUrl) {
+      toast("Please fix the invalid social links before saving.", "danger");
+      return;
+    }
+
     const gender = genderChoice === SELF ? genderCustom.trim() : genderChoice;
     const orientation = oriChoice === SELF ? oriCustom.trim() : oriChoice;
-
-    // TEMP DEBUG — remove after we find the bad field
-    console.log("SAVE PAYLOAD", {
-      displayName,
-      username,
-      bio,
-      avatarUrl,
-      coverUrl,
-      gender,
-      orientation,
-      showGender,
-      showOrientation,
-      birthday,
-      pronouns,
-      githubUrl,
-      instagramUrl,
-      linkedinUrl,
-      twitterUrl,
-      currentCity,
-      work,
-      education,
-    });
 
     const res = await updateProfile({
       name: displayName.trim() || currentUser.displayName,
@@ -293,7 +288,10 @@ export default function SettingsPage() {
                 <label>Or choose an avatar</label>
                 <AvatarPicker
                   value={avatarUrl}
-                  onSelect={setAvatarUrl}
+                  onSelect={(url) => {
+                    setAvatarUrl(url);
+                    toast("Avatar selected — hit Save changes.", "accent");
+                  }}
                   seedBase={
                     currentUser?.username || currentUser?.email || "user"
                   }
@@ -327,7 +325,10 @@ export default function SettingsPage() {
                     <button
                       key={c}
                       type="button"
-                      onClick={() => setCoverUrl(c)}
+                      onClick={() => {
+                        setCoverUrl(c);
+                        toast("Cover selected — hit Save changes.", "accent");
+                      }}
                       aria-label="Select cover"
                       style={{
                         background: c,
@@ -414,10 +415,20 @@ export default function SettingsPage() {
                 <textarea
                   id="bio"
                   value={bio}
-                  onChange={(e) => setBio(e.target.value)}
+                  onChange={(e) => setBio(e.target.value.slice(0, 160))}
                   placeholder="Tell the world about yourself…"
                   style={{ minHeight: 110 }}
+                  maxLength={160}
                 />
+                <span
+                  className="char-count"
+                  style={{
+                    color:
+                      bio.length > 140 ? "var(--danger, #ff3e3e)" : undefined,
+                  }}
+                >
+                  {bio.length}/160
+                </span>
               </div>
 
               <div className="field">
@@ -476,66 +487,136 @@ export default function SettingsPage() {
 
               <div className="field">
                 <label>Social links</label>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 8,
-                  }}
-                >
-                  <Github size={18} style={{ flexShrink: 0, opacity: 0.7 }} />
-                  <input
-                    type="url"
-                    value={githubUrl}
-                    onChange={(e) => setGithubUrl(e.target.value)}
-                    placeholder="https://github.com/yourusername"
-                  />
+
+                <div style={{ marginBottom: 8 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <Github size={18} style={{ flexShrink: 0, opacity: 0.7 }} />
+                    <input
+                      type="url"
+                      value={githubUrl}
+                      onChange={(e) => setGithubUrl(e.target.value)}
+                      placeholder="https://github.com/yourusername"
+                      style={{
+                        borderColor: !isValidUrl(githubUrl)
+                          ? "var(--danger, #ff3e3e)"
+                          : undefined,
+                      }}
+                    />
+                  </div>
+                  {!isValidUrl(githubUrl) && (
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--danger, #ff3e3e)",
+                        marginLeft: 26,
+                      }}
+                    >
+                      That doesn't look like a valid URL.
+                    </span>
+                  )}
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 8,
-                  }}
-                >
-                  <Twitter size={18} style={{ flexShrink: 0, opacity: 0.7 }} />
-                  <input
-                    type="url"
-                    value={twitterUrl}
-                    onChange={(e) => setTwitterUrl(e.target.value)}
-                    placeholder="https://x.com/yourusername"
-                  />
+
+                <div style={{ marginBottom: 8 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <Twitter
+                      size={18}
+                      style={{ flexShrink: 0, opacity: 0.7 }}
+                    />
+                    <input
+                      type="url"
+                      value={twitterUrl}
+                      onChange={(e) => setTwitterUrl(e.target.value)}
+                      placeholder="https://x.com/yourusername"
+                      style={{
+                        borderColor: !isValidUrl(twitterUrl)
+                          ? "var(--danger, #ff3e3e)"
+                          : undefined,
+                      }}
+                    />
+                  </div>
+                  {!isValidUrl(twitterUrl) && (
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--danger, #ff3e3e)",
+                        marginLeft: 26,
+                      }}
+                    >
+                      That doesn't look like a valid URL.
+                    </span>
+                  )}
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 8,
-                  }}
-                >
-                  <Linkedin size={18} style={{ flexShrink: 0, opacity: 0.7 }} />
-                  <input
-                    type="url"
-                    value={linkedinUrl}
-                    onChange={(e) => setLinkedinUrl(e.target.value)}
-                    placeholder="https://linkedin.com/in/yourusername"
-                  />
+
+                <div style={{ marginBottom: 8 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <Linkedin
+                      size={18}
+                      style={{ flexShrink: 0, opacity: 0.7 }}
+                    />
+                    <input
+                      type="url"
+                      value={linkedinUrl}
+                      onChange={(e) => setLinkedinUrl(e.target.value)}
+                      placeholder="https://linkedin.com/in/yourusername"
+                      style={{
+                        borderColor: !isValidUrl(linkedinUrl)
+                          ? "var(--danger, #ff3e3e)"
+                          : undefined,
+                      }}
+                    />
+                  </div>
+                  {!isValidUrl(linkedinUrl) && (
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--danger, #ff3e3e)",
+                        marginLeft: 26,
+                      }}
+                    >
+                      That doesn't look like a valid URL.
+                    </span>
+                  )}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Instagram
-                    size={18}
-                    style={{ flexShrink: 0, opacity: 0.7 }}
-                  />
-                  <input
-                    type="url"
-                    value={instagramUrl}
-                    onChange={(e) => setInstagramUrl(e.target.value)}
-                    placeholder="https://instagram.com/yourusername"
-                  />
+
+                <div>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <Instagram
+                      size={18}
+                      style={{ flexShrink: 0, opacity: 0.7 }}
+                    />
+                    <input
+                      type="url"
+                      value={instagramUrl}
+                      onChange={(e) => setInstagramUrl(e.target.value)}
+                      placeholder="https://instagram.com/yourusername"
+                      style={{
+                        borderColor: !isValidUrl(instagramUrl)
+                          ? "var(--danger, #ff3e3e)"
+                          : undefined,
+                      }}
+                    />
+                  </div>
+                  {!isValidUrl(instagramUrl) && (
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--danger, #ff3e3e)",
+                        marginLeft: 26,
+                      }}
+                    >
+                      That doesn't look like a valid URL.
+                    </span>
+                  )}
                 </div>
+
                 <span className="hint">
                   Leave blank to hide any icon from your profile.
                 </span>
@@ -626,8 +707,7 @@ export default function SettingsPage() {
                   Show on my profile
                 </label>
               </div>
-
-              <div className="editor-foot">
+              <div className="settings-sticky-save">
                 <button
                   type="button"
                   className="btn btn-accent"

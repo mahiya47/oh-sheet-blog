@@ -1258,6 +1258,17 @@ select {
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .toast-wrap {
   position: fixed;
   bottom: 24px;
@@ -1809,6 +1820,18 @@ select {
   margin: 8px 4px;
 }
 
+.settings-sticky-save {
+  position: sticky;
+  bottom: 0;
+  margin: var(--space-5) calc(-1 * var(--space-6)) calc(-1 * var(--space-6));
+  padding: var(--space-4) var(--space-6);
+  background: var(--surface);
+  border-top: var(--border-w) solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 10;
+}
+
 /* =========================================================================
    Responsive — consolidated. Two breakpoints: 1080px (drop right rail)
    and 768px (mobile: hamburger nav, bottom nav, icon-only search, etc.)
@@ -1921,5 +1944,9 @@ select {
   }
   .chat-shell--open .chat-list {
     display: none;
+  }
+  .settings-sticky-save {
+    margin: var(--space-5) calc(-1 * var(--space-5)) calc(-1 * var(--space-5));
+    padding: var(--space-4) var(--space-5);
   }
 }
