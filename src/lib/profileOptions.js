@@ -1,6 +1,6 @@
 export const GENDER_OPTIONS = [
-  "Woman",
-  "Man",
+  "Female",
+  "Male",
   "Non-binary",
   "Genderfluid",
   "Agender",
