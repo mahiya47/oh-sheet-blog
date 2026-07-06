@@ -27,7 +27,7 @@ export default function FeedPage() {
         <button
           type="button"
           onClick={() => navigate("/create")}
-          className="panel"
+          className="panel feed-composer-btn"
           style={{
             display: "flex",
             alignItems: "center",

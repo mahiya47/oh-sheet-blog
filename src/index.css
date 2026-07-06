@@ -1820,6 +1820,11 @@ select {
     display: block;
   }
 }
+@media (max-width: 768px) {
+  .feed-composer-btn {
+    display: none;
+  }
+}
 
 /* keep LeftSidebar (desktop rail) hidden on mobile if not already */
 @media (max-width: 768px) {
