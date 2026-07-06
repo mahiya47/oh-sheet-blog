@@ -221,6 +221,18 @@ export default function ProfilePage() {
                 variant={getVerifiedVariant(profile, isCreatorProfile)}
               />
             )}
+            {profile.pronouns && (
+              <span
+                style={{
+                  fontSize: "0.7rem",
+                  fontWeight: 400,
+                  color: "var(--text-muted)",
+                  marginLeft: 8,
+                }}
+              >
+                ({profile.pronouns})
+              </span>
+            )}
             {isBirthday(profile) && (
               <Cake
                 size={20}

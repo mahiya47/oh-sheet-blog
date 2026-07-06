@@ -90,6 +90,7 @@ export default function SettingsPage() {
   const [birthday, setBirthday] = useState(
     currentUser?.birthday ? currentUser.birthday.slice(0, 10) : "",
   );
+  const [pronouns, setPronouns] = useState(currentUser?.pronouns || "");
 
   // About — Facebook-style fields
   const [currentCity, setCurrentCity] = useState(
@@ -169,6 +170,7 @@ export default function SettingsPage() {
       showGender,
       showOrientation,
       birthday: birthday || undefined,
+      pronouns,
       githubUrl,
       instagramUrl,
       linkedinUrl,
@@ -360,6 +362,19 @@ export default function SettingsPage() {
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Your name"
                 />
+              </div>
+              <div className="field">
+                <label htmlFor="pronouns">Pronouns</label>
+                <input
+                  id="pronouns"
+                  type="text"
+                  value={pronouns}
+                  onChange={(e) => setPronouns(e.target.value)}
+                  placeholder="e.g. he/him, she/her, they/them"
+                />
+                <span className="hint">
+                  Shown next to your name on your profile.
+                </span>
               </div>
               <div className="field">
                 <label htmlFor="un">Username</label>

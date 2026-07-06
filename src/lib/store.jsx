@@ -509,6 +509,7 @@ export function StoreProvider({ children }) {
         instagramUrl,
         linkedinUrl,
         twitterUrl,
+        pronouns,
       });
       const updated = {
         ...currentUser,
