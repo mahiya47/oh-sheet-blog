@@ -159,6 +159,28 @@ export default function SettingsPage() {
     const gender = genderChoice === SELF ? genderCustom.trim() : genderChoice;
     const orientation = oriChoice === SELF ? oriCustom.trim() : oriChoice;
 
+    // TEMP DEBUG — remove after we find the bad field
+    console.log("SAVE PAYLOAD", {
+      displayName,
+      username,
+      bio,
+      avatarUrl,
+      coverUrl,
+      gender,
+      orientation,
+      showGender,
+      showOrientation,
+      birthday,
+      pronouns,
+      githubUrl,
+      instagramUrl,
+      linkedinUrl,
+      twitterUrl,
+      currentCity,
+      work,
+      education,
+    });
+
     const res = await updateProfile({
       name: displayName.trim() || currentUser.displayName,
       username: username.trim(),
