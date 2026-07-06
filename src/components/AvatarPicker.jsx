@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 // The avatar styles the user can pick from (DiceBear).
-const STYLES = ["identicon", "glass", "thumbs", "pixel-art", "bottts"];
+const STYLES = ["pixel-art", "bottts", "bottts-neutral"];
 
 // A few seeds so each style shows several distinct options.
 const SEEDS = ["alpha", "bravo", "charlie", "delta", "echo", "foxtrot"];
