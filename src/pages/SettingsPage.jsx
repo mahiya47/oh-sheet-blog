@@ -9,6 +9,9 @@ import {
   Instagram,
   Linkedin,
   Twitter,
+  MapPin,
+  Briefcase,
+  GraduationCap,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
@@ -18,7 +21,6 @@ import { COVERS } from "../lib/covers.js";
 import Avatar from "../components/Avatar.jsx";
 import AvatarPicker from "../components/AvatarPicker.jsx";
 
-// Downscale an uploaded image to a small JPEG data URL before storing it.
 function fileToAvatarDataUrl(file, max = 256) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -42,7 +44,6 @@ function fileToAvatarDataUrl(file, max = 256) {
   });
 }
 
-// Covers are wider — allow up to 1200px width.
 function fileToCoverDataUrl(file, maxW = 1200) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -90,6 +91,13 @@ export default function SettingsPage() {
     currentUser?.birthday ? currentUser.birthday.slice(0, 10) : "",
   );
 
+  // About — Facebook-style fields
+  const [currentCity, setCurrentCity] = useState(
+    currentUser?.currentCity || "",
+  );
+  const [work, setWork] = useState(currentUser?.work || "");
+  const [education, setEducation] = useState(currentUser?.education || "");
+
   // Social links
   const [githubUrl, setGithubUrl] = useState(currentUser?.githubUrl || "");
   const [instagramUrl, setInstagramUrl] = useState(
@@ -100,7 +108,6 @@ export default function SettingsPage() {
   );
   const [twitterUrl, setTwitterUrl] = useState(currentUser?.twitterUrl || "");
 
-  // Gender — if the stored value isn't one of the presets, treat it as self-described
   const storedGender = currentUser?.gender || "";
   const genderIsPreset = GENDER_OPTIONS.includes(storedGender);
   const [genderChoice, setGenderChoice] = useState(
@@ -111,7 +118,6 @@ export default function SettingsPage() {
   );
   const [showGender, setShowGender] = useState(!!currentUser?.showGender);
 
-  // Orientation — same pattern
   const storedOri = currentUser?.orientation || "";
   const oriIsPreset = ORIENTATION_OPTIONS.includes(storedOri);
   const [oriChoice, setOriChoice] = useState(
@@ -167,6 +173,9 @@ export default function SettingsPage() {
       instagramUrl,
       linkedinUrl,
       twitterUrl,
+      currentCity,
+      work,
+      education,
     });
     if (res.ok) {
       toast("Settings saved.", "accent");
@@ -372,6 +381,60 @@ export default function SettingsPage() {
                   placeholder="Tell the world about yourself…"
                   style={{ minHeight: 110 }}
                 />
+              </div>
+
+              <div className="field">
+                <label>About</label>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <MapPin size={18} style={{ flexShrink: 0, opacity: 0.7 }} />
+                  <input
+                    type="text"
+                    value={currentCity}
+                    onChange={(e) => setCurrentCity(e.target.value)}
+                    placeholder="Current city"
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <Briefcase
+                    size={18}
+                    style={{ flexShrink: 0, opacity: 0.7 }}
+                  />
+                  <input
+                    type="text"
+                    value={work}
+                    onChange={(e) => setWork(e.target.value)}
+                    placeholder="Where do you work?"
+                  />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <GraduationCap
+                    size={18}
+                    style={{ flexShrink: 0, opacity: 0.7 }}
+                  />
+                  <input
+                    type="text"
+                    value={education}
+                    onChange={(e) => setEducation(e.target.value)}
+                    placeholder="Where did you study?"
+                  />
+                </div>
+                <span className="hint">
+                  Shown in the About tab on your profile. Leave blank to hide.
+                </span>
               </div>
 
               <div className="field">

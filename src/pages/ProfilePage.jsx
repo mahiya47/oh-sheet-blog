@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
-  Crown,
   Cake,
   Github,
   Instagram,
@@ -10,6 +9,9 @@ import {
   Award,
   Pencil,
   Info as InfoIcon,
+  MapPin,
+  Briefcase,
+  GraduationCap,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -50,7 +52,7 @@ export default function ProfilePage() {
   const [listModal, setListModal] = useState(null);
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [showAchievements, setShowAchievements] = useState(false);
-  const [tab, setTab] = useState("sheets"); // "sheets" | "photos" | "info"
+  const [tab, setTab] = useState("sheets"); // "sheets" | "photos" | "about"
 
   useEffect(() => {
     getFeed();
@@ -114,16 +116,20 @@ export default function ProfilePage() {
     { url: profile.instagramUrl, Icon: Instagram, label: "Instagram" },
   ].filter((s) => s.url);
 
-  const hasInfo =
+  const hasAbout =
     profile.birthday ||
     profile.gender ||
     profile.orientation ||
+    profile.currentCity ||
+    profile.work ||
+    profile.education ||
     socialLinks.length > 0;
 
   const formattedBirthday = profile.birthday
     ? new Date(profile.birthday).toLocaleDateString(undefined, {
         month: "long",
         day: "numeric",
+        year: "numeric",
       })
     : null;
 
@@ -148,6 +154,13 @@ export default function ProfilePage() {
     const users = await getFollowingList(profile.id);
     setListModal({ title: "Following", users });
   };
+
+  const AboutRow = ({ icon: Icon, children }) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <Icon size={18} style={{ opacity: 0.7, flexShrink: 0 }} />
+      <span>{children}</span>
+    </div>
+  );
 
   return (
     <>
@@ -299,11 +312,11 @@ export default function ProfilePage() {
           >
             Photos ({photoPosts.length})
           </button>
-          {hasInfo && (
+          {hasAbout && (
             <button
               type="button"
-              className={`tab ${tab === "info" ? "active" : ""}`}
-              onClick={() => setTab("info")}
+              className={`tab ${tab === "about" ? "active" : ""}`}
+              onClick={() => setTab("about")}
               style={{
                 border: "none",
                 cursor: "pointer",
@@ -312,7 +325,7 @@ export default function ProfilePage() {
                 gap: 4,
               }}
             >
-              <InfoIcon size={14} /> Info
+              <InfoIcon size={14} /> About
             </button>
           )}
         </div>
@@ -373,47 +386,36 @@ export default function ProfilePage() {
           </div>
         ))}
 
-      {tab === "info" && (
+      {tab === "about" && (
         <div className="panel" style={{ padding: 20 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {profile.work && (
+              <AboutRow icon={Briefcase}>
+                Works at <b>{profile.work}</b>
+              </AboutRow>
+            )}
+            {profile.education && (
+              <AboutRow icon={GraduationCap}>
+                Studied at <b>{profile.education}</b>
+              </AboutRow>
+            )}
+            {profile.currentCity && (
+              <AboutRow icon={MapPin}>
+                Lives in <b>{profile.currentCity}</b>
+              </AboutRow>
+            )}
             {formattedBirthday && (
-              <div>
-                <div
-                  style={{
-                    fontSize: "0.72rem",
-                    textTransform: "uppercase",
-                    color: "var(--text-muted)",
-                    marginBottom: 4,
-                  }}
-                >
-                  Birthday
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <Cake size={15} /> {formattedBirthday}
-                </div>
-              </div>
+              <AboutRow icon={Cake}>Born {formattedBirthday}</AboutRow>
             )}
 
             {(profile.gender || profile.orientation) && (
-              <div>
-                <div
-                  style={{
-                    fontSize: "0.72rem",
-                    textTransform: "uppercase",
-                    color: "var(--text-muted)",
-                    marginBottom: 4,
-                  }}
-                >
-                  About
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {profile.gender && (
-                    <span className="tag">{profile.gender}</span>
-                  )}
-                  {profile.orientation && (
-                    <span className="tag">{profile.orientation}</span>
-                  )}
-                </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {profile.gender && (
+                  <span className="tag">{profile.gender}</span>
+                )}
+                {profile.orientation && (
+                  <span className="tag">{profile.orientation}</span>
+                )}
               </div>
             )}
 
