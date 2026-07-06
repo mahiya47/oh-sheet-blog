@@ -204,16 +204,30 @@ export default function PostModal({ postId, onClose }) {
         <div className="sheet-body">
           <p style={{ fontSize: "1.2rem" }}>{post.content}</p>
           {post.imageUrl && (
-            <img
-              src={post.imageUrl}
-              alt=""
+            <div
               style={{
                 width: "100%",
+                maxHeight: 640,
                 marginTop: 12,
                 borderRadius: "var(--radius)",
                 border: "2px solid var(--border)",
+                background: "rgba(0, 0, 0, 0.55)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
               }}
-            />
+            >
+              <img
+                src={post.imageUrl}
+                alt=""
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: 640,
+                  objectFit: "contain",
+                }}
+              />
+            </div>
           )}
           {post.tags?.length > 0 && (
             <div

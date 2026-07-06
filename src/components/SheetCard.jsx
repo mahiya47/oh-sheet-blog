@@ -259,11 +259,12 @@ export default function SheetCard({ post }) {
           <div
             style={{
               width: "100%",
-              aspectRatio: "16 / 10",
+              minHeight: 320,
+              maxHeight: 560,
               marginTop: 12,
               borderRadius: "var(--radius)",
               border: "2px solid var(--border)",
-              background: "rgba(128, 128, 128, 0.15)",
+              background: "rgba(0, 0, 0, 0.55)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -275,7 +276,7 @@ export default function SheetCard({ post }) {
               alt=""
               style={{
                 maxWidth: "100%",
-                maxHeight: "100%",
+                maxHeight: 560,
                 objectFit: "contain",
               }}
             />
