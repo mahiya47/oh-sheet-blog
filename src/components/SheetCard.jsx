@@ -121,11 +121,11 @@ export default function SheetCard({ post }) {
           <span className="names">
             <span className="display">
               {post.author?.displayName || "User"}
-              {post.author?.emailVerified && <VerifiedBadge />}
-              {post.author?.id === CREATOR_ID && (
-                <span className="creator-badge">
-                  <Crown size={10} /> Creator
-                </span>
+              {author?.emailVerified && (
+                <VerifiedBadge
+                  size={x}
+                  variant={getVerifiedVariant(author, author.id === CREATOR_ID)}
+                />
               )}
               {isBirthday(post.author) && (
                 <Cake

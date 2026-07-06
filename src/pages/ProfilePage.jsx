@@ -8,6 +8,8 @@ import {
   Linkedin,
   Twitter,
   Award,
+  Pencil,
+  Info as InfoIcon,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -20,6 +22,7 @@ import UserListModal from "../components/UserListModal.jsx";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
 import Lightbox from "../components/Lightbox.jsx";
 import AchievementsModal from "../components/AchievementsModal.jsx";
+import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 
 export default function ProfilePage() {
   const { userId } = useParams();
@@ -44,10 +47,10 @@ export default function ProfilePage() {
     following: 0,
     isFollowing: false,
   });
-  const [listModal, setListModal] = useState(null); // { title, users } or null
+  const [listModal, setListModal] = useState(null);
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [showAchievements, setShowAchievements] = useState(false);
-  const [tab, setTab] = useState("sheets"); // "sheets" | "photos"
+  const [tab, setTab] = useState("sheets"); // "sheets" | "photos" | "info"
 
   useEffect(() => {
     getFeed();
@@ -111,6 +114,19 @@ export default function ProfilePage() {
     { url: profile.instagramUrl, Icon: Instagram, label: "Instagram" },
   ].filter((s) => s.url);
 
+  const hasInfo =
+    profile.birthday ||
+    profile.gender ||
+    profile.orientation ||
+    socialLinks.length > 0;
+
+  const formattedBirthday = profile.birthday
+    ? new Date(profile.birthday).toLocaleDateString(undefined, {
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
   const onFollow = async () => {
     await toggleFollow(profile.id, following);
     const fresh = await getFollowInfo(profile.id);
@@ -163,14 +179,20 @@ export default function ProfilePage() {
             </button>
             <div>
               {isMe ? (
-                <Link to="/settings" className="btn">
-                  Edit profile
+                <Link
+                  to="/settings"
+                  className="btn btn-ghost"
+                  aria-label="Edit profile"
+                  style={{ width: 38, height: 38, padding: 0 }}
+                >
+                  <Pencil size={15} />
                 </Link>
               ) : (
                 <button
                   type="button"
                   className={`btn ${following ? "btn-danger" : "btn-accent"}`}
                   onClick={onFollow}
+                  style={{ fontSize: "0.75rem", padding: "7px 14px" }}
                 >
                   {following ? "Unfollow" : "Follow"}
                 </button>
@@ -180,11 +202,11 @@ export default function ProfilePage() {
 
           <h1 className="profile-name">
             {profile.displayName}
-            {profile?.emailVerified && <VerifiedBadge size={18} />}
-            {isCreatorProfile && (
-              <span className="creator-badge">
-                <Crown size={12} /> Creator
-              </span>
+            {profile?.emailVerified && (
+              <VerifiedBadge
+                size={18}
+                variant={getVerifiedVariant(profile, isCreatorProfile)}
+              />
             )}
             {isBirthday(profile) && (
               <Cake
@@ -198,94 +220,58 @@ export default function ProfilePage() {
             {profile.bio?.trim() ? profile.bio : "No bio yet."}
           </p>
 
-          {socialLinks.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                marginBottom: "var(--space-4)",
-              }}
-            >
-              {socialLinks.map(({ url, Icon, label }) => (
-                <a
-                  key={label}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  style={{
-                    width: 34,
-                    height: 34,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: "50%",
-                    border: "2px solid var(--border, #333)",
-                    color: "inherit",
-                  }}
-                >
-                  <Icon size={16} />
-                </a>
-              ))}
-            </div>
-          )}
-
-          {(profile.gender ||
-            profile.orientation ||
-            earnedBadges.length > 0) && (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 8,
-                marginBottom: "var(--space-4)",
-              }}
-            >
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {profile.gender && (
-                  <span className="tag">{profile.gender}</span>
-                )}
-                {profile.orientation && (
-                  <span className="tag">{profile.orientation}</span>
-                )}
-              </div>
-
-              {earnedBadges.length > 0 && (
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  onClick={() => setShowAchievements(true)}
-                  style={{ display: "flex", alignItems: "center", gap: 6 }}
-                >
-                  <Award size={14} /> Achievements
-                </button>
-              )}
-            </div>
-          )}
-
           <div
-            className="profile-stats"
-            style={{ border: "none", paddingTop: 0 }}
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              marginBottom: "var(--space-4)",
+            }}
           >
+            {earnedBadges.length > 0 && (
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setShowAchievements(true)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  fontSize: "0.7rem",
+                  padding: "6px 10px",
+                }}
+              >
+                <Award size={12} /> Achievements
+              </button>
+            )}
+
             <button
               type="button"
               onClick={openFollowing}
               className="btn btn-ghost"
-              style={{ display: "flex", alignItems: "center", gap: 6 }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                fontSize: "0.7rem",
+                padding: "6px 10px",
+              }}
             >
-              <b>{counts.following}</b>
-              <span>Following</span>
+              <b>{counts.following}</b> Following
             </button>
             <button
               type="button"
               onClick={openFollowers}
               className="btn btn-ghost"
-              style={{ display: "flex", alignItems: "center", gap: 6 }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                fontSize: "0.7rem",
+                padding: "6px 10px",
+              }}
             >
-              <b>{counts.followers}</b>
-              <span>Followers</span>
+              <b>{counts.followers}</b> Followers
             </button>
           </div>
         </div>
@@ -307,10 +293,26 @@ export default function ProfilePage() {
           >
             Photos ({photoPosts.length})
           </button>
+          {hasInfo && (
+            <button
+              type="button"
+              className={`tab ${tab === "info" ? "active" : ""}`}
+              onClick={() => setTab("info")}
+              style={{
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <InfoIcon size={14} /> Info
+            </button>
+          )}
         </div>
       </section>
 
-      {tab === "sheets" ? (
+      {tab === "sheets" && (
         <Feed
           posts={userPosts}
           emptyTitle={
@@ -321,44 +323,132 @@ export default function ProfilePage() {
           emptyTo={isMe ? "/create" : undefined}
           emptyToLabel="Post your first sheet"
         />
-      ) : photoPosts.length === 0 ? (
-        <div className="empty">
-          <p>No photos yet.</p>
-        </div>
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-            gap: 8,
-          }}
-        >
-          {photoPosts.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => setLightboxSrc(p.imageUrl)}
-              style={{
-                background: "none",
-                border: "2px solid var(--border, #333)",
-                borderRadius: "var(--radius)",
-                padding: 0,
-                cursor: "zoom-in",
-                aspectRatio: "1 / 1",
-                overflow: "hidden",
-              }}
-            >
-              <img
-                src={p.imageUrl}
-                alt=""
+      )}
+
+      {tab === "photos" &&
+        (photoPosts.length === 0 ? (
+          <div className="empty">
+            <p>No photos yet.</p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+              gap: 8,
+            }}
+          >
+            {photoPosts.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setLightboxSrc(p.imageUrl)}
                 style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
+                  background: "none",
+                  border: "2px solid var(--border, #333)",
+                  borderRadius: "var(--radius)",
+                  padding: 0,
+                  cursor: "zoom-in",
+                  aspectRatio: "1 / 1",
+                  overflow: "hidden",
                 }}
-              />
-            </button>
-          ))}
+              >
+                <img
+                  src={p.imageUrl}
+                  alt=""
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              </button>
+            ))}
+          </div>
+        ))}
+
+      {tab === "info" && (
+        <div className="panel" style={{ padding: 20 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {formattedBirthday && (
+              <div>
+                <div
+                  style={{
+                    fontSize: "0.72rem",
+                    textTransform: "uppercase",
+                    color: "var(--text-muted)",
+                    marginBottom: 4,
+                  }}
+                >
+                  Birthday
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <Cake size={15} /> {formattedBirthday}
+                </div>
+              </div>
+            )}
+
+            {(profile.gender || profile.orientation) && (
+              <div>
+                <div
+                  style={{
+                    fontSize: "0.72rem",
+                    textTransform: "uppercase",
+                    color: "var(--text-muted)",
+                    marginBottom: 4,
+                  }}
+                >
+                  About
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {profile.gender && (
+                    <span className="tag">{profile.gender}</span>
+                  )}
+                  {profile.orientation && (
+                    <span className="tag">{profile.orientation}</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {socialLinks.length > 0 && (
+              <div>
+                <div
+                  style={{
+                    fontSize: "0.72rem",
+                    textTransform: "uppercase",
+                    color: "var(--text-muted)",
+                    marginBottom: 8,
+                  }}
+                >
+                  Links
+                </div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  {socialLinks.map(({ url, Icon, label }) => (
+                    <a
+                      key={label}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      style={{
+                        width: 34,
+                        height: 34,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: "50%",
+                        border: "2px solid var(--border, #333)",
+                        color: "inherit",
+                      }}
+                    >
+                      <Icon size={16} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

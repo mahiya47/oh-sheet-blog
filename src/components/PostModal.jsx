@@ -175,11 +175,14 @@ export default function PostModal({ postId, onClose }) {
             <span className="names">
               <span className="display">
                 {post.author?.displayName}
-                {post.author?.emailVerified && <VerifiedBadge size={14} />}
-                {post.author?.id === CREATOR_ID && (
-                  <span className="creator-badge">
-                    <Crown size={10} /> Creator
-                  </span>
+                {author?.emailVerified && (
+                  <VerifiedBadge
+                    size={x}
+                    variant={getVerifiedVariant(
+                      author,
+                      author.id === CREATOR_ID,
+                    )}
+                  />
                 )}
               </span>
               <span className="handle">
