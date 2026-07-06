@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Trophy, Crown } from "lucide-react";
+import { Trophy, Crown, Info } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { CREATOR_ID } from "../lib/creator.js";
 import Avatar from "../components/Avatar.jsx";
+
+const POINTS_TABLE = [
+  { action: "Post a sheet", points: "+10" },
+  { action: "Someone likes your sheet", points: "+2" },
+  { action: "Someone comments on your sheet", points: "+3" },
+  { action: "You comment on a sheet", points: "+1" },
+  { action: "Daily login", points: "+1" },
+];
 
 export default function LeaderboardPage() {
   const { getLeaderboard } = useStore();
@@ -31,7 +39,8 @@ export default function LeaderboardPage() {
         <Trophy size={22} /> Leaderboard
       </h1>
       <p style={{ color: "var(--text-muted)", marginTop: -8 }}>
-        Top members by activity. Post, comment, like, and log in daily to climb.
+        Top 20 members by activity. Post, comment, like, and log in daily to
+        climb.
       </p>
 
       {loading ? (
@@ -98,6 +107,38 @@ export default function LeaderboardPage() {
           ))}
         </div>
       )}
+
+      <div className="panel" style={{ padding: 20 }}>
+        <h2
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: "1rem",
+            textTransform: "uppercase",
+            marginBottom: 14,
+          }}
+        >
+          <Info size={16} /> How points work
+        </h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {POINTS_TABLE.map((row) => (
+            <div
+              key={row.action}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "0.9rem",
+              }}
+            >
+              <span style={{ color: "var(--text-muted)" }}>{row.action}</span>
+              <span style={{ fontWeight: 700, color: "var(--accent)" }}>
+                {row.points}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

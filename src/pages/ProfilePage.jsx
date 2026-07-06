@@ -7,6 +7,7 @@ import {
   Instagram,
   Linkedin,
   Twitter,
+  Award,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -18,7 +19,7 @@ import Feed from "../components/Feed.jsx";
 import UserListModal from "../components/UserListModal.jsx";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
 import Lightbox from "../components/Lightbox.jsx";
-import Badge from "../components/Badge.jsx";
+import AchievementsModal from "../components/AchievementsModal.jsx";
 
 export default function ProfilePage() {
   const { userId } = useParams();
@@ -45,6 +46,8 @@ export default function ProfilePage() {
   });
   const [listModal, setListModal] = useState(null); // { title, users } or null
   const [lightboxSrc, setLightboxSrc] = useState(null);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [tab, setTab] = useState("sheets"); // "sheets" | "photos"
 
   useEffect(() => {
     getFeed();
@@ -88,6 +91,7 @@ export default function ProfilePage() {
   }
 
   const userPosts = getUserPosts(profile.id);
+  const photoPosts = userPosts.filter((p) => p.imageUrl);
   const isMe = currentUser?.id === profile.id;
   const following = counts.isFollowing;
   const isCreatorProfile = profile.id === CREATOR_ID;
@@ -98,6 +102,7 @@ export default function ProfilePage() {
 
   const ageBadge = getAccountAgeBadge(profile.createdAt);
   const scoreBadge = getScoreBadge(profile.score);
+  const earnedBadges = [ageBadge, scoreBadge].filter(Boolean);
 
   const socialLinks = [
     { url: profile.githubUrl, Icon: Github, label: "GitHub" },
@@ -225,50 +230,50 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {(ageBadge || scoreBadge) && (
+          {(profile.gender ||
+            profile.orientation ||
+            earnedBadges.length > 0) && (
             <div
               style={{
                 display: "flex",
                 flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
                 gap: 8,
                 marginBottom: "var(--space-4)",
               }}
             >
-              <Badge badge={ageBadge} />
-              <Badge badge={scoreBadge} />
-            </div>
-          )}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {profile.gender && (
+                  <span className="tag">{profile.gender}</span>
+                )}
+                {profile.orientation && (
+                  <span className="tag">{profile.orientation}</span>
+                )}
+              </div>
 
-          {(profile.gender || profile.orientation) && (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 8,
-                marginBottom: "var(--space-4)",
-              }}
-            >
-              {profile.gender && <span className="tag">{profile.gender}</span>}
-              {profile.orientation && (
-                <span className="tag">{profile.orientation}</span>
+              {earnedBadges.length > 0 && (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setShowAchievements(true)}
+                  style={{ display: "flex", alignItems: "center", gap: 6 }}
+                >
+                  <Award size={14} /> Achievements
+                </button>
               )}
             </div>
           )}
 
-          <div className="profile-stats">
+          <div
+            className="profile-stats"
+            style={{ border: "none", paddingTop: 0 }}
+          >
             <button
               type="button"
               onClick={openFollowing}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "inherit",
-                padding: 0,
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
+              className="btn btn-ghost"
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
             >
               <b>{counts.following}</b>
               <span>Following</span>
@@ -276,16 +281,8 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={openFollowers}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "inherit",
-                padding: 0,
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
+              className="btn btn-ghost"
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
             >
               <b>{counts.followers}</b>
               <span>Followers</span>
@@ -294,20 +291,76 @@ export default function ProfilePage() {
         </div>
 
         <div className="profile-tabs">
-          <div className="tab active">Sheets</div>
+          <button
+            type="button"
+            className={`tab ${tab === "sheets" ? "active" : ""}`}
+            onClick={() => setTab("sheets")}
+            style={{ border: "none", cursor: "pointer" }}
+          >
+            Sheets
+          </button>
+          <button
+            type="button"
+            className={`tab ${tab === "photos" ? "active" : ""}`}
+            onClick={() => setTab("photos")}
+            style={{ border: "none", cursor: "pointer" }}
+          >
+            Photos ({photoPosts.length})
+          </button>
         </div>
       </section>
 
-      <Feed
-        posts={userPosts}
-        emptyTitle={
-          isMe
-            ? "You haven't posted a sheet yet."
-            : "@" + profile.username + " hasn't posted yet."
-        }
-        emptyTo={isMe ? "/create" : undefined}
-        emptyToLabel="Post your first sheet"
-      />
+      {tab === "sheets" ? (
+        <Feed
+          posts={userPosts}
+          emptyTitle={
+            isMe
+              ? "You haven't posted a sheet yet."
+              : "@" + profile.username + " hasn't posted yet."
+          }
+          emptyTo={isMe ? "/create" : undefined}
+          emptyToLabel="Post your first sheet"
+        />
+      ) : photoPosts.length === 0 ? (
+        <div className="empty">
+          <p>No photos yet.</p>
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+            gap: 8,
+          }}
+        >
+          {photoPosts.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setLightboxSrc(p.imageUrl)}
+              style={{
+                background: "none",
+                border: "2px solid var(--border, #333)",
+                borderRadius: "var(--radius)",
+                padding: 0,
+                cursor: "zoom-in",
+                aspectRatio: "1 / 1",
+                overflow: "hidden",
+              }}
+            >
+              <img
+                src={p.imageUrl}
+                alt=""
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            </button>
+          ))}
+        </div>
+      )}
 
       {listModal && (
         <UserListModal
@@ -318,6 +371,13 @@ export default function ProfilePage() {
       )}
 
       <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+
+      {showAchievements && (
+        <AchievementsModal
+          badges={earnedBadges}
+          onClose={() => setShowAchievements(false)}
+        />
+      )}
     </>
   );
 }
