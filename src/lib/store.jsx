@@ -823,6 +823,11 @@ export function StoreProvider({ children }) {
         getDmThread,
         sendDm,
         getDmUnread,
+        blockUser,
+        unblockUser,
+        getBlockedUsers,
+        getBlockStatus,
+        deleteAccount,
       }}
     >
       {children}
