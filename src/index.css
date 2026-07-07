@@ -968,6 +968,11 @@ select {
   font-size: 1.8rem;
   text-transform: uppercase;
 }
+@media (max-width: 480px) {
+  .profile-name {
+    font-size: 1.3rem;
+  }
+}
 .profile-handle {
   color: var(--text-muted);
   margin-bottom: var(--space-3);

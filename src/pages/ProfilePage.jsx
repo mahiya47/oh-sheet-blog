@@ -278,24 +278,55 @@ export default function ProfilePage() {
           </div>
 
           {/* Achievements — its own row, icon-only, only if earned */}
-          {earnedBadges.length > 0 && (
-            <div style={{ marginBottom: "var(--space-4)" }}>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setShowAchievements(true)}
-                aria-label="View achievements"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 38,
-                  height: 38,
-                  padding: 0,
-                }}
-              >
-                <Award size={16} />
-              </button>
+          {(earnedBadges.length > 0 || socialLinks.length > 0) && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: "var(--space-4)",
+              }}
+            >
+              {earnedBadges.length > 0 && (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setShowAchievements(true)}
+                  aria-label="View achievements"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 38,
+                    height: 38,
+                    padding: 0,
+                  }}
+                >
+                  <Award size={16} />
+                </button>
+              )}
+              {socialLinks.map(({ url, Icon, label }) => (
+                <a
+                  key={label}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="social-icon-btn"
+                  style={{
+                    width: 38,
+                    height: 38,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "50%",
+                    border: "2px solid var(--border, #333)",
+                    color: "inherit",
+                  }}
+                >
+                  <Icon size={16} />
+                </a>
+              ))}
             </div>
           )}
         </div>
@@ -421,45 +452,6 @@ export default function ProfilePage() {
                 {profile.orientation && (
                   <span className="tag">{profile.orientation}</span>
                 )}
-              </div>
-            )}
-
-            {socialLinks.length > 0 && (
-              <div>
-                <div
-                  style={{
-                    fontSize: "0.72rem",
-                    textTransform: "uppercase",
-                    color: "var(--text-muted)",
-                    marginBottom: 8,
-                  }}
-                >
-                  Links
-                </div>
-                <div style={{ display: "flex", gap: 10 }}>
-                  {socialLinks.map(({ url, Icon, label }) => (
-                    <a
-                      key={label}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={label}
-                      className="social-icon-btn"
-                      style={{
-                        width: 34,
-                        height: 34,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%",
-                        border: "2px solid var(--border, #333)",
-                        color: "inherit",
-                      }}
-                    >
-                      <Icon size={16} />
-                    </a>
-                  ))}
-                </div>
               </div>
             )}
           </div>
