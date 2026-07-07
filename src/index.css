@@ -420,7 +420,7 @@ select {
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr) 320px;
   gap: var(--space-5);
-  padding: var(--space-5) var(--space-4) 80px;
+  padding: var(--space-5) var(--space-4) 120px;
   align-items: start;
 }
 
