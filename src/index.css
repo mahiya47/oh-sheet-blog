@@ -455,10 +455,13 @@ select {
   min-width: 0;
 }
 
+.rail-right-wrapper {
+  align-self: stretch;
+}
+
 .rail-right {
   position: sticky;
   top: 72px;
-  align-self: stretch;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);

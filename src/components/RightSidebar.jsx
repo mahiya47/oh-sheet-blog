@@ -111,74 +111,82 @@ export default function RightSidebar() {
   };
 
   return (
-    <aside className="rail-right" aria-label="Activity">
-      <section className="panel">
-        <h2 className="panel-head">Following activity</h2>
-        {following.length > 0 ? (
-          following.map((p) => <MiniRow key={p.id} post={p} />)
-        ) : (
-          <p className="empty-note">No recent posts from people you follow.</p>
-        )}
-        <Link to="/following" className="more-link">
-          View following feed
-        </Link>
-      </section>
-
-      <section className="panel">
-        <h2 className="panel-head">Trending sheets</h2>
-        {trending.length > 0 ? (
-          trending.map((p) => <MiniRow key={p.id} post={p} />)
-        ) : (
-          <p className="empty-note">Nothing trending yet.</p>
-        )}
-        <Link to="/trending" className="more-link">
-          View all trending
-        </Link>
-      </section>
-
-      <section className="panel">
-        <h2 className="panel-head">Trending tags</h2>
-        {trendingTags.length > 0 ? (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 8,
-              padding: "var(--space-4)",
-            }}
-          >
-            {trendingTags.map((t) => (
-              <Link key={t.name} to={`/tag/${t.name}`} className="tag">
-                #{t.name}
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="empty-note">No tags yet.</p>
-        )}
-      </section>
-
-      {suggestions.length > 0 && (
+    <aside className="rail-right-wrapper" aria-label="Activity">
+      <div className="rail-right">
         <section className="panel">
-          <h2 className="panel-head">People you may know</h2>
-          {suggestions.map((u) => (
-            <SuggestionRow key={u.id} user={u} onFollowed={dismissSuggestion} />
-          ))}
+          <h2 className="panel-head">Following activity</h2>
+          {following.length > 0 ? (
+            following.map((p) => <MiniRow key={p.id} post={p} />)
+          ) : (
+            <p className="empty-note">
+              No recent posts from people you follow.
+            </p>
+          )}
+          <Link to="/following" className="more-link">
+            View following feed
+          </Link>
         </section>
-      )}
 
-      <section className="panel mini-footer">
-        <div className="links">
-          <Link to="/about">About</Link>
-          <Link to="/rules">Rules</Link>
-          <Link to="/privacy">Privacy</Link>
-          <Link to="/agreement">Agreement</Link>
-        </div>
-        <div className="copy">
-          <Sheet size={14} />
-          <span>© 2026 Oh Sheet! Inc.</span>
-        </div>
-      </section>
+        <section className="panel">
+          <h2 className="panel-head">Trending sheets</h2>
+          {trending.length > 0 ? (
+            trending.map((p) => <MiniRow key={p.id} post={p} />)
+          ) : (
+            <p className="empty-note">Nothing trending yet.</p>
+          )}
+          <Link to="/trending" className="more-link">
+            View all trending
+          </Link>
+        </section>
+
+        <section className="panel">
+          <h2 className="panel-head">Trending tags</h2>
+          {trendingTags.length > 0 ? (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+                padding: "var(--space-4)",
+              }}
+            >
+              {trendingTags.map((t) => (
+                <Link key={t.name} to={`/tag/${t.name}`} className="tag">
+                  #{t.name}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="empty-note">No tags yet.</p>
+          )}
+        </section>
+
+        {suggestions.length > 0 && (
+          <section className="panel">
+            <h2 className="panel-head">People you may know</h2>
+            {suggestions.map((u) => (
+              <SuggestionRow
+                key={u.id}
+                user={u}
+                onFollowed={dismissSuggestion}
+              />
+            ))}
+          </section>
+        )}
+
+        <section className="panel mini-footer">
+          <div className="links">
+            <Link to="/about">About</Link>
+            <Link to="/rules">Rules</Link>
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/agreement">Agreement</Link>
+          </div>
+          <div className="copy">
+            <Sheet size={14} />
+            <span>© 2026 Oh Sheet! Inc.</span>
+          </div>
+        </section>
+      </div>
     </aside>
   );
 }
