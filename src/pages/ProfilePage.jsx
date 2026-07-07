@@ -12,6 +12,8 @@ import {
   MapPin,
   Briefcase,
   GraduationCap,
+  ShieldOff,
+  MoreHorizontal,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -43,6 +45,9 @@ export default function ProfilePage() {
     toggleFollow,
     getFollowers,
     getFollowingList,
+    blockUser,
+    unblockUser,
+    getBlockStatus,
   } = useStore();
   const toast = useToast();
 
@@ -58,6 +63,11 @@ export default function ProfilePage() {
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [showAchievements, setShowAchievements] = useState(false);
   const [tab, setTab] = useState("sheets"); // "sheets" | "photos" | "about"
+  const [blockStatus, setBlockStatus] = useState({
+    iBlockedThem: false,
+    theyBlockedMe: false,
+  });
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     getFeed();
@@ -66,13 +76,18 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!targetId) return;
     setLoading(true);
-    Promise.all([getProfile(targetId), getFollowInfo(targetId)]).then(
-      ([prof, info]) => {
-        setProfile(prof);
-        setCounts(info);
-        setLoading(false);
-      },
-    );
+    Promise.all([
+      getProfile(targetId),
+      getFollowInfo(targetId),
+      currentUser?.id !== targetId
+        ? getBlockStatus(targetId)
+        : Promise.resolve({ iBlockedThem: false, theyBlockedMe: false }),
+    ]).then(([prof, info, block]) => {
+      setProfile(prof);
+      setCounts(info);
+      setBlockStatus(block);
+      setLoading(false);
+    });
   }, [targetId]);
 
   if (loading) {
@@ -140,6 +155,25 @@ export default function ProfilePage() {
     );
   };
 
+  const onToggleBlock = async () => {
+    setMenuOpen(false);
+    if (blockStatus.iBlockedThem) {
+      const ok = await unblockUser(profile.id);
+      if (ok) {
+        setBlockStatus((s) => ({ ...s, iBlockedThem: false }));
+        toast(`Unblocked @${profile.username}.`, "accent");
+      }
+    } else {
+      const ok = await blockUser(profile.id);
+      if (ok) {
+        setBlockStatus((s) => ({ ...s, iBlockedThem: true }));
+        const fresh = await getFollowInfo(profile.id);
+        setCounts(fresh);
+        toast(`Blocked @${profile.username}.`, "danger");
+      }
+    }
+  };
+
   const openFollowers = async () => {
     const users = await getFollowers(profile.id);
     setListModal({ title: "Followers", users });
@@ -156,6 +190,18 @@ export default function ProfilePage() {
       <span>{children}</span>
     </div>
   );
+
+  // If they've blocked me, show a minimal "unavailable" state instead of their content
+  if (!isMe && blockStatus.theyBlockedMe) {
+    return (
+      <div className="empty">
+        <p>This profile isn't available.</p>
+        <p style={{ marginTop: 12 }}>
+          <Link to="/feed">Back to the feed</Link>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -187,7 +233,7 @@ export default function ProfilePage() {
             >
               <Avatar user={profile} size={104} />
             </button>
-            <div>
+            <div style={{ display: "flex", gap: 8 }}>
               {isMe ? (
                 <Link
                   to="/settings"
@@ -198,14 +244,48 @@ export default function ProfilePage() {
                   <Pencil size={15} />
                 </Link>
               ) : (
-                <button
-                  type="button"
-                  className={`btn ${following ? "btn-danger" : "btn-accent"}`}
-                  onClick={onFollow}
-                  style={{ fontSize: "0.75rem", padding: "7px 14px" }}
-                >
-                  {following ? "Unfollow" : "Follow"}
-                </button>
+                <>
+                  {!blockStatus.iBlockedThem && (
+                    <button
+                      type="button"
+                      className={`btn ${following ? "btn-danger" : "btn-accent"}`}
+                      onClick={onFollow}
+                      style={{ fontSize: "0.75rem", padding: "7px 14px" }}
+                    >
+                      {following ? "Unfollow" : "Follow"}
+                    </button>
+                  )}
+                  <div style={{ position: "relative" }}>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => setMenuOpen((o) => !o)}
+                      aria-label="More options"
+                      style={{ width: 38, height: 38, padding: 0 }}
+                    >
+                      <MoreHorizontal size={15} />
+                    </button>
+                    {menuOpen && (
+                      <div
+                        className="more-menu"
+                        role="menu"
+                        style={{ right: 0, minWidth: 160 }}
+                      >
+                        <button
+                          type="button"
+                          className="danger"
+                          role="menuitem"
+                          onClick={onToggleBlock}
+                        >
+                          <ShieldOff size={15} />
+                          {blockStatus.iBlockedThem
+                            ? "Unblock"
+                            : `Block @${profile.username}`}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           </div>

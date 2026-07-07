@@ -3,6 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   User,
+  Info,
+  Link2,
+  ShieldAlert,
   Cog,
   Palette,
   Github,
@@ -80,8 +83,15 @@ function isValidUrl(value) {
 }
 
 export default function SettingsPage() {
-  const { currentUser, updateProfile, resetDemo, resendVerification } =
-    useStore();
+  const {
+    currentUser,
+    updateProfile,
+    resendVerification,
+    getBlockedUsers,
+    unblockUser,
+    deleteAccount,
+    logout,
+  } = useStore();
   const { theme, toggleTheme } = useTheme();
   const toast = useToast();
   const navigate = useNavigate();
@@ -91,6 +101,7 @@ export default function SettingsPage() {
   const [tab, setTab] = useState("profile");
   const [dirty, setDirty] = useState(false);
   const [sendingVerify, setSendingVerify] = useState(false);
+
   const [displayName, setDisplayName] = useState(
     currentUser?.displayName || "",
   );
@@ -103,14 +114,12 @@ export default function SettingsPage() {
   );
   const [pronouns, setPronouns] = useState(currentUser?.pronouns || "");
 
-  // About — Facebook-style fields
   const [currentCity, setCurrentCity] = useState(
     currentUser?.currentCity || "",
   );
   const [work, setWork] = useState(currentUser?.work || "");
   const [education, setEducation] = useState(currentUser?.education || "");
 
-  // Social links
   const [githubUrl, setGithubUrl] = useState(currentUser?.githubUrl || "");
   const [instagramUrl, setInstagramUrl] = useState(
     currentUser?.instagramUrl || "",
@@ -141,6 +150,48 @@ export default function SettingsPage() {
   const [showOrientation, setShowOrientation] = useState(
     !!currentUser?.showOrientation,
   );
+
+  // ---- Privacy & Safety ----
+  const [blockedUsers, setBlockedUsers] = useState([]);
+  const [loadingBlocked, setLoadingBlocked] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (tab !== "privacy") return;
+    setLoadingBlocked(true);
+    getBlockedUsers().then((list) => {
+      setBlockedUsers(list);
+      setLoadingBlocked(false);
+    });
+  }, [tab]);
+
+  const onUnblock = async (userId, name) => {
+    const ok = await unblockUser(userId);
+    if (ok) {
+      setBlockedUsers((prev) => prev.filter((u) => u.id !== userId));
+      toast(`Unblocked ${name}.`, "accent");
+    } else {
+      toast("Could not unblock. Try again.", "danger");
+    }
+  };
+
+  const onDeleteAccount = async () => {
+    if (deleteConfirmText !== "DELETE") return;
+    setDeleting(true);
+    const res = await deleteAccount();
+    setDeleting(false);
+    if (res.ok) {
+      toast(
+        "Account deleted. Log back in within 7 days to undo this.",
+        "danger",
+      );
+      navigate("/login");
+    } else {
+      toast(res.error || "Could not delete account.", "danger");
+    }
+  };
+
   useEffect(() => {
     setDirty(true);
   }, [
@@ -165,6 +216,7 @@ export default function SettingsPage() {
     oriCustom,
     showOrientation,
   ]);
+
   useEffect(() => {
     const handler = (e) => {
       if (!dirty) return;
@@ -250,20 +302,26 @@ export default function SettingsPage() {
     setSendingVerify(false);
   };
 
-  const onReset = () => {
-    resetDemo();
-    toast("Demo data reset.", "default");
-    navigate("/feed");
-  };
-
   const isImageCover =
     coverUrl?.startsWith("data:") || coverUrl?.startsWith("http");
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
+    { id: "about", label: "About", icon: Info },
+    { id: "social", label: "Social Links", icon: Link2 },
+    { id: "privacy", label: "Privacy & Safety", icon: ShieldAlert },
     { id: "account", label: "Account", icon: Cog },
     { id: "appearance", label: "Appearance", icon: Palette },
   ];
+
+  const showStickySave = ["profile", "about", "social"].includes(tab);
+
+  const goBack = () => {
+    if (dirty && !window.confirm("You have unsaved changes. Leave anyway?")) {
+      return;
+    }
+    navigate("/feed");
+  };
 
   return (
     <div>
@@ -274,19 +332,7 @@ export default function SettingsPage() {
           </Link>
         </div>
         <div className="nav-right">
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={() => {
-              if (
-                dirty &&
-                !window.confirm("You have unsaved changes. Leave anyway?")
-              ) {
-                return;
-              }
-              navigate("/feed");
-            }}
-          >
+          <button type="button" className="btn btn-ghost" onClick={goBack}>
             <ArrowLeft size={16} /> Back to feed
           </button>
         </div>
@@ -310,6 +356,7 @@ export default function SettingsPage() {
         </aside>
 
         <main className="settings-main">
+          {/* ============ PROFILE TAB ============ */}
           {tab === "profile" && (
             <>
               <h3>Public profile</h3>
@@ -477,9 +524,16 @@ export default function SettingsPage() {
                   {bio.length}/160
                 </span>
               </div>
+            </>
+          )}
+
+          {/* ============ ABOUT TAB ============ */}
+          {tab === "about" && (
+            <>
+              <h3>About</h3>
 
               <div className="field">
-                <label>About</label>
+                <label>Life details</label>
                 <div
                   style={{
                     display: "flex",
@@ -533,8 +587,99 @@ export default function SettingsPage() {
               </div>
 
               <div className="field">
-                <label>Social links</label>
+                <label htmlFor="gender">Gender</label>
+                <select
+                  id="gender"
+                  value={genderChoice}
+                  onChange={(e) => setGenderChoice(e.target.value)}
+                >
+                  <option value="">Select…</option>
+                  {GENDER_OPTIONS.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </select>
+                {genderChoice === SELF && (
+                  <input
+                    type="text"
+                    value={genderCustom}
+                    onChange={(e) => setGenderCustom(e.target.value)}
+                    placeholder="Describe your gender"
+                    style={{ marginTop: 8 }}
+                  />
+                )}
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginTop: 8,
+                    fontSize: "0.85rem",
+                    textTransform: "none",
+                    fontWeight: 400,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={showGender}
+                    onChange={(e) => setShowGender(e.target.checked)}
+                  />
+                  Show on my profile
+                </label>
+              </div>
 
+              <div className="field">
+                <label htmlFor="orientation">Orientation</label>
+                <select
+                  id="orientation"
+                  value={oriChoice}
+                  onChange={(e) => setOriChoice(e.target.value)}
+                >
+                  <option value="">Select…</option>
+                  {ORIENTATION_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
+                </select>
+                {oriChoice === SELF && (
+                  <input
+                    type="text"
+                    value={oriCustom}
+                    onChange={(e) => setOriCustom(e.target.value)}
+                    placeholder="Describe your orientation"
+                    style={{ marginTop: 8 }}
+                  />
+                )}
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginTop: 8,
+                    fontSize: "0.85rem",
+                    textTransform: "none",
+                    fontWeight: 400,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={showOrientation}
+                    onChange={(e) => setShowOrientation(e.target.checked)}
+                  />
+                  Show on my profile
+                </label>
+              </div>
+            </>
+          )}
+
+          {/* ============ SOCIAL LINKS TAB ============ */}
+          {tab === "social" && (
+            <>
+              <h3>Social links</h3>
+
+              <div className="field">
                 <div style={{ marginBottom: 8 }}>
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
@@ -668,104 +813,95 @@ export default function SettingsPage() {
                   Leave blank to hide any icon from your profile.
                 </span>
               </div>
-
-              <div className="field">
-                <label htmlFor="gender">Gender</label>
-                <select
-                  id="gender"
-                  value={genderChoice}
-                  onChange={(e) => setGenderChoice(e.target.value)}
-                >
-                  <option value="">Select…</option>
-                  {GENDER_OPTIONS.map((g) => (
-                    <option key={g} value={g}>
-                      {g}
-                    </option>
-                  ))}
-                </select>
-                {genderChoice === SELF && (
-                  <input
-                    type="text"
-                    value={genderCustom}
-                    onChange={(e) => setGenderCustom(e.target.value)}
-                    placeholder="Describe your gender"
-                    style={{ marginTop: 8 }}
-                  />
-                )}
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginTop: 8,
-                    fontSize: "0.85rem",
-                    textTransform: "none",
-                    fontWeight: 400,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={showGender}
-                    onChange={(e) => setShowGender(e.target.checked)}
-                  />
-                  Show on my profile
-                </label>
-              </div>
-
-              <div className="field">
-                <label htmlFor="orientation">Orientation</label>
-                <select
-                  id="orientation"
-                  value={oriChoice}
-                  onChange={(e) => setOriChoice(e.target.value)}
-                >
-                  <option value="">Select…</option>
-                  {ORIENTATION_OPTIONS.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
-                </select>
-                {oriChoice === SELF && (
-                  <input
-                    type="text"
-                    value={oriCustom}
-                    onChange={(e) => setOriCustom(e.target.value)}
-                    placeholder="Describe your orientation"
-                    style={{ marginTop: 8 }}
-                  />
-                )}
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginTop: 8,
-                    fontSize: "0.85rem",
-                    textTransform: "none",
-                    fontWeight: 400,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={showOrientation}
-                    onChange={(e) => setShowOrientation(e.target.checked)}
-                  />
-                  Show on my profile
-                </label>
-              </div>
-              <div className="settings-sticky-save">
-                <button
-                  type="button"
-                  className="btn btn-accent"
-                  onClick={onSave}
-                >
-                  Save changes
-                </button>
-              </div>
             </>
           )}
 
+          {/* sticky save — only for tabs with editable fields */}
+          {showStickySave && (
+            <div className="settings-sticky-save">
+              <button type="button" className="btn btn-accent" onClick={onSave}>
+                Save changes
+              </button>
+            </div>
+          )}
+
+          {/* ============ PRIVACY & SAFETY TAB ============ */}
+          {tab === "privacy" && (
+            <>
+              <h3>Blocked users</h3>
+              {loadingBlocked ? (
+                <p className="hint">Loading…</p>
+              ) : blockedUsers.length === 0 ? (
+                <p className="hint">You haven't blocked anyone.</p>
+              ) : (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                >
+                  {blockedUsers.map((u) => (
+                    <div
+                      key={u.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        border: "2px solid var(--border-soft)",
+                        borderRadius: "var(--radius)",
+                        padding: "10px 14px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        <Avatar user={u} size={36} />
+                        <span>{u.displayName}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => onUnblock(u.id, u.displayName)}
+                      >
+                        Unblock
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <h3 style={{ marginTop: 32, color: "var(--danger, #ff3e3e)" }}>
+                Delete account
+              </h3>
+              <p className="hint" style={{ marginBottom: 12 }}>
+                Deleting your account hides it immediately. You have 7 days to
+                change your mind — just log back in during that window to undo
+                it. After 7 days, your account and all your data are permanently
+                deleted and can't be recovered.
+              </p>
+              <div className="field">
+                <label htmlFor="delConfirm">Type DELETE to confirm</label>
+                <input
+                  id="delConfirm"
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="DELETE"
+                />
+              </div>
+              <button
+                type="button"
+                className="btn btn-danger"
+                disabled={deleteConfirmText !== "DELETE" || deleting}
+                onClick={onDeleteAccount}
+              >
+                {deleting ? "Deleting…" : "Delete my account"}
+              </button>
+            </>
+          )}
+
+          {/* ============ ACCOUNT TAB ============ */}
           {tab === "account" && (
             <>
               <h3>Account</h3>
@@ -805,6 +941,7 @@ export default function SettingsPage() {
             </>
           )}
 
+          {/* ============ APPEARANCE TAB ============ */}
           {tab === "appearance" && (
             <>
               <h3>Appearance</h3>

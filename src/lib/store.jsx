@@ -475,6 +475,62 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const blockUser = async (userId) => {
+    try {
+      await api.post(`/blocks/${userId}`);
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const unblockUser = async (userId) => {
+    try {
+      await api.delete(`/blocks/${userId}`);
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const getBlockedUsers = async () => {
+    try {
+      const res = await api.get("/blocks");
+      return res.data.map((u) => ({
+        ...u,
+        username: u.username || u.email?.split("@")[0],
+        displayName: u.name || u.email?.split("@")[0],
+      }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
+  const getBlockStatus = async (userId) => {
+    try {
+      const res = await api.get(`/blocks/${userId}/status`);
+      return res.data;
+    } catch {
+      return { iBlockedThem: false, theyBlockedMe: false };
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      await api.delete("/auth/me");
+      logout();
+      return { ok: true };
+    } catch (err) {
+      return {
+        ok: false,
+        error: err.response?.data?.message || "Could not delete account",
+      };
+    }
+  };
+
   // ---- Profile -------------------------------------------------------------
 
   const updateProfile = async ({
