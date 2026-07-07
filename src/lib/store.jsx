@@ -821,6 +821,7 @@ export function StoreProvider({ children }) {
         getChatUnread,
         markChatSeen,
         getFollowingSidebar,
+        getSuggestedUsers,
         getFollowCounts,
         isFollowing,
         search,
