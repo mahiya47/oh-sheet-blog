@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Sheet } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useModal } from "../context/ModalContext.jsx";
+import Avatar from "./Avatar.jsx";
 
 function MiniRow({ post }) {
   const { openPost } = useModal();
@@ -24,10 +25,75 @@ function MiniRow({ post }) {
   );
 }
 
+function SuggestionRow({ user, onFollowed }) {
+  const { toggleFollow } = useStore();
+  const [following, setFollowing] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const onFollow = async () => {
+    setBusy(true);
+    const ok = await toggleFollow(user.id, false);
+    setBusy(false);
+    if (ok) {
+      setFollowing(true);
+      onFollowed?.(user.id);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "10px var(--space-4)",
+      }}
+    >
+      <Link to={`/profile/${user.id}`} style={{ flexShrink: 0 }}>
+        <Avatar user={user} size={36} />
+      </Link>
+      <Link
+        to={`/profile/${user.id}`}
+        style={{ flex: 1, minWidth: 0, color: "inherit" }}
+      >
+        <div
+          style={{
+            fontWeight: 700,
+            fontSize: "0.85rem",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {user.displayName}
+        </div>
+        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+          @{user.username}
+        </div>
+      </Link>
+      <button
+        type="button"
+        className="btn btn-ghost"
+        onClick={onFollow}
+        disabled={busy || following}
+        style={{ fontSize: "0.7rem", padding: "6px 10px", flexShrink: 0 }}
+      >
+        {following ? "Following" : "Follow"}
+      </button>
+    </div>
+  );
+}
+
 export default function RightSidebar() {
-  const { currentUser, getFollowingSidebar, getTrending, getTrendingTags } =
-    useStore();
+  const {
+    currentUser,
+    getFollowingSidebar,
+    getTrending,
+    getTrendingTags,
+    getSuggestedUsers,
+  } = useStore();
   const [following, setFollowing] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   const trending = getTrending(4);
   const trendingTags = getTrendingTags(6);
 
@@ -37,7 +103,12 @@ export default function RightSidebar() {
     } else {
       setFollowing([]);
     }
+    getSuggestedUsers().then(setSuggestions);
   }, [currentUser]);
+
+  const dismissSuggestion = (userId) => {
+    setSuggestions((prev) => prev.filter((u) => u.id !== userId));
+  };
 
   return (
     <aside className="rail-right" aria-label="Activity">
@@ -86,6 +157,15 @@ export default function RightSidebar() {
           <p className="empty-note">No tags yet.</p>
         )}
       </section>
+
+      {suggestions.length > 0 && (
+        <section className="panel">
+          <h2 className="panel-head">People you may know</h2>
+          {suggestions.map((u) => (
+            <SuggestionRow key={u.id} user={u} onFollowed={dismissSuggestion} />
+          ))}
+        </section>
+      )}
 
       <section className="panel mini-footer">
         <div className="links">

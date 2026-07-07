@@ -15,6 +15,7 @@ import {
   Mail,
   BadgeCheck,
   X,
+  RefreshCcw,
 } from "lucide-react";
 
 const ICON = {
@@ -24,6 +25,7 @@ const ICON = {
   dm: Mail,
   reply: MessageCircle,
   verified: BadgeCheck,
+  reactivated: RefreshCcw,
 };
 const TEXT = {
   like: "liked your sheet",
@@ -32,6 +34,7 @@ const TEXT = {
   dm: "sent you a message",
   reply: "replied to your comment",
   verified: "🎉 You're verified! Enjoy your blue tick.",
+  reactivated: "👋 Welcome back! Your account has been reactivated.",
 };
 
 export default function NotificationsPage() {
@@ -106,8 +109,8 @@ export default function NotificationsPage() {
               >
                 <Avatar user={n.actor} size={40} />
                 <span style={{ flex: 1 }}>
-                  {n.type === "verified" ? (
-                    TEXT.verified
+                  {n.type === "verified" || n.type === "reactivated" ? (
+                    TEXT[n.type]
                   ) : (
                     <>
                       <b>

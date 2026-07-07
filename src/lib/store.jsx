@@ -475,6 +475,20 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const getSuggestedUsers = async () => {
+    try {
+      const res = await api.get("/users/suggestions");
+      return res.data.map((u) => ({
+        ...u,
+        username: u.username || u.email?.split("@")[0],
+        displayName: u.name || u.email?.split("@")[0],
+      }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
   const blockUser = async (userId) => {
     try {
       await api.post(`/blocks/${userId}`);
