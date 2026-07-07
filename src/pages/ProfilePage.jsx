@@ -17,7 +17,11 @@ import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 import { DEFAULT_COVER } from "../lib/covers.js";
-import { getAccountAgeBadge, getScoreBadge } from "../lib/badges.js";
+import {
+  getAccountAgeBadge,
+  getScoreBadge,
+  getPostCountBadge,
+} from "../lib/badges.js";
 import Avatar from "../components/Avatar.jsx";
 import Feed from "../components/Feed.jsx";
 import UserListModal from "../components/UserListModal.jsx";
@@ -98,8 +102,8 @@ export default function ProfilePage() {
 
   const ageBadge = getAccountAgeBadge(profile.createdAt);
   const scoreBadge = getScoreBadge(profile.score);
-  const earnedBadges = [ageBadge, scoreBadge].filter(Boolean);
-
+  const postBadge = getPostCountBadge(userPosts.length);
+  const earnedBadges = [ageBadge, scoreBadge, postBadge].filter(Boolean);
   const socialLinks = [
     { url: profile.githubUrl, Icon: Github, label: "GitHub" },
     { url: profile.twitterUrl, Icon: Twitter, label: "Twitter/X" },

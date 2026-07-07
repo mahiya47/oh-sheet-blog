@@ -1,7 +1,7 @@
-import { Sprout, Medal, Trophy, Gem, Star } from "lucide-react";
+import { Medal, Trophy, Gem, Star, Crown, Feather } from "lucide-react";
 import { TIER_GRADIENTS } from "../lib/badges.js";
 
-const ICONS = { Sprout, Medal, Trophy, Gem, Star };
+const ICONS = { Medal, Trophy, Gem, Star, Crown, Feather };
 
 export default function Badge({ badge }) {
   if (!badge) return null;

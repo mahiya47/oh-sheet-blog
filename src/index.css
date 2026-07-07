@@ -457,12 +457,13 @@ select {
 
 .rail-right {
   position: sticky;
-  top: auto;
-  bottom: var(--space-5);
-  align-self: end;
+  top: 72px;
+  align-self: start;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  max-height: calc(100vh - 88px);
+  overflow-y: auto;
 }
 /* =========================================================================
    Cards (sheets)
