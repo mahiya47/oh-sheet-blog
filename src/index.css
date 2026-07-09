@@ -24,9 +24,7 @@
   --c10: #c4ff3e;
 
   /* Type */
-  --font-mono:
-    "Ubuntu Mono", ui-monospace, "Cascadia Code", "Source Code Pro", monospace;
-  --font-display: "Rubik Wet Paint", var(--font-mono);
+  --font-mono: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 
   /* Spacing scale */
   --space-1: 4px;
