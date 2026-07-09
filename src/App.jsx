@@ -22,46 +22,53 @@ import VerifyEmailPage from "./pages/VerifyEmailPage";
 import OAuthCallbackPage from "./pages/OAuthCallbackPage.jsx";
 import OnboardingPage from "./pages/OnboardingPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 
 export default function App() {
   return (
-    <Routes>
-      {/* Public */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
-      <Route path="/onboarding" element={<OnboardingPage />} />
-      <Route path="/verify/:token" element={<VerifyEmailPage />} />
+    <>
+      <ScrollToTop />
+      <Routes>
+        {/* Public */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path="/verify/:token" element={<VerifyEmailPage />} />
 
-      {/* Everything below requires a signed-in user */}
-      <Route element={<ProtectedRoute />}>
-        {/* Settings has its own full-width layout */}
-        <Route path="/settings" element={<SettingsPage />} />
+        {/* Everything below requires a signed-in user */}
+        <Route element={<ProtectedRoute />}>
+          {/* Settings has its own full-width layout */}
+          <Route path="/settings" element={<SettingsPage />} />
 
-        {/* The rest share the three-column shell */}
-        <Route element={<Layout />}>
-          <Route path="/" element={<Navigate to="/feed" replace />} />
-          <Route path="/feed" element={<FeedPage />} />
-          <Route path="/following" element={<FollowingPage />} />
-          <Route path="/trending" element={<TrendingPage />} />
-          <Route path="/post/:id" element={<PostPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/chat" element={<ChatPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/create" element={<CreatePostPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile/:userId" element={<ProfilePage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/tag/:name" element={<TagPage />} />
-          <Route path="/support" element={<SupportPage />} />
-          <Route path="/about" element={<StaticPage page="about" />} />
-          <Route path="/rules" element={<StaticPage page="rules" />} />
-          <Route path="/privacy" element={<StaticPage page="privacy" />} />
-          <Route path="/agreement" element={<StaticPage page="agreement" />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/admin" element={<AdminPage />} />
+          {/* The rest share the three-column shell */}
+          <Route element={<Layout />}>
+            <Route path="/" element={<Navigate to="/feed" replace />} />
+            <Route path="/feed" element={<FeedPage />} />
+            <Route path="/following" element={<FollowingPage />} />
+            <Route path="/trending" element={<TrendingPage />} />
+            <Route path="/post/:id" element={<PostPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/create" element={<CreatePostPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/tag/:name" element={<TagPage />} />
+            <Route path="/support" element={<SupportPage />} />
+            <Route path="/about" element={<StaticPage page="about" />} />
+            <Route path="/rules" element={<StaticPage page="rules" />} />
+            <Route path="/privacy" element={<StaticPage page="privacy" />} />
+            <Route
+              path="/agreement"
+              element={<StaticPage page="agreement" />}
+            />
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Route>
-      </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 }
