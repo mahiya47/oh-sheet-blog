@@ -24,8 +24,14 @@ import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 
 export default function SheetCard({ post }) {
-  const { currentUser, toggleLike, createPost, deletePost, editPost } =
-    useStore();
+  const {
+    currentUser,
+    toggleLike,
+    createPost,
+    deletePost,
+    editPost,
+    toggleFollow,
+  } = useStore();
   const { openPost } = useModal();
   const toast = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,6 +56,14 @@ export default function SheetCard({ post }) {
   const onLike = (e) => {
     stop(e);
     toggleLike(post.id, post.likedByMe);
+  };
+
+  const onFollowAuthor = async (e) => {
+    stop(e);
+    const ok = await toggleFollow(post.author.id, false);
+    if (ok) {
+      toast(`Following @${post.author.username}.`, "accent");
+    }
   };
 
   const onRepost = (e) => {
@@ -145,46 +159,58 @@ export default function SheetCard({ post }) {
           </span>
         </Link>
 
-        <div className="more" ref={menuRef} onClick={stop}>
-          <button
-            type="button"
-            className="more-trigger"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label="More options"
-            aria-haspopup="menu"
-            aria-expanded={menuOpen}
-          >
-            <MoreHorizontal size={20} />
-          </button>
-          {menuOpen && (
-            <div className="more-menu" role="menu">
-              <Link
-                to={`/profile/${post.author?.id}`}
-                role="menuitem"
-                onClick={() => setMenuOpen(false)}
-              >
-                <UserRound size={15} /> Visit profile
-              </Link>
-              <button type="button" role="menuitem" onClick={onReport}>
-                <Flag size={15} /> Report
-              </button>
-              {mine && (
-                <button type="button" role="menuitem" onClick={onEdit}>
-                  <Pencil size={15} /> Edit
-                </button>
-              )}
-              {mine && (
-                <button
-                  type="button"
-                  className="danger"
-                  role="menuitem"
-                  onClick={onDelete}
-                >
-                  <Trash2 size={15} /> Delete
-                </button>
-              )}
-            </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {!mine && !post.isFollowedByMe && (
+            <button
+              type="button"
+              className="btn btn-accent"
+              onClick={onFollowAuthor}
+              style={{ fontSize: "0.7rem", padding: "5px 10px" }}
+            >
+              Follow
+            </button>
           )}
+          <div className="more" ref={menuRef} onClick={stop}>
+            <button
+              type="button"
+              className="more-trigger"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="More options"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+            >
+              <MoreHorizontal size={20} />
+            </button>
+            {menuOpen && (
+              <div className="more-menu" role="menu">
+                <Link
+                  to={`/profile/${post.author?.id}`}
+                  role="menuitem"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <UserRound size={15} /> Visit profile
+                </Link>
+                <button type="button" role="menuitem" onClick={onReport}>
+                  <Flag size={15} /> Report
+                </button>
+                {mine && (
+                  <button type="button" role="menuitem" onClick={onEdit}>
+                    <Pencil size={15} /> Edit
+                  </button>
+                )}
+                {mine && (
+                  <button
+                    type="button"
+                    className="danger"
+                    role="menuitem"
+                    onClick={onDelete}
+                  >
+                    <Trash2 size={15} /> Delete
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
