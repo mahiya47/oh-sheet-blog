@@ -25,6 +25,7 @@
 
   /* Type */
   --font-mono: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Rubik Wet Paint", var(--font-mono);
 
   /* Spacing scale */
   --space-1: 4px;
