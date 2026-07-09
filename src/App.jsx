@@ -19,6 +19,8 @@ import ChatPage from "./pages/ChatPage.jsx";
 import PostPage from "./pages/PostPage.jsx";
 import NotificationsPage from "./pages/NotificationsPage.jsx";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
+import OAuthCallbackPage from "./pages/OAuthCallbackPage.jsx";
+import OnboardingPage from "./pages/OnboardingPage.jsx";
 
 export default function App() {
   return (
@@ -26,6 +28,8 @@ export default function App() {
       {/* Public */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
+      <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/verify/:token" element={<VerifyEmailPage />} />
 
       {/* Everything below requires a signed-in user */}

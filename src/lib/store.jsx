@@ -167,6 +167,82 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const loginWithToken = async (token) => {
+    try {
+      localStorage.setItem("token", token);
+      const payload = JSON.parse(atob(token.split(".")[1]));
+
+      let name = payload.email?.split("@")[0];
+      let username = payload.email?.split("@")[0];
+      let avatarUrl = null;
+      let coverUrl = null;
+      let gender = "";
+      let orientation = "";
+      let showGender = false;
+      let showOrientation = false;
+      let birthday = null;
+      let emailVerified = false;
+      let createdAt = null;
+      let score = 0;
+      let githubUrl = null;
+      let instagramUrl = null;
+      let linkedinUrl = null;
+      let twitterUrl = null;
+      let googleId = null;
+      let githubId = null;
+
+      try {
+        const profileRes = await api.get(`/users/${payload.userId}`);
+        name = profileRes.data.name || name;
+        emailVerified = profileRes.data.emailVerified || false;
+        username = profileRes.data.username || username;
+        avatarUrl = profileRes.data.avatarUrl || null;
+        coverUrl = profileRes.data.coverUrl || null;
+        gender = profileRes.data.gender || "";
+        orientation = profileRes.data.orientation || "";
+        showGender = profileRes.data.showGender || false;
+        showOrientation = profileRes.data.showOrientation || false;
+        birthday = profileRes.data.birthday || null;
+        createdAt = profileRes.data.createdAt || null;
+        score = profileRes.data.score || 0;
+        githubUrl = profileRes.data.githubUrl || null;
+        instagramUrl = profileRes.data.instagramUrl || null;
+        linkedinUrl = profileRes.data.linkedinUrl || null;
+        twitterUrl = profileRes.data.twitterUrl || null;
+        googleId = profileRes.data.googleId || null;
+        githubId = profileRes.data.githubId || null;
+      } catch {}
+
+      const user = {
+        id: payload.userId,
+        email: payload.email,
+        username,
+        displayName: name,
+        avatarUrl,
+        coverUrl,
+        gender,
+        orientation,
+        showGender,
+        showOrientation,
+        birthday,
+        emailVerified,
+        createdAt,
+        score,
+        githubUrl,
+        instagramUrl,
+        linkedinUrl,
+        twitterUrl,
+        googleId,
+        githubId,
+      };
+      localStorage.setItem("current-user", JSON.stringify(user));
+      setCurrentUser(user);
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: "Sign-in failed" };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("current-user");
@@ -843,6 +919,7 @@ export function StoreProvider({ children }) {
         getBlockedUsers,
         getBlockStatus,
         deleteAccount,
+        loginWithToken,
       }}
     >
       {children}
