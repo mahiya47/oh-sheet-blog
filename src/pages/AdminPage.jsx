@@ -361,10 +361,19 @@ export default function AdminPage() {
                       <>
                         <div style={{ minWidth: 0 }}>
                           <div style={{ fontWeight: 700 }}>
-                            <Link to={`/profile/${r.reportedUser.id}`}>
-                              @{r.reportedUser.username}
-                            </Link>{" "}
-                            reported by @{r.reporter.username}
+                            {r.reportedUser ? (
+                              <Link to={`/profile/${r.reportedUser.id}`}>
+                                @{r.reportedUser.username}
+                              </Link>
+                            ) : (
+                              <span style={{ color: "var(--text-dim)" }}>
+                                [deleted user]
+                              </span>
+                            )}{" "}
+                            reported by{" "}
+                            {r.reporter
+                              ? `@${r.reporter.username}`
+                              : "[deleted user]"}
                           </div>
                           <div style={{ fontSize: "0.85rem" }}>
                             {r.reason} ·{" "}
