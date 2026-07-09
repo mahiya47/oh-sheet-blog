@@ -999,6 +999,18 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const getPostLikers = async (postId) => {
+    try {
+      const res = await api.get(`/posts/${postId}/likers`);
+      return res.data.map((u) => ({
+        ...u,
+        username: u.username || u.email?.split("@")[0],
+        displayName: u.name || u.email?.split("@")[0],
+      }));
+    } catch {
+      return [];
+    }
+  };
   // ---- Stubs ---------------------------------------------------------------
 
   const getUserPosts = (userId) => posts.filter((p) => p.author?.id === userId);
@@ -1080,6 +1092,7 @@ export function StoreProvider({ children }) {
         adminUpdateReport,
         adminGetSupport,
         adminUpdateSupport,
+        getPostLikers,
       }}
     >
       {children}

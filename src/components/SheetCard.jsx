@@ -22,6 +22,7 @@ import Avatar from "./Avatar.jsx";
 import VerifiedBadge from "./VerifiedBadge.jsx";
 import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
+import UserListModal from "./UserListModal.jsx";
 
 export default function SheetCard({ post }) {
   const {
@@ -31,6 +32,7 @@ export default function SheetCard({ post }) {
     deletePost,
     editPost,
     toggleFollow,
+    getPostLikers,
   } = useStore();
   const { openPost } = useModal();
   const toast = useToast();
@@ -39,6 +41,7 @@ export default function SheetCard({ post }) {
   const [draft, setDraft] = useState(post.content);
   const [reposting, setReposting] = useState(false);
   const [repostText, setRepostText] = useState("");
+  const [listModal, setListModal] = useState(null);
   const menuRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
@@ -56,6 +59,13 @@ export default function SheetCard({ post }) {
   const onLike = (e) => {
     stop(e);
     toggleLike(post.id, post.likedByMe);
+  };
+
+  const onShowLikers = async (e) => {
+    stop(e);
+    if (post.likeCount === 0) return;
+    const users = await getPostLikers(post.id);
+    setListModal({ title: "Liked by", users });
   };
 
   const onFollowAuthor = async (e) => {
@@ -416,7 +426,12 @@ export default function SheetCard({ post }) {
           aria-pressed={post.likedByMe}
         >
           <Heart size={18} fill={post.likedByMe ? "currentColor" : "none"} />{" "}
-          <span>{post.likeCount}</span>
+          <span
+            onClick={onShowLikers}
+            style={{ cursor: post.likeCount > 0 ? "pointer" : "default" }}
+          >
+            {post.likeCount}
+          </span>
         </button>
         <button
           type="button"
@@ -435,6 +450,14 @@ export default function SheetCard({ post }) {
           <Share2 size={18} /> <span>Share</span>
         </button>
       </footer>
+
+      {listModal && (
+        <UserListModal
+          title={listModal.title}
+          users={listModal.users}
+          onClose={() => setListModal(null)}
+        />
+      )}
     </article>
   );
 }

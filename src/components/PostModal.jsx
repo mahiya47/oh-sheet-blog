@@ -8,6 +8,7 @@ import Avatar from "./Avatar.jsx";
 import VerifiedBadge from "./VerifiedBadge.jsx";
 import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID } from "../lib/creator.js";
+import UserListModal from "./UserListModal.jsx";
 
 export default function PostModal({ postId, onClose }) {
   const {
@@ -17,12 +18,14 @@ export default function PostModal({ postId, onClose }) {
     toggleLike,
     addComment,
     deleteComment,
+    getPostLikers,
   } = useStore();
   const toast = useToast();
   const [text, setText] = useState("");
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [replyTo, setReplyTo] = useState(null); // { id, username } or null
+  const [listModal, setListModal] = useState(null);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -73,6 +76,12 @@ export default function PostModal({ postId, onClose }) {
       () => toast("Link copied!", "accent"),
       () => toast("Could not copy link.", "danger"),
     );
+  };
+
+  const onShowLikers = async () => {
+    if (!post || post.likeCount === 0) return;
+    const users = await getPostLikers(post.id);
+    setListModal({ title: "Liked by", users });
   };
 
   const onDeleteComment = async (commentId) => {
@@ -260,7 +269,15 @@ export default function PostModal({ postId, onClose }) {
             aria-pressed={post.likedByMe}
           >
             <Heart size={18} fill={post.likedByMe ? "currentColor" : "none"} />{" "}
-            <span>{post.likeCount}</span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                onShowLikers();
+              }}
+              style={{ cursor: post.likeCount > 0 ? "pointer" : "default" }}
+            >
+              {post.likeCount}
+            </span>
           </button>
           <button type="button" className="stat" onClick={onShare}>
             <Share2 size={18} /> <span>Share</span>
@@ -344,6 +361,14 @@ export default function PostModal({ postId, onClose }) {
           )}
         </div>
       </div>
+
+      {listModal && (
+        <UserListModal
+          title={listModal.title}
+          users={listModal.users}
+          onClose={() => setListModal(null)}
+        />
+      )}
     </div>
   );
 }
