@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import { GENDER_OPTIONS, ORIENTATION_OPTIONS } from "../lib/profileOptions.js";
 import Avatar from "../components/Avatar.jsx";
 import AvatarPicker from "../components/AvatarPicker.jsx";
 
@@ -28,6 +29,8 @@ function fileToAvatarDataUrl(file, max = 256) {
   });
 }
 
+const SELF = "Prefer to self-describe";
+
 export default function OnboardingPage() {
   const { currentUser, updateProfile } = useStore();
   const toast = useToast();
@@ -40,6 +43,13 @@ export default function OnboardingPage() {
   );
   const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || "");
   const [bio, setBio] = useState("");
+  const [birthday, setBirthday] = useState("");
+
+  const [genderChoice, setGenderChoice] = useState("");
+  const [genderCustom, setGenderCustom] = useState("");
+  const [oriChoice, setOriChoice] = useState("");
+  const [oriCustom, setOriCustom] = useState("");
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -62,11 +72,20 @@ export default function OnboardingPage() {
     }
     setSaving(true);
     setError("");
+
+    const gender = genderChoice === SELF ? genderCustom.trim() : genderChoice;
+    const orientation = oriChoice === SELF ? oriCustom.trim() : oriChoice;
+
     const res = await updateProfile({
       name: displayName.trim() || username.trim(),
       username: username.trim(),
       bio,
       avatarUrl,
+      birthday: birthday || undefined,
+      gender,
+      orientation,
+      showGender: false,
+      showOrientation: false,
     });
     setSaving(false);
     if (res.ok) {
@@ -147,6 +166,66 @@ export default function OnboardingPage() {
               style={{ minHeight: 90 }}
               maxLength={160}
             />
+          </div>
+
+          <div className="field">
+            <label htmlFor="ob-bday">Birthday (optional)</label>
+            <input
+              id="ob-bday"
+              type="date"
+              value={birthday}
+              onChange={(e) => setBirthday(e.target.value)}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="ob-gender">Gender (optional)</label>
+            <select
+              id="ob-gender"
+              value={genderChoice}
+              onChange={(e) => setGenderChoice(e.target.value)}
+            >
+              <option value="">Select…</option>
+              {GENDER_OPTIONS.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+            {genderChoice === SELF && (
+              <input
+                type="text"
+                value={genderCustom}
+                onChange={(e) => setGenderCustom(e.target.value)}
+                placeholder="Describe your gender"
+                style={{ marginTop: 8 }}
+              />
+            )}
+          </div>
+
+          <div className="field">
+            <label htmlFor="ob-ori">Orientation (optional)</label>
+            <select
+              id="ob-ori"
+              value={oriChoice}
+              onChange={(e) => setOriChoice(e.target.value)}
+            >
+              <option value="">Select…</option>
+              {ORIENTATION_OPTIONS.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
+            {oriChoice === SELF && (
+              <input
+                type="text"
+                value={oriCustom}
+                onChange={(e) => setOriCustom(e.target.value)}
+                placeholder="Describe your orientation"
+                style={{ marginTop: 8 }}
+              />
+            )}
           </div>
 
           <button

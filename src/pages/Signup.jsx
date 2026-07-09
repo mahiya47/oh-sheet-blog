@@ -1,82 +1,71 @@
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Github } from "lucide-react";
+import { Eye, EyeOff, Github, Check, X } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
-import { GENDER_OPTIONS, ORIENTATION_OPTIONS } from "../lib/profileOptions.js";
-import Avatar from "../components/Avatar.jsx";
-import AvatarPicker from "../components/AvatarPicker.jsx";
+import { getPasswordStrength } from "../lib/passwordStrength.js";
+import api from "../api.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://192.168.1.4:5000/api";
 
-function fileToAvatarDataUrl(file, max = 256) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const scale = Math.min(1, max / Math.max(img.width, img.height));
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.85));
-      };
-      img.onerror = reject;
-      img.src = reader.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-const SELF = "Prefer to self-describe";
-
 export default function Signup() {
-  const { currentUser, signup, updateProfile } = useStore();
+  const { currentUser, signup } = useStore();
   const toast = useToast();
   const navigate = useNavigate();
-  const fileRef = useRef(null);
+
   const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
     confirm: "",
-    birthday: "",
   });
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [genderChoice, setGenderChoice] = useState("");
-  const [genderCustom, setGenderCustom] = useState("");
-  const [oriChoice, setOriChoice] = useState("");
-  const [oriCustom, setOriCustom] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
 
   if (currentUser) return <Navigate to="/feed" replace />;
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const onPickFile = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const dataUrl = await fileToAvatarDataUrl(file);
-      setAvatarUrl(dataUrl);
-      toast("Photo ready.", "accent");
-    } catch {
-      toast("Couldn't load that image.", "danger");
+  useEffect(() => {
+    const uname = form.username.trim();
+    if (uname.length < 3) {
+      setUsernameAvailable(null);
+      return;
     }
-  };
+    setCheckingUsername(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await api.get(
+          `/users/check-username/${encodeURIComponent(uname)}`,
+        );
+        setUsernameAvailable(res.data.available);
+      } catch {
+        setUsernameAvailable(null);
+      }
+      setCheckingUsername(false);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [form.username]);
+
+  const strength = getPasswordStrength(form.password);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
+    if (usernameAvailable === false) {
+      setError("That username is already taken.");
+      return;
+    }
     if (form.password !== form.confirm) {
       setError("Passwords do not match.");
+      return;
+    }
+    if (form.password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
 
@@ -87,24 +76,8 @@ export default function Signup() {
     });
 
     if (res.ok) {
-      const gender = genderChoice === SELF ? genderCustom.trim() : genderChoice;
-      const orientation = oriChoice === SELF ? oriCustom.trim() : oriChoice;
-
-      if (avatarUrl || gender || orientation || form.birthday) {
-        await updateProfile({
-          name: form.username,
-          username: form.username,
-          bio: "",
-          avatarUrl,
-          gender,
-          orientation,
-          showGender: false,
-          showOrientation: false,
-          birthday: form.birthday || undefined,
-        });
-      }
       toast("Account created. Welcome to Oh Sheet!", "accent");
-      navigate("/feed");
+      navigate("/onboarding");
     } else {
       setError(res.error);
     }
@@ -195,14 +168,60 @@ export default function Signup() {
           {error && <div className="form-error">{error}</div>}
 
           <div className="field">
-            <input
-              type="text"
-              value={form.username}
-              onChange={set("username")}
-              placeholder="Username"
-              autoComplete="username"
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                type="text"
+                value={form.username}
+                onChange={set("username")}
+                placeholder="Username"
+                autoComplete="username"
+                style={{ paddingRight: 36 }}
+              />
+              {form.username.trim().length >= 3 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    right: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
+                >
+                  {checkingUsername ? (
+                    <span
+                      style={{
+                        width: 14,
+                        height: 14,
+                        border: "2px solid var(--border-soft)",
+                        borderTopColor: "var(--accent)",
+                        borderRadius: "50%",
+                        display: "inline-block",
+                        animation: "spin 0.7s linear infinite",
+                      }}
+                    />
+                  ) : usernameAvailable === true ? (
+                    <Check size={16} color="#3eff8b" />
+                  ) : usernameAvailable === false ? (
+                    <X size={16} color="#ff3e3e" />
+                  ) : null}
+                </span>
+              )}
+            </div>
+            {usernameAvailable === false && (
+              <span
+                style={{ fontSize: "0.75rem", color: "var(--danger, #ff3e3e)" }}
+              >
+                That username is taken.
+              </span>
+            )}
+            {usernameAvailable === true && (
+              <span
+                style={{ fontSize: "0.75rem", color: "var(--accent, #3eff8b)" }}
+              >
+                Available!
+              </span>
+            )}
           </div>
+
           <div className="field">
             <input
               type="email"
@@ -212,6 +231,7 @@ export default function Signup() {
               autoComplete="email"
             />
           </div>
+
           <div className="field" style={{ position: "relative" }}>
             <input
               type={showPassword ? "text" : "password"}
@@ -240,7 +260,38 @@ export default function Signup() {
             >
               {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
             </button>
+
+            {form.password && (
+              <div style={{ marginTop: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 4,
+                    marginBottom: 4,
+                  }}
+                >
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      style={{
+                        flex: 1,
+                        height: 4,
+                        borderRadius: 2,
+                        background:
+                          i < strength.score
+                            ? strength.color
+                            : "var(--border-soft)",
+                      }}
+                    />
+                  ))}
+                </div>
+                <span style={{ fontSize: "0.75rem", color: strength.color }}>
+                  {strength.label}
+                </span>
+              </div>
+            )}
           </div>
+
           <div className="field" style={{ position: "relative" }}>
             <input
               type={showConfirm ? "text" : "password"}
@@ -271,104 +322,10 @@ export default function Signup() {
             </button>
           </div>
 
-          <div className="field">
-            <label htmlFor="su-bday">Birthday (optional)</label>
-            <input
-              id="su-bday"
-              type="date"
-              value={form.birthday}
-              onChange={set("birthday")}
-            />
-          </div>
-
-          <div className="field">
-            <label htmlFor="su-gender">Gender (optional)</label>
-            <select
-              id="su-gender"
-              value={genderChoice}
-              onChange={(e) => setGenderChoice(e.target.value)}
-            >
-              <option value="">Select…</option>
-              {GENDER_OPTIONS.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
-            {genderChoice === SELF && (
-              <input
-                type="text"
-                value={genderCustom}
-                onChange={(e) => setGenderCustom(e.target.value)}
-                placeholder="Describe your gender"
-                style={{ marginTop: 8 }}
-              />
-            )}
-          </div>
-
-          <div className="field">
-            <label htmlFor="su-ori">Orientation (optional)</label>
-            <select
-              id="su-ori"
-              value={oriChoice}
-              onChange={(e) => setOriChoice(e.target.value)}
-            >
-              <option value="">Select…</option>
-              {ORIENTATION_OPTIONS.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
-            {oriChoice === SELF && (
-              <input
-                type="text"
-                value={oriCustom}
-                onChange={(e) => setOriCustom(e.target.value)}
-                placeholder="Describe your orientation"
-                style={{ marginTop: 8 }}
-              />
-            )}
-          </div>
-
-          <div className="pfp-row">
-            <Avatar
-              user={{ username: form.username, email: form.email, avatarUrl }}
-              size={64}
-            />
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={onPickFile}
-            />
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={() => fileRef.current?.click()}
-            >
-              Upload photo
-            </button>
-          </div>
-
-          <div className="field">
-            <label>Or choose an avatar (optional)</label>
-            <AvatarPicker
-              value={avatarUrl}
-              onSelect={setAvatarUrl}
-              seedBase={form.username || form.email || "newuser"}
-            />
-          </div>
-
           <button type="submit" className="btn btn-accent btn-block">
             Create account
           </button>
         </form>
-
-        <p className="demo-note">
-          Pick a unique username — you can change it later in Settings.
-        </p>
 
         <div className="auth-foot">
           Already have an account? <Link to="/login">Sign in</Link>
