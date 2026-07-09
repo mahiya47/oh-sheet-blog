@@ -44,7 +44,7 @@ export default function SheetCard({ post }) {
 
   const mine = currentUser && post.author?.id === currentUser.id;
   const stop = (e) => e.stopPropagation();
-
+  const [justFollowed, setJustFollowed] = useState(false);
   const open = () => openPost(post.id);
   const onKey = (e) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -62,6 +62,7 @@ export default function SheetCard({ post }) {
     stop(e);
     const ok = await toggleFollow(post.author.id, false);
     if (ok) {
+      setJustFollowed(true);
       toast(`Following @${post.author.username}.`, "accent");
     }
   };
@@ -160,7 +161,7 @@ export default function SheetCard({ post }) {
         </Link>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {!mine && !post.isFollowedByMe && (
+          {!mine && !post.isFollowedByMe && !justFollowed && (
             <button
               type="button"
               className="btn btn-accent"
