@@ -101,15 +101,16 @@ export default function Login() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          href={`${API_URL}/auth/google`}
-          className="btn btn-ghost btn-block" style=
-          {{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-          }}
-          <a>
+          <a
+            href={`${API_URL}/auth/google`}
+            className="btn btn-ghost btn-block"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
@@ -130,15 +131,17 @@ export default function Login() {
             </svg>
             Continue with Google
           </a>
-          href={`${API_URL}/auth/github`}
-          className="btn btn-ghost btn-block" style=
-          {{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-          }}
-          <a>
+
+          <a
+            href={`${API_URL}/auth/github`}
+            className="btn btn-ghost btn-block"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
             <Github size={16} />
             Continue with GitHub
           </a>
