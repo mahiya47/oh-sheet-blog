@@ -4,6 +4,7 @@ import { Sheet } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useModal } from "../context/ModalContext.jsx";
 import Avatar from "./Avatar.jsx";
+import { useBidirectionalSticky } from "../lib/useBidirectionalSticky.js";
 
 function MiniRow({ post }) {
   const { openPost } = useModal();
@@ -94,6 +95,7 @@ export default function RightSidebar() {
   } = useStore();
   const [following, setFollowing] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
+  const railRef = useBidirectionalSticky(72, 16);
   const trending = getTrending(4);
   const trendingTags = getTrendingTags(6);
 
@@ -112,7 +114,7 @@ export default function RightSidebar() {
 
   return (
     <aside className="rail-right-wrapper" aria-label="Activity">
-      <div className="rail-right">
+      <div className="rail-right" ref={railRef}>
         <section className="panel">
           <h2 className="panel-head">Following activity</h2>
           {following.length > 0 ? (
