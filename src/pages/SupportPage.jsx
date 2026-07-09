@@ -1,21 +1,35 @@
 import { useState } from "react";
-import { Mail, Hash } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useToast } from "../context/ToastContext.jsx";
+import { useStore } from "../lib/store.jsx";
 
 const BLANK = { type: "complaint", subject: "", body: "" };
 
 export default function SupportPage() {
   const toast = useToast();
+  const { submitSupportTicket } = useStore();
   const [form, setForm] = useState(BLANK);
+  const [submitting, setSubmitting] = useState(false);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!form.subject.trim() || !form.body.trim()) {
       return toast("Add a subject and a description first.", "danger");
     }
-    toast("Request submitted — we'll be in touch.", "accent");
-    setForm(BLANK);
+    setSubmitting(true);
+    const res = await submitSupportTicket({
+      type: form.type,
+      subject: form.subject,
+      message: form.body,
+    });
+    setSubmitting(false);
+    if (res.ok) {
+      toast("Request submitted — we'll be in touch.", "accent");
+      setForm(BLANK);
+    } else {
+      toast(res.error || "Could not submit. Try again.", "danger");
+    }
   };
 
   return (
@@ -63,8 +77,13 @@ export default function SupportPage() {
           >
             Discard
           </button>
-          <button type="button" className="btn btn-accent" onClick={onSubmit}>
-            Submit request
+          <button
+            type="button"
+            className="btn btn-accent"
+            onClick={onSubmit}
+            disabled={submitting}
+          >
+            {submitting ? "Submitting…" : "Submit request"}
           </button>
         </div>
       </div>

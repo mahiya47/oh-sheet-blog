@@ -50,6 +50,7 @@ export default function ProfilePage() {
     blockUser,
     unblockUser,
     getBlockStatus,
+    submitReport,
   } = useStore();
   const toast = useToast();
 
@@ -179,10 +180,15 @@ export default function ProfilePage() {
 
   const onSubmitReport = async (reason) => {
     setShowReport(false);
-    toast(
-      `Thanks — we'll take a look at @${profile.username}'s account.`,
-      "accent",
-    );
+    const res = await submitReport(profile.id, reason);
+    if (res.ok) {
+      toast(
+        `Thanks — we'll take a look at @${profile.username}'s account.`,
+        "accent",
+      );
+    } else {
+      toast(res.error || "Could not submit report.", "danger");
+    }
 
     if (!blockStatus.iBlockedThem) {
       const wantsBlock = window.confirm(

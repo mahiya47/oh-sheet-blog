@@ -854,6 +854,151 @@ export function StoreProvider({ children }) {
     localStorage.setItem("chat-last-seen", new Date().toISOString());
   };
 
+  const submitSupportTicket = async ({ type, subject, message }) => {
+    try {
+      await api.post("/support", { type, subject, message });
+      return { ok: true };
+    } catch (err) {
+      return {
+        ok: false,
+        error: err.response?.data?.message || "Could not submit request",
+      };
+    }
+  };
+
+  const submitReport = async (reportedUserId, reason) => {
+    try {
+      await api.post("/reports", { reportedUserId, reason });
+      return { ok: true };
+    } catch (err) {
+      return {
+        ok: false,
+        error: err.response?.data?.message || "Could not submit report",
+      };
+    }
+  };
+
+  const adminGetStats = async () => {
+    try {
+      const res = await api.get("/admin/stats");
+      return res.data;
+    } catch {
+      return null;
+    }
+  };
+
+  const adminListUsers = async (q = "") => {
+    try {
+      const res = await api.get(`/admin/users?q=${encodeURIComponent(q)}`);
+      return res.data;
+    } catch {
+      return [];
+    }
+  };
+
+  const adminDeleteUser = async (id) => {
+    try {
+      await api.delete(`/admin/users/${id}`);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const adminListPosts = async (q = "") => {
+    try {
+      const res = await api.get(`/admin/posts?q=${encodeURIComponent(q)}`);
+      return res.data;
+    } catch {
+      return [];
+    }
+  };
+
+  const adminDeletePost = async (id) => {
+    try {
+      await api.delete(`/admin/posts/${id}`);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const adminListComments = async (q = "") => {
+    try {
+      const res = await api.get(`/admin/comments?q=${encodeURIComponent(q)}`);
+      return res.data;
+    } catch {
+      return [];
+    }
+  };
+
+  const adminDeleteComment = async (id) => {
+    try {
+      await api.delete(`/admin/comments/${id}`);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const adminListChat = async (q = "") => {
+    try {
+      const res = await api.get(`/admin/chat?q=${encodeURIComponent(q)}`);
+      return res.data;
+    } catch {
+      return [];
+    }
+  };
+
+  const adminDeleteChatMessage = async (id) => {
+    try {
+      await api.delete(`/admin/chat/${id}`);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const adminGetReports = async (status = "") => {
+    try {
+      const res = await api.get(
+        `/admin/reports${status ? `?status=${status}` : ""}`,
+      );
+      return res.data;
+    } catch {
+      return [];
+    }
+  };
+
+  const adminUpdateReport = async (id, status) => {
+    try {
+      await api.put(`/admin/reports/${id}`, { status });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const adminGetSupport = async (status = "") => {
+    try {
+      const res = await api.get(
+        `/admin/support${status ? `?status=${status}` : ""}`,
+      );
+      return res.data;
+    } catch {
+      return [];
+    }
+  };
+
+  const adminUpdateSupport = async (id, status) => {
+    try {
+      await api.put(`/admin/support/${id}`, { status });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   // ---- Stubs ---------------------------------------------------------------
 
   const getUserPosts = (userId) => posts.filter((p) => p.author?.id === userId);
@@ -920,6 +1065,21 @@ export function StoreProvider({ children }) {
         getBlockStatus,
         deleteAccount,
         loginWithToken,
+        submitSupportTicket,
+        submitReport,
+        adminGetStats,
+        adminListUsers,
+        adminDeleteUser,
+        adminListPosts,
+        adminDeletePost,
+        adminListComments,
+        adminDeleteComment,
+        adminListChat,
+        adminDeleteChatMessage,
+        adminGetReports,
+        adminUpdateReport,
+        adminGetSupport,
+        adminUpdateSupport,
       }}
     >
       {children}
