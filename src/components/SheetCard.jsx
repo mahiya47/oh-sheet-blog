@@ -12,6 +12,7 @@ import {
   UserRound,
   Crown,
   Cake,
+  Eye,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useModal } from "../context/ModalContext.jsx";
@@ -23,6 +24,7 @@ import VerifiedBadge from "./VerifiedBadge.jsx";
 import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 import UserListModal from "./UserListModal.jsx";
+import ReactionPicker from "./ReactionPicker.jsx";
 
 export default function SheetCard({ post }) {
   const {
@@ -33,6 +35,8 @@ export default function SheetCard({ post }) {
     editPost,
     toggleFollow,
     getPostLikers,
+    reactToPost,
+    REACTION_EMOJI,
   } = useStore();
   const { openPost } = useModal();
   const toast = useToast();
@@ -419,20 +423,25 @@ export default function SheetCard({ post }) {
       </div>
 
       <footer className="sheet-foot">
-        <button
-          type="button"
-          className={`stat ${post.likedByMe ? "liked" : ""}`}
-          onClick={onLike}
-          aria-pressed={post.likedByMe}
+        <ReactionPicker
+          current={post.myReaction}
+          onPick={(type) => reactToPost(post.id, type)}
         >
-          <Heart size={18} fill={post.likedByMe ? "currentColor" : "none"} />{" "}
-          <span
-            onClick={onShowLikers}
-            style={{ cursor: post.likeCount > 0 ? "pointer" : "default" }}
+          <button
+            type="button"
+            className={`stat ${post.likedByMe ? "liked" : ""}`}
+            onClick={(e) => {
+              stop(e);
+              reactToPost(post.id, post.myReaction || "heart");
+            }}
+            aria-pressed={post.likedByMe}
           >
-            {post.likeCount}
-          </span>
-        </button>
+            <span style={{ fontSize: "1.1rem", lineHeight: 1 }}>
+              {post.myReaction ? REACTION_EMOJI[post.myReaction] : "❤️"}
+            </span>
+            <span>{post.likeCount}</span>
+          </button>
+        </ReactionPicker>
         <button
           type="button"
           className="stat"
@@ -449,6 +458,17 @@ export default function SheetCard({ post }) {
         <button type="button" className="stat" onClick={onShare}>
           <Share2 size={18} /> <span>Share</span>
         </button>
+        {post.likeCount > 0 && (
+          <button
+            type="button"
+            className="stat"
+            onClick={onShowLikers}
+            style={{ marginLeft: "auto" }}
+            aria-label="See who liked this"
+          >
+            <Eye size={16} /> <span>See likes</span>
+          </button>
+        )}
       </footer>
 
       {listModal && (

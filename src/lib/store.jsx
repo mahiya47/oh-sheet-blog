@@ -402,6 +402,52 @@ export function StoreProvider({ children }) {
     }
   };
 
+  const REACTION_EMOJI = {
+    heart: "❤️",
+    thumbsup: "👍",
+    laugh: "😂",
+    cry: "😢",
+    poop: "💩",
+  };
+
+  const reactToPost = async (postId, type) => {
+    // optimistic UI update
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id !== postId) return p;
+        const wasReaction = p.myReaction;
+        const counts = { ...(p.reactionCounts || {}) };
+        if (wasReaction)
+          counts[wasReaction] = Math.max(0, (counts[wasReaction] || 1) - 1);
+        const removing = wasReaction === type;
+        const newReaction = removing ? null : type;
+        if (newReaction) counts[newReaction] = (counts[newReaction] || 0) + 1;
+        return {
+          ...p,
+          myReaction: newReaction,
+          likedByMe: !!newReaction,
+          likeCount: Object.values(counts).reduce((a, b) => a + b, 0),
+          reactionCounts: counts,
+        };
+      }),
+    );
+
+    try {
+      await api.post(`/posts/${postId}/react`, { type });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getPostReactions = async (postId) => {
+    try {
+      const res = await api.get(`/posts/${postId}/reactions`);
+      return res.data;
+    } catch {
+      return { counts: {}, users: [] };
+    }
+  };
+
   // ---- Search --------------------------------------------------------------
 
   const search = (raw) => {
@@ -1093,6 +1139,9 @@ export function StoreProvider({ children }) {
         adminGetSupport,
         adminUpdateSupport,
         getPostLikers,
+        reactToPost,
+        getPostReactions,
+        REACTION_EMOJI,
       }}
     >
       {children}

@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { X, Heart, Share2, Trash2, Crown, CornerDownRight } from "lucide-react";
+import {
+  X,
+  Heart,
+  Share2,
+  Trash2,
+  Crown,
+  CornerDownRight,
+  Eye,
+} from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { colorFor, timeAgo } from "../lib/time.js";
@@ -24,7 +32,7 @@ export default function PostModal({ postId, onClose }) {
   const [text, setText] = useState("");
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
-  const [replyTo, setReplyTo] = useState(null); // { id, username } or null
+  const [replyTo, setReplyTo] = useState(null);
   const [listModal, setListModal] = useState(null);
 
   useEffect(() => {
@@ -269,19 +277,22 @@ export default function PostModal({ postId, onClose }) {
             aria-pressed={post.likedByMe}
           >
             <Heart size={18} fill={post.likedByMe ? "currentColor" : "none"} />{" "}
-            <span
-              onClick={(e) => {
-                e.stopPropagation();
-                onShowLikers();
-              }}
-              style={{ cursor: post.likeCount > 0 ? "pointer" : "default" }}
-            >
-              {post.likeCount}
-            </span>
+            <span>{post.likeCount}</span>
           </button>
           <button type="button" className="stat" onClick={onShare}>
             <Share2 size={18} /> <span>Share</span>
           </button>
+          {post.likeCount > 0 && (
+            <button
+              type="button"
+              className="stat"
+              onClick={onShowLikers}
+              style={{ marginLeft: "auto" }}
+              aria-label="See who liked this"
+            >
+              <Eye size={16} /> <span>See likes</span>
+            </button>
+          )}
         </footer>
 
         <div className="comments">
