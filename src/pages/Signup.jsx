@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { GENDER_OPTIONS, ORIENTATION_OPTIONS } from "../lib/profileOptions.js";
@@ -49,6 +50,8 @@ export default function Signup() {
   const [genderCustom, setGenderCustom] = useState("");
   const [oriChoice, setOriChoice] = useState("");
   const [oriCustom, setOriCustom] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
 
   if (currentUser) return <Navigate to="/feed" replace />;
@@ -136,23 +139,63 @@ export default function Signup() {
               autoComplete="email"
             />
           </div>
-          <div className="field">
+          <div className="field" style={{ position: "relative" }}>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={form.password}
               onChange={set("password")}
               placeholder="Password"
               autoComplete="new-password"
+              style={{ paddingRight: 42 }}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              style={{
+                position: "absolute",
+                right: 12,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--text-muted)",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
           </div>
-          <div className="field">
+          <div className="field" style={{ position: "relative" }}>
             <input
-              type="password"
+              type={showConfirm ? "text" : "password"}
               value={form.confirm}
               onChange={set("confirm")}
               placeholder="Confirm password"
               autoComplete="new-password"
+              style={{ paddingRight: 42 }}
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirm((s) => !s)}
+              aria-label={showConfirm ? "Hide password" : "Show password"}
+              style={{
+                position: "absolute",
+                right: 12,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--text-muted)",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              {showConfirm ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
           </div>
 
           <div className="field">
