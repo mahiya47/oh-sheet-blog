@@ -13,6 +13,7 @@ import {
   Briefcase,
   GraduationCap,
   ShieldOff,
+  Flag,
   MoreHorizontal,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
@@ -32,6 +33,7 @@ import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import Lightbox from "../components/Lightbox.jsx";
 import AchievementsModal from "../components/AchievementsModal.jsx";
 import ProfileSkeleton from "../components/ProfileSkeleton.jsx";
+import ReportModal from "../components/ReportModal.jsx";
 
 export default function ProfilePage() {
   const { userId } = useParams();
@@ -68,6 +70,7 @@ export default function ProfilePage() {
     theyBlockedMe: false,
   });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     getFeed();
@@ -174,6 +177,29 @@ export default function ProfilePage() {
     }
   };
 
+  const onSubmitReport = async (reason) => {
+    setShowReport(false);
+    toast(
+      `Thanks — we'll take a look at @${profile.username}'s account.`,
+      "accent",
+    );
+
+    if (!blockStatus.iBlockedThem) {
+      const wantsBlock = window.confirm(
+        `Report submitted. Want to also block @${profile.username} so you don't see their content anymore?`,
+      );
+      if (wantsBlock) {
+        const ok = await blockUser(profile.id);
+        if (ok) {
+          setBlockStatus((s) => ({ ...s, iBlockedThem: true }));
+          const fresh = await getFollowInfo(profile.id);
+          setCounts(fresh);
+          toast(`Blocked @${profile.username}.`, "danger");
+        }
+      }
+    }
+  };
+
   const openFollowers = async () => {
     const users = await getFollowers(profile.id);
     setListModal({ title: "Followers", users });
@@ -269,8 +295,19 @@ export default function ProfilePage() {
                       <div
                         className="more-menu"
                         role="menu"
-                        style={{ right: 0, minWidth: 160 }}
+                        style={{ right: 0, minWidth: 180 }}
                       >
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            setShowReport(true);
+                          }}
+                        >
+                          <Flag size={15} />
+                          Report @{profile.username}
+                        </button>
                         <button
                           type="button"
                           className="danger"
@@ -556,6 +593,14 @@ export default function ProfilePage() {
         <AchievementsModal
           badges={earnedBadges}
           onClose={() => setShowAchievements(false)}
+        />
+      )}
+
+      {showReport && (
+        <ReportModal
+          username={profile.username}
+          onClose={() => setShowReport(false)}
+          onSubmit={onSubmitReport}
         />
       )}
     </>

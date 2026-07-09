@@ -87,75 +87,77 @@ export default function OnboardingPage() {
 
         {error && <div className="form-error">{error}</div>}
 
-        <div className="pfp-row">
-          <Avatar user={{ username, avatarUrl }} size={72} />
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={onPickFile}
-          />
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="pfp-row">
+            <Avatar user={{ username, avatarUrl }} size={72} />
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={onPickFile}
+            />
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => fileRef.current?.click()}
+            >
+              Upload photo
+            </button>
+          </div>
+
+          <div className="field">
+            <label>Or choose an avatar</label>
+            <AvatarPicker
+              value={avatarUrl}
+              onSelect={setAvatarUrl}
+              seedBase={username || "newuser"}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="ob-username">Username</label>
+            <input
+              id="ob-username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="username"
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="ob-name">Display name</label>
+            <input
+              id="ob-name"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Your name"
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="ob-bio">Bio (optional)</label>
+            <textarea
+              id="ob-bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value.slice(0, 160))}
+              placeholder="Tell the world about yourself…"
+              style={{ minHeight: 90 }}
+              maxLength={160}
+            />
+          </div>
+
           <button
             type="button"
-            className="btn btn-ghost"
-            onClick={() => fileRef.current?.click()}
+            className="btn btn-accent btn-block"
+            onClick={onSave}
+            disabled={saving}
           >
-            Upload photo
+            {saving ? "Saving…" : "Continue to Oh Sheet!"}
           </button>
         </div>
-
-        <div className="field">
-          <label>Or choose an avatar</label>
-          <AvatarPicker
-            value={avatarUrl}
-            onSelect={setAvatarUrl}
-            seedBase={username || "newuser"}
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="ob-username">Username</label>
-          <input
-            id="ob-username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="username"
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="ob-name">Display name</label>
-          <input
-            id="ob-name"
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Your name"
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="ob-bio">Bio (optional)</label>
-          <textarea
-            id="ob-bio"
-            value={bio}
-            onChange={(e) => setBio(e.target.value.slice(0, 160))}
-            placeholder="Tell the world about yourself…"
-            style={{ minHeight: 90 }}
-            maxLength={160}
-          />
-        </div>
-
-        <button
-          type="button"
-          className="btn btn-accent btn-block"
-          onClick={onSave}
-          disabled={saving}
-        >
-          {saving ? "Saving…" : "Continue to Oh Sheet!"}
-        </button>
       </div>
     </div>
   );
