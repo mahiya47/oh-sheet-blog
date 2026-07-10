@@ -298,10 +298,6 @@ export default function SheetCard({ post }) {
               marginTop: 12,
               borderRadius: "var(--radius)",
               border: "2px solid var(--border)",
-              background: "rgba(0, 0, 0, 0.55)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
               overflow: "hidden",
             }}
           >
@@ -309,9 +305,11 @@ export default function SheetCard({ post }) {
               src={post.imageUrl}
               alt=""
               style={{
-                maxWidth: "100%",
+                width: "100%",
+                height: "100%",
                 maxHeight: 560,
-                objectFit: "contain",
+                objectFit: "cover",
+                display: "block",
               }}
             />
           </div>
@@ -417,10 +415,13 @@ export default function SheetCard({ post }) {
 
       <footer
         className="sheet-foot"
+        onClick={stop}
         onTouchStart={stop}
         onTouchEnd={stop}
         onContextMenu={stop}
         style={{
+          display: "flex",
+          width: "100%",
           WebkitTouchCallout: "none",
           WebkitUserSelect: "none",
           userSelect: "none",
@@ -439,6 +440,7 @@ export default function SheetCard({ post }) {
               reactToPost(post.id, post.myReaction || "heart");
             }}
             aria-pressed={post.likedByMe}
+            style={{ flex: 1, justifyContent: "center" }}
           >
             <span style={{ fontSize: "1.1rem", lineHeight: 1 }}>
               {post.myReaction ? REACTION_EMOJI[post.myReaction] : "❤️"}
@@ -453,13 +455,24 @@ export default function SheetCard({ post }) {
             stop(e);
             open();
           }}
+          style={{ flex: 1, justifyContent: "center" }}
         >
           <MessageCircle size={18} /> <span>{post.commentCount}</span>
         </button>
-        <button type="button" className="stat" onClick={onRepost}>
+        <button
+          type="button"
+          className="stat"
+          onClick={onRepost}
+          style={{ flex: 1, justifyContent: "center" }}
+        >
           <Repeat2 size={18} /> <span>Repost</span>
         </button>
-        <button type="button" className="stat" onClick={onShare}>
+        <button
+          type="button"
+          className="stat"
+          onClick={onShare}
+          style={{ flex: 1, justifyContent: "center" }}
+        >
           <Share2 size={18} /> <span>Share</span>
         </button>
         {post.likeCount > 0 && (
@@ -468,6 +481,7 @@ export default function SheetCard({ post }) {
             className="stat"
             onClick={onShowReactions}
             aria-label="See reactions"
+            style={{ flex: 1, justifyContent: "center" }}
           >
             <Eye size={16} /> <span>See reactions</span>
           </button>
