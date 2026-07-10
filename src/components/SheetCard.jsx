@@ -293,25 +293,23 @@ export default function SheetCard({ post }) {
           <div
             style={{
               width: "100%",
-              minHeight: 320,
               maxHeight: 560,
               marginTop: 12,
               borderRadius: "var(--radius)",
               border: "2px solid var(--border)",
-              background: "rgba(0, 0, 0, 0.55)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
               overflow: "hidden",
+              display: "flex",
+              justifyContent: "center",
             }}
           >
             <img
               src={post.imageUrl}
               alt=""
               style={{
-                maxWidth: "100%",
+                width: "100%",
                 maxHeight: 560,
                 objectFit: "contain",
+                display: "block",
               }}
             />
           </div>
