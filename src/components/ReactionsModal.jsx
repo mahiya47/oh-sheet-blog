@@ -28,7 +28,7 @@ const REACTION_EMOJI = {
   kiss: "💋",
 };
 
-export default function ReactionsModal({ counts, users, onClose }) {
+export default function ReactionsModal({ counts = {}, users = [], onClose }) {
   const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
   const activeTypes = REACTION_ORDER.filter((t) => counts[t] > 0);
   const [filter, setFilter] = useState("all");
