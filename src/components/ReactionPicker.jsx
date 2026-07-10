@@ -1,172 +1,102 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { X, Crown } from "lucide-react";
-import { CREATOR_ID } from "../lib/creator.js";
-import Avatar from "./Avatar.jsx";
+import { useState, useRef, useEffect } from "react";
 
-const REACTION_ORDER = [
-  "heart",
-  "thumbsup",
-  "laugh",
-  "cry",
-  "poop",
-  "rainbow",
-  "hug",
-  "blast",
-  "kiss",
+const REACTIONS = [
+  { type: "heart", emoji: "❤️", label: "Love" },
+  { type: "thumbsup", emoji: "👍", label: "Like" },
+  { type: "laugh", emoji: "😂", label: "Haha" },
+  { type: "cry", emoji: "😢", label: "Sad" },
+  { type: "poop", emoji: "💩", label: "Poop" },
+  { type: "rainbow", emoji: "🌈", label: "Rainbow" },
+  { type: "hug", emoji: "🤗", label: "Hug" },
+  { type: "blast", emoji: "💥", label: "Blast" },
+  { type: "kiss", emoji: "💋", label: "Kiss" },
 ];
 
-const REACTION_EMOJI = {
-  heart: "❤️",
-  thumbsup: "👍",
-  laugh: "😂",
-  cry: "😢",
-  poop: "💩",
-  rainbow: "🌈",
-  hug: "🤗",
-  blast: "💥",
-  kiss: "💋",
-};
+export default function ReactionPicker({ current, onPick, children }) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef(null);
+  const hoverTimerRef = useRef(null);
 
-export default function ReactionsModal({ counts, users, onClose }) {
-  const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
-  const activeTypes = REACTION_ORDER.filter((t) => counts[t] > 0);
-  const [filter, setFilter] = useState("all");
+  useEffect(() => {
+    if (!open) return;
+    const handleOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [open]);
 
-  const shownUsers =
-    filter === "all" ? users : users.filter((u) => u.reaction === filter);
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
+
+  const openPicker = () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => setOpen(true), 400);
+  };
+
+  const cancelOpen = () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+  };
 
   return (
     <div
-      className="overlay"
-      onClick={(e) => {
-        e.stopPropagation();
-        if (e.target === e.currentTarget) onClose();
-      }}
+      ref={wrapperRef}
+      style={{ position: "relative", display: "inline-flex" }}
+      onMouseEnter={openPicker}
+      onMouseLeave={cancelOpen}
     >
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Reactions"
-        style={{ maxWidth: 440 }}
-      >
-        <button
-          type="button"
-          className="modal-close"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClose();
-          }}
-          aria-label="Close"
-        >
-          <X size={18} />
-        </button>
-
-        <div className="sheet-head" style={{ "--head": "var(--accent)" }}>
-          <span className="sheet-author">
-            <span className="names">
-              <span className="display">Reactions</span>
-            </span>
-          </span>
-        </div>
-
-        {/* Filter tabs: All + each reaction type present */}
+      {children}
+      {open && (
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 6,
-            padding: "10px var(--space-3) 0",
+            position: "absolute",
+            bottom: "100%",
+            left: 0,
+            marginBottom: 6,
+            display: "grid",
+            gridTemplateColumns: "repeat(5, 1fr)",
+            gap: 4,
+            width: 220,
+            background: "var(--surface, #111)",
+            border: "2px solid var(--border, #333)",
+            borderRadius: 16,
+            padding: 8,
+            boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
+            zIndex: 50,
           }}
         >
-          <button
-            type="button"
-            onClick={() => setFilter("all")}
-            className="tag"
-            style={{
-              cursor: "pointer",
-              background: filter === "all" ? "var(--accent)" : "transparent",
-              color: filter === "all" ? "var(--accent-ink)" : "inherit",
-            }}
-          >
-            All {totalCount}
-          </button>
-          {activeTypes.map((t) => (
+          {REACTIONS.map((r) => (
             <button
-              key={t}
+              key={r.type}
               type="button"
-              onClick={() => setFilter(t)}
-              className="tag"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpen(false);
+                onPick(r.type);
+              }}
+              aria-label={r.label}
+              title={r.label}
               style={{
+                background: "none",
+                border: "none",
                 cursor: "pointer",
-                background: filter === t ? "var(--accent)" : "transparent",
-                color: filter === t ? "var(--accent-ink)" : "inherit",
+                fontSize: "1.3rem",
+                lineHeight: 1,
+                padding: 4,
+                borderRadius: 8,
+                transform: current === r.type ? "scale(1.2)" : "scale(1)",
               }}
             >
-              {REACTION_EMOJI[t]} {counts[t]}
+              {r.emoji}
             </button>
           ))}
         </div>
-
-        <div style={{ padding: "var(--space-3)" }}>
-          {shownUsers.length === 0 ? (
-            <p
-              style={{
-                color: "var(--text-dim)",
-                padding: "var(--space-4)",
-                textAlign: "center",
-              }}
-            >
-              Nobody here yet.
-            </p>
-          ) : (
-            shownUsers.map((u) => (
-              <Link
-                key={u.id}
-                to={`/profile/${u.id}`}
-                onClick={onClose}
-                className="mini-row"
-                style={{ display: "flex", alignItems: "center", gap: 12 }}
-              >
-                <Avatar user={u} size={40} />
-                <span
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    minWidth: 0,
-                    flex: 1,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    {u.displayName || u.name}
-                    {u.id === CREATOR_ID && (
-                      <span className="creator-badge">
-                        <Crown size={10} /> Creator
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}
-                  >
-                    @{u.username}
-                  </span>
-                </span>
-                <span style={{ fontSize: "1.2rem" }}>
-                  {REACTION_EMOJI[u.reaction]}
-                </span>
-              </Link>
-            ))
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

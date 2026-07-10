@@ -541,7 +541,7 @@ export default function PostPage() {
         </div>
 
         <footer className="sheet-foot">
-          {/* <ReactionPicker
+          <ReactionPicker
             current={post.myReaction}
             onPick={(type) => {
               reactToPost(post.id, type);
@@ -561,20 +561,7 @@ export default function PostPage() {
               </span>
               <span>{post.likeCount}</span>
             </button>
-          </ReactionPicker> */}
-          <button
-            type="button"
-            className={`stat ${post.likedByMe ? "liked" : ""}`}
-            onClick={() => {
-              reactToPost(post.id, post.myReaction || "heart");
-              load();
-            }}
-          >
-            <span style={{ fontSize: "1.1rem", lineHeight: 1 }}>
-              {post.myReaction ? REACTION_EMOJI[post.myReaction] : "❤️"}
-            </span>
-            <span>{post.likeCount}</span>
-          </button>
+          </ReactionPicker>
           <button type="button" className="stat">
             <MessageCircle size={18} /> <span>{totalComments}</span>
           </button>
