@@ -408,8 +408,11 @@ export function StoreProvider({ children }) {
     laugh: "😂",
     cry: "😢",
     poop: "💩",
+    rainbow: "🌈",
+    hug: "🤗",
+    blast: "💥",
+    kiss: "💋",
   };
-
   const reactToPost = async (postId, type) => {
     // optimistic UI update
     setPosts((prev) =>

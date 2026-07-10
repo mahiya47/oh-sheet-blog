@@ -173,6 +173,7 @@ export default function PostModal({ postId, onClose }) {
     <div
       className="overlay"
       onClick={(e) => {
+        e.stopPropagation();
         if (e.target === e.currentTarget) onClose();
       }}
     >
@@ -185,7 +186,10 @@ export default function PostModal({ postId, onClose }) {
         <button
           type="button"
           className="modal-close"
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
           aria-label="Close"
         >
           <X size={18} />

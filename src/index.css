@@ -530,6 +530,7 @@ select {
   gap: var(--space-5);
   padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--border-soft);
+  flex-wrap: wrap;
 }
 .stat {
   display: inline-flex;
