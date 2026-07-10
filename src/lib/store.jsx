@@ -60,6 +60,8 @@ const normalizePost = (post) => ({
   likeCount: post.likeCount ?? 0,
   commentCount: post.commentCount ?? 0,
   likedByMe: post.likedByMe ?? false,
+  reactionCounts: post.reactionCounts ?? {},
+  myReaction: post.myReaction ?? null,
   author: {
     ...post.author,
     username: post.author?.username || post.author?.email?.split("@")[0],
