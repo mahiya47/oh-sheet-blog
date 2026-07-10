@@ -415,7 +415,18 @@ export default function SheetCard({ post }) {
         )}
       </div>
 
-      <footer className="sheet-foot">
+      <footer
+        className="sheet-foot"
+        onTouchStart={stop}
+        onTouchEnd={stop}
+        onContextMenu={stop}
+        style={{
+          WebkitTouchCallout: "none",
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          touchAction: "manipulation",
+        }}
+      >
         <ReactionPicker
           current={post.myReaction}
           onPick={(type) => reactToPost(post.id, type)}
