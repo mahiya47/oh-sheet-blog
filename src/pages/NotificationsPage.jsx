@@ -90,9 +90,14 @@ export default function NotificationsPage() {
             const to =
               n.type === "dm"
                 ? `/chat?dm=${n.actor?.id}`
-                : n.type === "verified"
+                : n.type === "verified" || n.type === "reactivated"
                   ? "/settings"
-                  : `/profile/${n.actor?.id}`;
+                  : (n.type === "like" ||
+                        n.type === "comment" ||
+                        n.type === "reply") &&
+                      n.postId
+                    ? `/post/${n.postId}`
+                    : `/profile/${n.actor?.id}`;
             return (
               <Link
                 key={n.id}

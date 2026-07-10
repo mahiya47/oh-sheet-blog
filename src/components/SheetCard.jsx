@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  Heart,
   MessageCircle,
   Repeat2,
   Share2,
@@ -15,7 +14,6 @@ import {
   Eye,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
-import { useModal } from "../context/ModalContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { useClickAway } from "../lib/useClickAway.js";
 import { colorFor, timeAgo } from "../lib/time.js";
@@ -23,8 +21,8 @@ import Avatar from "./Avatar.jsx";
 import VerifiedBadge from "./VerifiedBadge.jsx";
 import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
-import UserListModal from "./UserListModal.jsx";
 import ReactionPicker from "./ReactionPicker.jsx";
+import ReactionsModal from "./ReactionsModal.jsx";
 
 export default function SheetCard({ post }) {
   const {
@@ -34,25 +32,25 @@ export default function SheetCard({ post }) {
     deletePost,
     editPost,
     toggleFollow,
-    getPostLikers,
+    getPostReactions,
     reactToPost,
     REACTION_EMOJI,
   } = useStore();
-  const { openPost } = useModal();
+  const navigate = useNavigate();
   const toast = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(post.content);
   const [reposting, setReposting] = useState(false);
   const [repostText, setRepostText] = useState("");
-  const [listModal, setListModal] = useState(null);
+  const [reactionsModal, setReactionsModal] = useState(null);
   const menuRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
   const mine = currentUser && post.author?.id === currentUser.id;
   const stop = (e) => e.stopPropagation();
   const [justFollowed, setJustFollowed] = useState(false);
-  const open = () => openPost(post.id);
+  const open = () => navigate(`/post/${post.id}`);
   const onKey = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -60,16 +58,11 @@ export default function SheetCard({ post }) {
     }
   };
 
-  const onLike = (e) => {
-    stop(e);
-    toggleLike(post.id, post.likedByMe);
-  };
-
-  const onShowLikers = async (e) => {
+  const onShowReactions = async (e) => {
     stop(e);
     if (post.likeCount === 0) return;
-    const users = await getPostLikers(post.id);
-    setListModal({ title: "Liked by", users });
+    const data = await getPostReactions(post.id);
+    setReactionsModal(data);
   };
 
   const onFollowAuthor = async (e) => {
@@ -328,7 +321,7 @@ export default function SheetCard({ post }) {
           <div
             onClick={(e) => {
               stop(e);
-              openPost(post.repostOf.id);
+              navigate(`/post/${post.repostOf.id}`);
             }}
             style={{
               marginTop: 12,
@@ -462,20 +455,19 @@ export default function SheetCard({ post }) {
           <button
             type="button"
             className="stat"
-            onClick={onShowLikers}
-            style={{ marginLeft: "auto" }}
-            aria-label="See who liked this"
+            onClick={onShowReactions}
+            aria-label="See reactions"
           >
-            <Eye size={16} /> <span>See likes</span>
+            <Eye size={16} /> <span>See reactions</span>
           </button>
         )}
       </footer>
 
-      {listModal && (
-        <UserListModal
-          title={listModal.title}
-          users={listModal.users}
-          onClose={() => setListModal(null)}
+      {reactionsModal && (
+        <ReactionsModal
+          counts={reactionsModal.counts}
+          users={reactionsModal.users}
+          onClose={() => setReactionsModal(null)}
         />
       )}
     </article>
