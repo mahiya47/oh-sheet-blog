@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Sheet } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
-import { useModal } from "../context/ModalContext.jsx";
-import Avatar from "./Avatar.jsx";
 import { useBidirectionalSticky } from "../lib/useBidirectionalSticky.js";
+import Avatar from "./Avatar.jsx";
 
 function MiniRow({ post }) {
-  const { openPost } = useModal();
+  const navigate = useNavigate();
   return (
     <button
       type="button"
@@ -18,7 +17,7 @@ function MiniRow({ post }) {
         background: "transparent",
         border: "none",
       }}
-      onClick={() => openPost(post.id)}
+      onClick={() => navigate(`/post/${post.id}`)}
     >
       <span className="meta">@{post.author?.username || "anon"}</span>
       <span className="snippet">{post.content}</span>
@@ -95,13 +94,13 @@ export default function RightSidebar() {
   } = useStore();
   const [following, setFollowing] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
+  const trending = getTrending(8);
+  const trendingTags = getTrendingTags(10);
   const railRef = useBidirectionalSticky(72, 16);
-  const trending = getTrending(4);
-  const trendingTags = getTrendingTags(6);
 
   useEffect(() => {
     if (currentUser) {
-      getFollowingSidebar(3).then(setFollowing);
+      getFollowingSidebar(5).then(setFollowing);
     } else {
       setFollowing([]);
     }
