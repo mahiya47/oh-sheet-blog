@@ -298,6 +298,10 @@ export default function SheetCard({ post }) {
               marginTop: 12,
               borderRadius: "var(--radius)",
               border: "2px solid var(--border)",
+              background: "rgba(0, 0, 0, 0.55)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               overflow: "hidden",
             }}
           >
@@ -305,11 +309,9 @@ export default function SheetCard({ post }) {
               src={post.imageUrl}
               alt=""
               style={{
-                width: "100%",
-                height: "100%",
+                maxWidth: "100%",
                 maxHeight: 560,
-                objectFit: "cover",
-                display: "block",
+                objectFit: "contain",
               }}
             />
           </div>
