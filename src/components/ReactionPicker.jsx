@@ -16,6 +16,7 @@ export default function ReactionPicker({ current, onPick, children }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
   const hoverTimerRef = useRef(null);
+  const longPressFiredRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -25,7 +26,11 @@ export default function ReactionPicker({ current, onPick, children }) {
       }
     };
     document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
+    document.addEventListener("touchstart", handleOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+    };
   }, [open]);
 
   useEffect(() => {
@@ -34,6 +39,7 @@ export default function ReactionPicker({ current, onPick, children }) {
     };
   }, []);
 
+  // Desktop: hover-and-hold
   const openPicker = () => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => setOpen(true), 400);
@@ -43,12 +49,35 @@ export default function ReactionPicker({ current, onPick, children }) {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
   };
 
+  // Mobile: long-press. Quick tap (<400ms) falls through to the child
+  // button's normal onClick (instant react). A hold past 400ms opens
+  // the picker and suppresses the click that would otherwise fire.
+  const handleTouchStart = () => {
+    longPressFiredRef.current = false;
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      setOpen(true);
+      longPressFiredRef.current = true;
+    }, 400);
+  };
+
+  const handleTouchEnd = (e) => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    if (longPressFiredRef.current) {
+      // picker just opened via long-press — don't let the
+      // trailing click also fire the default reaction
+      e.preventDefault();
+    }
+  };
+
   return (
     <div
       ref={wrapperRef}
       style={{ position: "relative", display: "inline-flex" }}
       onMouseEnter={openPicker}
       onMouseLeave={cancelOpen}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {children}
       {open && (
