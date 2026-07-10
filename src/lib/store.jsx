@@ -54,6 +54,18 @@ const CARD_COLORS = [
 const randomColor = () =>
   CARD_COLORS[Math.floor(Math.random() * CARD_COLORS.length)];
 
+export const REACTION_EMOJI = {
+  heart: "❤️",
+  thumbsup: "👍",
+  laugh: "😂",
+  cry: "😢",
+  poop: "💩",
+  rainbow: "🌈",
+  hug: "🤗",
+  blast: "💥",
+  kiss: "💋",
+};
+
 const normalizePost = (post) => ({
   ...post,
   color: randomColor(),
@@ -81,66 +93,49 @@ export function StoreProvider({ children }) {
 
   // ---- Auth ---------------------------------------------------------------
 
+  const fetchFullProfile = async (userId) => {
+    try {
+      const res = await api.get(`/users/${userId}`);
+      return res.data;
+    } catch {
+      return {};
+    }
+  };
+
+  const buildUserFromProfile = (payload, profile) => ({
+    id: payload.userId,
+    email: payload.email,
+    username: profile.username || payload.email?.split("@")[0],
+    displayName: profile.name || payload.email?.split("@")[0],
+    avatarUrl: profile.avatarUrl || null,
+    coverUrl: profile.coverUrl || null,
+    gender: profile.gender || "",
+    orientation: profile.orientation || "",
+    showGender: profile.showGender || false,
+    showOrientation: profile.showOrientation || false,
+    birthday: profile.birthday || null,
+    emailVerified: profile.emailVerified || false,
+    createdAt: profile.createdAt || null,
+    score: profile.score || 0,
+    githubUrl: profile.githubUrl || null,
+    instagramUrl: profile.instagramUrl || null,
+    linkedinUrl: profile.linkedinUrl || null,
+    twitterUrl: profile.twitterUrl || null,
+    pronouns: profile.pronouns || "",
+    currentCity: profile.currentCity || "",
+    work: profile.work || "",
+    education: profile.education || "",
+    googleId: profile.googleId || null,
+    githubId: profile.githubId || null,
+  });
+
   const login = async (email, password) => {
     try {
       const res = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
       const payload = JSON.parse(atob(res.data.token.split(".")[1]));
-      let name = payload.email?.split("@")[0];
-      let username = payload.email?.split("@")[0];
-      let avatarUrl = null;
-      let coverUrl = null;
-      let gender = "";
-      let orientation = "";
-      let showGender = false;
-      let showOrientation = false;
-      let birthday = null;
-      let emailVerified = false;
-      let createdAt = null;
-      let score = 0;
-      let githubUrl = null;
-      let instagramUrl = null;
-      let linkedinUrl = null;
-      let twitterUrl = null;
-      try {
-        const profileRes = await api.get(`/users/${payload.userId}`);
-        name = profileRes.data.name || name;
-        emailVerified = profileRes.data.emailVerified || false;
-        username = profileRes.data.username || username;
-        avatarUrl = profileRes.data.avatarUrl || null;
-        coverUrl = profileRes.data.coverUrl || null;
-        gender = profileRes.data.gender || "";
-        orientation = profileRes.data.orientation || "";
-        showGender = profileRes.data.showGender || false;
-        showOrientation = profileRes.data.showOrientation || false;
-        birthday = profileRes.data.birthday || null;
-        createdAt = profileRes.data.createdAt || null;
-        score = profileRes.data.score || 0;
-        githubUrl = profileRes.data.githubUrl || null;
-        instagramUrl = profileRes.data.instagramUrl || null;
-        linkedinUrl = profileRes.data.linkedinUrl || null;
-        twitterUrl = profileRes.data.twitterUrl || null;
-      } catch {}
-      const user = {
-        id: payload.userId,
-        email: payload.email,
-        username,
-        displayName: name,
-        avatarUrl,
-        coverUrl,
-        gender,
-        orientation,
-        showGender,
-        showOrientation,
-        birthday,
-        emailVerified,
-        createdAt,
-        score,
-        githubUrl,
-        instagramUrl,
-        linkedinUrl,
-        twitterUrl,
-      };
+      const profile = await fetchFullProfile(payload.userId);
+      const user = buildUserFromProfile(payload, profile);
       localStorage.setItem("current-user", JSON.stringify(user));
       setCurrentUser(user);
       return { ok: true };
@@ -149,6 +144,20 @@ export function StoreProvider({ children }) {
         ok: false,
         error: err.response?.data?.message || "Login failed",
       };
+    }
+  };
+
+  const loginWithToken = async (token) => {
+    try {
+      localStorage.setItem("token", token);
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const profile = await fetchFullProfile(payload.userId);
+      const user = buildUserFromProfile(payload, profile);
+      localStorage.setItem("current-user", JSON.stringify(user));
+      setCurrentUser(user);
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: "Sign-in failed" };
     }
   };
 
@@ -169,82 +178,6 @@ export function StoreProvider({ children }) {
     }
   };
 
-  const loginWithToken = async (token) => {
-    try {
-      localStorage.setItem("token", token);
-      const payload = JSON.parse(atob(token.split(".")[1]));
-
-      let name = payload.email?.split("@")[0];
-      let username = payload.email?.split("@")[0];
-      let avatarUrl = null;
-      let coverUrl = null;
-      let gender = "";
-      let orientation = "";
-      let showGender = false;
-      let showOrientation = false;
-      let birthday = null;
-      let emailVerified = false;
-      let createdAt = null;
-      let score = 0;
-      let githubUrl = null;
-      let instagramUrl = null;
-      let linkedinUrl = null;
-      let twitterUrl = null;
-      let googleId = null;
-      let githubId = null;
-
-      try {
-        const profileRes = await api.get(`/users/${payload.userId}`);
-        name = profileRes.data.name || name;
-        emailVerified = profileRes.data.emailVerified || false;
-        username = profileRes.data.username || username;
-        avatarUrl = profileRes.data.avatarUrl || null;
-        coverUrl = profileRes.data.coverUrl || null;
-        gender = profileRes.data.gender || "";
-        orientation = profileRes.data.orientation || "";
-        showGender = profileRes.data.showGender || false;
-        showOrientation = profileRes.data.showOrientation || false;
-        birthday = profileRes.data.birthday || null;
-        createdAt = profileRes.data.createdAt || null;
-        score = profileRes.data.score || 0;
-        githubUrl = profileRes.data.githubUrl || null;
-        instagramUrl = profileRes.data.instagramUrl || null;
-        linkedinUrl = profileRes.data.linkedinUrl || null;
-        twitterUrl = profileRes.data.twitterUrl || null;
-        googleId = profileRes.data.googleId || null;
-        githubId = profileRes.data.githubId || null;
-      } catch {}
-
-      const user = {
-        id: payload.userId,
-        email: payload.email,
-        username,
-        displayName: name,
-        avatarUrl,
-        coverUrl,
-        gender,
-        orientation,
-        showGender,
-        showOrientation,
-        birthday,
-        emailVerified,
-        createdAt,
-        score,
-        githubUrl,
-        instagramUrl,
-        linkedinUrl,
-        twitterUrl,
-        googleId,
-        githubId,
-      };
-      localStorage.setItem("current-user", JSON.stringify(user));
-      setCurrentUser(user);
-      return { ok: true };
-    } catch (err) {
-      return { ok: false, error: "Sign-in failed" };
-    }
-  };
-
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("current-user");
@@ -253,6 +186,19 @@ export function StoreProvider({ children }) {
   };
 
   const loginAsDemo = async () => login("test@test.com", "test1234");
+
+  const deleteAccount = async () => {
+    try {
+      await api.delete("/auth/me");
+      logout();
+      return { ok: true };
+    } catch (err) {
+      return {
+        ok: false,
+        error: err.response?.data?.message || "Could not delete account",
+      };
+    }
+  };
 
   // ---- Posts ---------------------------------------------------------------
 
@@ -291,7 +237,7 @@ export function StoreProvider({ children }) {
   const getPost = async (id) => {
     try {
       const res = await api.get(`/posts/${id}`);
-      return res.data;
+      return normalizePost(res.data);
     } catch {
       return null;
     }
@@ -379,42 +325,8 @@ export function StoreProvider({ children }) {
     }
   };
 
-  // ---- Likes ---------------------------------------------------------------
+  // ---- Reactions -------------------------------------------------------
 
-  const toggleLike = async (postId, currentlyLiked) => {
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? {
-              ...p,
-              likedByMe: !currentlyLiked,
-              likeCount: p.likeCount + (currentlyLiked ? -1 : 1),
-            }
-          : p,
-      ),
-    );
-    try {
-      if (currentlyLiked) {
-        await api.delete(`/posts/${postId}/like`);
-      } else {
-        await api.post(`/posts/${postId}/like`);
-      }
-    } catch (err) {
-      if (err.response?.status !== 400) console.error(err);
-    }
-  };
-
-  const REACTION_EMOJI = {
-    heart: "❤️",
-    thumbsup: "👍",
-    laugh: "😂",
-    cry: "😢",
-    poop: "💩",
-    rainbow: "🌈",
-    hug: "🤗",
-    blast: "💥",
-    kiss: "💋",
-  };
   const reactToPost = async (postId, type) => {
     // optimistic UI update
     setPosts((prev) =>
@@ -422,16 +334,20 @@ export function StoreProvider({ children }) {
         if (p.id !== postId) return p;
         const wasReaction = p.myReaction;
         const counts = { ...(p.reactionCounts || {}) };
-        if (wasReaction)
+        if (wasReaction) {
           counts[wasReaction] = Math.max(0, (counts[wasReaction] || 1) - 1);
+        }
         const removing = wasReaction === type;
         const newReaction = removing ? null : type;
-        if (newReaction) counts[newReaction] = (counts[newReaction] || 0) + 1;
+        if (newReaction) {
+          counts[newReaction] = (counts[newReaction] || 0) + 1;
+        }
+        const safeValues = Object.values(counts || {});
         return {
           ...p,
           myReaction: newReaction,
           likedByMe: !!newReaction,
-          likeCount: Object.values(counts).reduce((a, b) => a + b, 0),
+          likeCount: safeValues.reduce((a, b) => a + b, 0),
           reactionCounts: counts,
         };
       }),
@@ -447,9 +363,25 @@ export function StoreProvider({ children }) {
   const getPostReactions = async (postId) => {
     try {
       const res = await api.get(`/posts/${postId}/reactions`);
-      return res.data;
+      return {
+        counts: res.data?.counts ?? {},
+        users: res.data?.users ?? [],
+      };
     } catch {
       return { counts: {}, users: [] };
+    }
+  };
+
+  const getPostLikers = async (postId) => {
+    try {
+      const res = await api.get(`/posts/${postId}/likers`);
+      return res.data.map((u) => ({
+        ...u,
+        username: u.username || u.email?.split("@")[0],
+        displayName: u.name || u.email?.split("@")[0],
+      }));
+    } catch {
+      return [];
     }
   };
 
@@ -616,6 +548,8 @@ export function StoreProvider({ children }) {
     }
   };
 
+  // ---- Blocking --------------------------------------------------------
+
   const blockUser = async (userId) => {
     try {
       await api.post(`/blocks/${userId}`);
@@ -659,15 +593,28 @@ export function StoreProvider({ children }) {
     }
   };
 
-  const deleteAccount = async () => {
+  // ---- Reports & Support -------------------------------------------------
+
+  const submitReport = async (reportedUserId, reason) => {
     try {
-      await api.delete("/auth/me");
-      logout();
+      await api.post("/reports", { reportedUserId, reason });
       return { ok: true };
     } catch (err) {
       return {
         ok: false,
-        error: err.response?.data?.message || "Could not delete account",
+        error: err.response?.data?.message || "Could not submit report",
+      };
+    }
+  };
+
+  const submitSupportTicket = async ({ type, subject, message }) => {
+    try {
+      await api.post("/support", { type, subject, message });
+      return { ok: true };
+    } catch (err) {
+      return {
+        ok: false,
+        error: err.response?.data?.message || "Could not submit request",
       };
     }
   };
@@ -732,6 +679,7 @@ export function StoreProvider({ children }) {
       };
     }
   };
+
   const resendVerification = async () => {
     try {
       await api.post("/auth/resend-verification");
@@ -905,29 +853,7 @@ export function StoreProvider({ children }) {
     localStorage.setItem("chat-last-seen", new Date().toISOString());
   };
 
-  const submitSupportTicket = async ({ type, subject, message }) => {
-    try {
-      await api.post("/support", { type, subject, message });
-      return { ok: true };
-    } catch (err) {
-      return {
-        ok: false,
-        error: err.response?.data?.message || "Could not submit request",
-      };
-    }
-  };
-
-  const submitReport = async (reportedUserId, reason) => {
-    try {
-      await api.post("/reports", { reportedUserId, reason });
-      return { ok: true };
-    } catch (err) {
-      return {
-        ok: false,
-        error: err.response?.data?.message || "Could not submit report",
-      };
-    }
-  };
+  // ---- Admin -------------------------------------------------------------
 
   const adminGetStats = async () => {
     try {
@@ -937,7 +863,6 @@ export function StoreProvider({ children }) {
       return null;
     }
   };
-
   const adminListUsers = async (q = "") => {
     try {
       const res = await api.get(`/admin/users?q=${encodeURIComponent(q)}`);
@@ -946,7 +871,6 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
-
   const adminDeleteUser = async (id) => {
     try {
       await api.delete(`/admin/users/${id}`);
@@ -955,7 +879,6 @@ export function StoreProvider({ children }) {
       return false;
     }
   };
-
   const adminListPosts = async (q = "") => {
     try {
       const res = await api.get(`/admin/posts?q=${encodeURIComponent(q)}`);
@@ -964,7 +887,6 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
-
   const adminDeletePost = async (id) => {
     try {
       await api.delete(`/admin/posts/${id}`);
@@ -973,7 +895,6 @@ export function StoreProvider({ children }) {
       return false;
     }
   };
-
   const adminListComments = async (q = "") => {
     try {
       const res = await api.get(`/admin/comments?q=${encodeURIComponent(q)}`);
@@ -982,7 +903,6 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
-
   const adminDeleteComment = async (id) => {
     try {
       await api.delete(`/admin/comments/${id}`);
@@ -991,7 +911,6 @@ export function StoreProvider({ children }) {
       return false;
     }
   };
-
   const adminListChat = async (q = "") => {
     try {
       const res = await api.get(`/admin/chat?q=${encodeURIComponent(q)}`);
@@ -1000,7 +919,6 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
-
   const adminDeleteChatMessage = async (id) => {
     try {
       await api.delete(`/admin/chat/${id}`);
@@ -1009,7 +927,6 @@ export function StoreProvider({ children }) {
       return false;
     }
   };
-
   const adminGetReports = async (status = "") => {
     try {
       const res = await api.get(
@@ -1020,7 +937,6 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
-
   const adminUpdateReport = async (id, status) => {
     try {
       await api.put(`/admin/reports/${id}`, { status });
@@ -1029,7 +945,6 @@ export function StoreProvider({ children }) {
       return false;
     }
   };
-
   const adminGetSupport = async (status = "") => {
     try {
       const res = await api.get(
@@ -1040,7 +955,6 @@ export function StoreProvider({ children }) {
       return [];
     }
   };
-
   const adminUpdateSupport = async (id, status) => {
     try {
       await api.put(`/admin/support/${id}`, { status });
@@ -1050,18 +964,6 @@ export function StoreProvider({ children }) {
     }
   };
 
-  const getPostLikers = async (postId) => {
-    try {
-      const res = await api.get(`/posts/${postId}/likers`);
-      return res.data.map((u) => ({
-        ...u,
-        username: u.username || u.email?.split("@")[0],
-        displayName: u.name || u.email?.split("@")[0],
-      }));
-    } catch {
-      return [];
-    }
-  };
   // ---- Stubs ---------------------------------------------------------------
 
   const getUserPosts = (userId) => posts.filter((p) => p.author?.id === userId);
@@ -1076,9 +978,11 @@ export function StoreProvider({ children }) {
         loading,
         posts,
         login,
+        loginWithToken,
         signup,
         logout,
         loginAsDemo,
+        deleteAccount,
         getFeed,
         getPost,
         createPost,
@@ -1087,7 +991,10 @@ export function StoreProvider({ children }) {
         getComments,
         addComment,
         deleteComment,
-        toggleLike,
+        reactToPost,
+        getPostReactions,
+        getPostLikers,
+        REACTION_EMOJI,
         toggleFollow,
         getFollowInfo,
         getFollowers,
@@ -1126,10 +1033,8 @@ export function StoreProvider({ children }) {
         unblockUser,
         getBlockedUsers,
         getBlockStatus,
-        deleteAccount,
-        loginWithToken,
-        submitSupportTicket,
         submitReport,
+        submitSupportTicket,
         adminGetStats,
         adminListUsers,
         adminDeleteUser,
@@ -1143,10 +1048,6 @@ export function StoreProvider({ children }) {
         adminUpdateReport,
         adminGetSupport,
         adminUpdateSupport,
-        getPostLikers,
-        reactToPost,
-        getPostReactions,
-        REACTION_EMOJI,
       }}
     >
       {children}
