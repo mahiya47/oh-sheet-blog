@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -24,7 +24,6 @@ import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import ReactionPicker from "../components/ReactionPicker.jsx";
 import ReactionsModal from "../components/ReactionsModal.jsx";
 import { useClickAway } from "../lib/useClickAway.js";
-import { useRef } from "react";
 
 export default function PostPage() {
   const { id } = useParams();
@@ -193,9 +192,9 @@ export default function PostPage() {
       key={c.id}
       style={isReply ? { marginLeft: 38 } : undefined}
     >
-      <div style={{ display: "flex", gap: 10 }}>
+      <div style={{ display: "flex", gap: 10, minWidth: 0, flex: 1 }}>
         <Avatar user={c.author} size={28} />
-        <div>
+        <div style={{ minWidth: 0 }}>
           <Link to={`/profile/${c.author?.id}`} className="who">
             @{c.author?.username}
             {c.author?.emailVerified && (
@@ -592,7 +591,7 @@ export default function PostPage() {
       </article>
 
       {currentUser && (
-        <div className="panel" style={{ display: "flex", gap: 8, padding: 12 }}>
+        <div className="comments" style={{ borderTop: "none" }}>
           {replyTo && (
             <div
               style={{
@@ -601,8 +600,10 @@ export default function PostPage() {
                 gap: 8,
                 fontSize: "0.8rem",
                 color: "var(--text-muted)",
+                marginBottom: 8,
               }}
             >
+              <CornerDownRight size={13} />
               Replying to @{replyTo.username}
               <button
                 type="button"
@@ -612,36 +613,37 @@ export default function PostPage() {
                   border: "none",
                   cursor: "pointer",
                   color: "var(--danger, #ff3e3e)",
+                  fontSize: "0.8rem",
+                  padding: 0,
                 }}
               >
-                ✕
+                ✕ cancel
               </button>
             </div>
           )}
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={
-              replyTo ? `Reply to @${replyTo.username}…` : "Write a comment…"
-            }
-            style={{ flex: 1 }}
-            onKeyDown={(e) => e.key === "Enter" && submit()}
-          />
-          <button type="button" className="btn btn-accent" onClick={submit}>
-            {replyTo ? "Reply" : "Post"}
-          </button>
+          <div className="comment-form" style={{ marginTop: 0 }}>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
+              }}
+              placeholder={
+                replyTo ? `Reply to @${replyTo.username}…` : "Write a comment"
+              }
+              aria-label="Write a comment"
+            />
+            <button type="button" className="btn btn-accent" onClick={submit}>
+              {replyTo ? "Reply" : "Post"}
+            </button>
+          </div>
         </div>
       )}
 
-      <div className="panel">
+      <div className="comments">
+        <h3>Comments ({totalComments})</h3>
         {comments.length === 0 ? (
-          <p
-            style={{
-              padding: 16,
-              color: "var(--text-dim)",
-              textAlign: "center",
-            }}
-          >
+          <p style={{ color: "var(--text-dim)", padding: "8px 0" }}>
             No comments yet.
           </p>
         ) : (
