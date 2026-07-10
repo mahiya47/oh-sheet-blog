@@ -628,7 +628,9 @@ select {
 }
 
 .sheet-media {
-  margin: 12px calc(-1 * var(--space-4)) 0;
+  margin: 12px calc(-1 * var(--space-4)) calc(-1 * var(--space-5));
+  border-top: var(--border-w) solid var(--border);
+  border-bottom: var(--border-w) solid var(--border);
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -637,6 +639,7 @@ select {
 .sheet-foot {
   gap: 0;
   flex-wrap: nowrap;
+  border-top: none;
 }
 /* =========================================================================
    Sort bar
