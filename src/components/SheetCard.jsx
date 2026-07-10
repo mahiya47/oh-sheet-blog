@@ -416,7 +416,7 @@ export default function SheetCard({ post }) {
       </div>
 
       <footer className="sheet-foot">
-        <ReactionPicker
+        {/* <ReactionPicker
           current={post.myReaction}
           onPick={(type) => reactToPost(post.id, type)}
         >
@@ -434,7 +434,21 @@ export default function SheetCard({ post }) {
             </span>
             <span>{post.likeCount}</span>
           </button>
-        </ReactionPicker>
+        </ReactionPicker> */}
+        <button
+          type="button"
+          className={`stat ${post.likedByMe ? "liked" : ""}`}
+          onClick={(e) => {
+            stop(e);
+            reactToPost(post.id, post.myReaction || "heart");
+          }}
+          aria-pressed={post.likedByMe}
+        >
+          <span style={{ fontSize: "1.1rem", lineHeight: 1 }}>
+            {post.myReaction ? REACTION_EMOJI[post.myReaction] : "❤️"}
+          </span>
+          <span>{post.likeCount}</span>
+        </button>
         <button
           type="button"
           className="stat"
