@@ -626,6 +626,18 @@ select {
 .more-menu .danger svg {
   opacity: 1;
 }
+
+.sheet-media {
+  margin: 12px calc(-1 * var(--space-4)) 0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.sheet-foot {
+  gap: 0;
+  flex-wrap: nowrap;
+}
 /* =========================================================================
    Sort bar
    ========================================================================= */

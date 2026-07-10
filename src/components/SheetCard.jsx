@@ -290,23 +290,13 @@ export default function SheetCard({ post }) {
         )}
 
         {post.imageUrl && !editing && (
-          <div
-            style={{
-              width: "100%",
-              maxHeight: 560,
-              marginTop: 12,
-              borderRadius: "var(--radius)",
-              border: "2px solid var(--border)",
-              overflow: "hidden",
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
+          <div className="sheet-media">
             <img
               src={post.imageUrl}
               alt=""
               style={{
                 width: "100%",
+                height: "auto",
                 maxHeight: 560,
                 objectFit: "contain",
                 display: "block",
