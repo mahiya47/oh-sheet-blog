@@ -109,9 +109,47 @@ export default function PostPage() {
   // copy of the post — so after any reaction we refetch just this post
   // and sync it into local state, instead of needing a full page reload.
   const handleReact = async (type) => {
-    await reactToPost(post.id, type);
-    const fresh = await getPost(post.id);
-    if (fresh) setPost(fresh);
+    const prev = post;
+    const wasThisType = prev.myReaction === type;
+
+    // Optimistic local update — happens instantly, no waiting on the network
+    const reactionCounts = { ...(prev.reactionCounts || {}) };
+    let likeCount = prev.likeCount;
+    let myReaction = prev.myReaction;
+    let likedByMe = prev.likedByMe;
+
+    if (wasThisType) {
+      // un-react
+      reactionCounts[type] = Math.max(0, (reactionCounts[type] || 1) - 1);
+      likeCount = Math.max(0, likeCount - 1);
+      myReaction = null;
+      likedByMe = false;
+    } else if (prev.myReaction) {
+      // switching reaction type — total count stays the same
+      reactionCounts[prev.myReaction] = Math.max(
+        0,
+        (reactionCounts[prev.myReaction] || 1) - 1,
+      );
+      reactionCounts[type] = (reactionCounts[type] || 0) + 1;
+      myReaction = type;
+      likedByMe = true;
+    } else {
+      // new reaction
+      reactionCounts[type] = (reactionCounts[type] || 0) + 1;
+      likeCount = likeCount + 1;
+      myReaction = type;
+      likedByMe = true;
+    }
+
+    setPost({ ...prev, reactionCounts, likeCount, myReaction, likedByMe });
+
+    // Reconcile with the server in the background. On failure, roll back.
+    try {
+      await reactToPost(post.id, type);
+    } catch {
+      setPost(prev);
+      toast("Could not update reaction.", "danger");
+    }
   };
 
   if (loading) {
