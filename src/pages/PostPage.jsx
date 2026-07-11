@@ -57,6 +57,7 @@ export default function PostPage() {
   const [repostText, setRepostText] = useState("");
   const [justFollowed, setJustFollowed] = useState(false);
   const menuRef = useRef(null);
+  const commentBoxRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
   const normalizeUser = (u) => ({
@@ -122,6 +123,8 @@ export default function PostPage() {
     0,
   );
 
+  const stop = (e) => e.stopPropagation();
+
   const onShare = () => {
     navigator.clipboard?.writeText(window.location.href).then(
       () => toast("Link copied!", "accent"),
@@ -162,11 +165,23 @@ export default function PostPage() {
     }
   };
 
+  const onRepost = () => {
+    setRepostText("");
+    setReposting(true);
+  };
+
   const onConfirmRepost = async () => {
     const originalId = post.repostOfId || post.id;
     await createPost(repostText.trim(), [], "", originalId);
     setReposting(false);
     toast("Reposted to your profile.", "accent");
+  };
+
+  const onGoToComments = () => {
+    commentBoxRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
   };
 
   const submit = async () => {
@@ -417,29 +432,38 @@ export default function PostPage() {
             <p style={{ fontSize: "1.2rem" }}>{post.content}</p>
           )}
 
-          {post.imageUrl && !editing && (
+          {post.tags?.length > 0 && !editing && (
             <div
               style={{
-                width: "100%",
-                minHeight: 320,
-                maxHeight: 640,
-                marginTop: 12,
-                borderRadius: "var(--radius)",
-                border: "2px solid var(--border)",
-                background: "rgba(0, 0, 0, 0.55)",
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
+                flexWrap: "wrap",
+                gap: 6,
+                marginTop: 12,
               }}
             >
+              {post.tags.map((pt) => (
+                <Link
+                  key={pt.tag?.id || pt.tag?.name}
+                  to={`/tag/${pt.tag?.name}`}
+                  className="tag"
+                >
+                  #{pt.tag?.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {post.imageUrl && !editing && (
+            <div className="sheet-media">
               <img
                 src={post.imageUrl}
                 alt=""
                 style={{
-                  maxWidth: "100%",
+                  width: "100%",
+                  height: "auto",
                   maxHeight: 640,
                   objectFit: "contain",
+                  display: "block",
                 }}
               />
             </div>
@@ -516,27 +540,6 @@ export default function PostPage() {
               This sheet was deleted.
             </div>
           )}
-
-          {post.tags?.length > 0 && !editing && (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 6,
-                marginTop: 12,
-              }}
-            >
-              {post.tags.map((pt) => (
-                <Link
-                  key={pt.tag?.id || pt.tag?.name}
-                  to={`/tag/${pt.tag?.name}`}
-                  className="tag"
-                >
-                  #{pt.tag?.name}
-                </Link>
-              ))}
-            </div>
-          )}
         </div>
 
         <footer
@@ -579,7 +582,7 @@ export default function PostPage() {
             className="stat"
             onClick={(e) => {
               stop(e);
-              open();
+              onGoToComments();
             }}
             style={{ flex: 1, justifyContent: "center" }}
           >
@@ -588,7 +591,10 @@ export default function PostPage() {
           <button
             type="button"
             className="stat"
-            onClick={onRepost}
+            onClick={(e) => {
+              stop(e);
+              onRepost();
+            }}
             aria-label="Repost"
             style={{ flex: 1, justifyContent: "center" }}
           >
@@ -649,7 +655,11 @@ export default function PostPage() {
               </button>
             </div>
           )}
-          <div className="comment-form" style={{ marginTop: 0 }}>
+          <div
+            className="comment-form"
+            style={{ marginTop: 0 }}
+            ref={commentBoxRef}
+          >
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
