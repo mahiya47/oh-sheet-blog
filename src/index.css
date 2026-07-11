@@ -47,16 +47,19 @@
 
 /* ---- Dark theme (default — this is the app's real identity) ---- */
 :root,
-[data-theme="dark"] .sheet,
-[data-theme="dark"] .panel,
-[data-theme="dark"] .rail-left,
-[data-theme="dark"] .editor,
-[data-theme="dark"] .sortbar,
-[data-theme="dark"] .profile,
-[data-theme="dark"] .content-card,
-[data-theme="dark"] .settings-side,
-[data-theme="dark"] .settings-main {
-  box-shadow: 4px 4px 0 var(--border);
+[data-theme="dark"] {
+  --bg: #101012;
+  --surface: #000000;
+  --surface-2: #15151a;
+  --surface-3: #1d1d24;
+  --text: #ffffff;
+  --text-muted: #9a9aa3;
+  --text-dim: #5d5d66;
+  --border: #ffffff;
+  --border-soft: #2a2a31;
+  --shadow-color: rgba(255, 255, 255, 0.12);
+  --shadow-strong: var(--accent);
+  --overlay: rgba(0, 0, 0, 0.86);
 }
 
 /* ---- Light theme (functional companion, classic light neobrutalism) ---- */
@@ -87,6 +90,17 @@
   box-shadow: 4px 4px 0 var(--border);
 }
 
+[data-theme="dark"] .sheet,
+[data-theme="dark"] .panel,
+[data-theme="dark"] .rail-left,
+[data-theme="dark"] .editor,
+[data-theme="dark"] .sortbar,
+[data-theme="dark"] .profile,
+[data-theme="dark"] .content-card,
+[data-theme="dark"] .settings-side,
+[data-theme="dark"] .settings-main {
+  box-shadow: 4px 4px 0 var(--border);
+}
 /* ---- Reset ---- */
 *,
 *::before,
