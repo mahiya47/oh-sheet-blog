@@ -481,9 +481,8 @@ select {
 }
 .sheet.clickable:hover {
   transform: translate(-3px, -3px);
-  box-shadow: 6px 6px 0 var(--shadow-strong);
+  border-color: var(--shadow-strong);
 }
-
 .sheet-head {
   display: flex;
   align-items: center;
@@ -528,11 +527,12 @@ select {
 
 .sheet-foot {
   display: flex;
-  gap: var(--space-5);
   padding: var(--space-3) var(--space-4);
-  border-top: 1px solid var(--border-soft);
-  flex-wrap: wrap;
+  border-top: none;
+  flex-wrap: nowrap;
+  gap: var(--space-2);
 }
+
 .stat {
   display: inline-flex;
   align-items: center;
@@ -637,11 +637,6 @@ select {
   justify-content: center;
 }
 
-.sheet-foot {
-  gap: 0;
-  flex-wrap: nowrap;
-  border-top: none;
-}
 /* =========================================================================
    Sort bar
    ========================================================================= */
