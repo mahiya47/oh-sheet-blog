@@ -1,33 +1,66 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, ImagePlus } from "lucide-react";
+import { X, ImagePlus, Crop as CropIcon } from "lucide-react";
+import Cropper from "react-easy-crop";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 
 const MAX = 500;
 
-// Downscale a large image to a reasonable size before storing/sending.
-function fileToImageDataUrl(file, max = 800) {
+// Mobile-friendly portrait ratio — matches how images render in the feed card
+const CROP_ASPECT = 4 / 5;
+
+function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const scale = Math.min(1, max / Math.max(img.width, img.height));
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.6));
-      };
-      img.onerror = reject;
-      img.src = reader.result;
-    };
+    reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+// Crops the image to the pixel box react-easy-crop gives us, then
+// downsizes the result the same way the old fileToImageDataUrl did.
+async function getCroppedImageDataUrl(imageSrc, cropPixels, max = 800) {
+  const img = await loadImage(imageSrc);
+
+  const cropCanvas = document.createElement("canvas");
+  cropCanvas.width = cropPixels.width;
+  cropCanvas.height = cropPixels.height;
+  const cropCtx = cropCanvas.getContext("2d");
+  cropCtx.drawImage(
+    img,
+    cropPixels.x,
+    cropPixels.y,
+    cropPixels.width,
+    cropPixels.height,
+    0,
+    0,
+    cropPixels.width,
+    cropPixels.height,
+  );
+
+  const scale = Math.min(
+    1,
+    max / Math.max(cropCanvas.width, cropCanvas.height),
+  );
+  const w = Math.round(cropCanvas.width * scale);
+  const h = Math.round(cropCanvas.height * scale);
+  const outCanvas = document.createElement("canvas");
+  outCanvas.width = w;
+  outCanvas.height = h;
+  outCanvas.getContext("2d").drawImage(cropCanvas, 0, 0, w, h);
+
+  return outCanvas.toDataURL("image/jpeg", 0.7);
 }
 
 export default function CreatePostPage() {
@@ -39,6 +72,12 @@ export default function CreatePostPage() {
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState([]);
   const [imageUrl, setImageUrl] = useState("");
+
+  // Crop modal state
+  const [cropSrc, setCropSrc] = useState(null); // raw uploaded image, pre-crop
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const over = content.length > MAX;
   const empty = content.trim().length === 0 && !imageUrl;
@@ -64,11 +103,41 @@ export default function CreatePostPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const dataUrl = await fileToImageDataUrl(file);
-      setImageUrl(dataUrl);
-      toast("Image added.", "accent");
+      const dataUrl = await readFileAsDataUrl(file);
+      setCropSrc(dataUrl);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
     } catch {
       toast("Couldn't load that image.", "danger");
+    }
+    e.target.value = ""; // allow picking the same file again later
+  };
+
+  const onCropComplete = useCallback((_, pixels) => {
+    setCroppedAreaPixels(pixels);
+  }, []);
+
+  const onConfirmCrop = async () => {
+    if (!cropSrc || !croppedAreaPixels) return;
+    try {
+      const dataUrl = await getCroppedImageDataUrl(cropSrc, croppedAreaPixels);
+      setImageUrl(dataUrl);
+      setCropSrc(null);
+      toast("Image added.", "accent");
+    } catch {
+      toast("Couldn't crop that image.", "danger");
+    }
+  };
+
+  const onCancelCrop = () => {
+    setCropSrc(null);
+  };
+
+  const onEditCurrentImage = () => {
+    if (imageUrl) {
+      setCropSrc(imageUrl);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
     }
   };
 
@@ -181,6 +250,16 @@ export default function CreatePostPage() {
             <button
               type="button"
               className="icon-btn"
+              onClick={onEditCurrentImage}
+              style={{ position: "absolute", top: 8, right: 44 }}
+              aria-label="Re-crop image"
+              title="Re-crop"
+            >
+              <CropIcon size={16} />
+            </button>
+            <button
+              type="button"
+              className="icon-btn"
               onClick={() => setImageUrl("")}
               style={{ position: "absolute", top: 8, right: 8 }}
               aria-label="Remove image"
@@ -217,6 +296,71 @@ export default function CreatePostPage() {
           Post sheet
         </button>
       </div>
+
+      {cropSrc && (
+        <div className="overlay" onClick={onCancelCrop}>
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: 420,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ position: "relative", width: "100%", height: 420 }}>
+              <Cropper
+                image={cropSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={CROP_ASPECT}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+            <div style={{ padding: "var(--space-4)" }}>
+              <label
+                style={{
+                  fontSize: "0.8rem",
+                  color: "var(--text-muted)",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                }}
+              >
+                Zoom
+              </label>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.05}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                style={{ width: "100%" }}
+              />
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <button
+                  type="button"
+                  className="btn btn-accent"
+                  onClick={onConfirmCrop}
+                  style={{ flex: 1 }}
+                >
+                  Crop & use
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={onCancelCrop}
+                  style={{ flex: 1 }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
