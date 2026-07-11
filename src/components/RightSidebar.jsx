@@ -138,8 +138,6 @@ export default function RightSidebar() {
           </Link>
         </section>
 
-        <div className="rail-divider" />
-
         <section className="panel">
           <h2 className="panel-head">Trending sheets</h2>
           {trending.length > 0 ? (
@@ -153,8 +151,6 @@ export default function RightSidebar() {
             View all trending
           </Link>
         </section>
-
-        <div className="rail-divider" />
 
         <section className="panel">
           <h2 className="panel-head">Trending tags</h2>
@@ -179,23 +175,18 @@ export default function RightSidebar() {
         </section>
 
         {visibleSuggestions.length > 0 && (
-          <>
-            <div className="rail-divider" />
-            <section className="panel">
-              <h2 className="panel-head">People you may know</h2>
-              {visibleSuggestions.map((u, i) => (
-                <SuggestionRow
-                  key={u.id}
-                  user={u}
-                  onFollowed={dismissSuggestion}
-                  isLast={i === visibleSuggestions.length - 1}
-                />
-              ))}
-            </section>
-          </>
+          <section className="panel">
+            <h2 className="panel-head">People you may know</h2>
+            {visibleSuggestions.map((u, i) => (
+              <SuggestionRow
+                key={u.id}
+                user={u}
+                onFollowed={dismissSuggestion}
+                isLast={i === visibleSuggestions.length - 1}
+              />
+            ))}
+          </section>
         )}
-
-        <div className="rail-divider" />
 
         <section className="panel mini-footer">
           <div className="links">
