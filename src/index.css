@@ -629,7 +629,7 @@ select {
 }
 
 .sheet-media {
-  margin: 12px calc(-1 * var(--space-4)) calc(-1 * var(--space-5));
+  margin: 12px calc(-1 * var(--space-4)) 0;
   border-top: var(--border-w) solid var(--border);
   border-bottom: var(--border-w) solid var(--border);
   overflow: hidden;
