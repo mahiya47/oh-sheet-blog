@@ -478,7 +478,7 @@ select {
 }
 
 .rail-right .panel + .panel {
-  border-top: 3px solid var(--border-soft);
+  border-top: 3px solid var(--border);
 }
 /* =========================================================================
    Cards (sheets)
