@@ -539,21 +539,34 @@ export default function PostPage() {
           )}
         </div>
 
-        <footer className="sheet-foot">
+        <footer
+          className="sheet-foot"
+          onClick={stop}
+          onTouchStart={stop}
+          onTouchEnd={stop}
+          onContextMenu={stop}
+          style={{
+            display: "flex",
+            width: "100%",
+            WebkitTouchCallout: "none",
+            WebkitUserSelect: "none",
+            userSelect: "none",
+            touchAction: "manipulation",
+          }}
+        >
           <ReactionPicker
             current={post.myReaction}
-            onPick={(type) => {
-              reactToPost(post.id, type);
-              load();
-            }}
+            onPick={(type) => reactToPost(post.id, type)}
           >
             <button
               type="button"
               className={`stat ${post.likedByMe ? "liked" : ""}`}
-              onClick={() => {
+              onClick={(e) => {
+                stop(e);
                 reactToPost(post.id, post.myReaction || "heart");
-                load();
               }}
+              aria-pressed={post.likedByMe}
+              style={{ flex: 1, justifyContent: "center" }}
             >
               <span style={{ fontSize: "1.1rem", lineHeight: 1 }}>
                 {post.myReaction ? REACTION_EMOJI[post.myReaction] : "❤️"}
@@ -561,21 +574,34 @@ export default function PostPage() {
               <span>{post.likeCount}</span>
             </button>
           </ReactionPicker>
-          <button type="button" className="stat">
-            <MessageCircle size={18} /> <span>{totalComments}</span>
+          <button
+            type="button"
+            className="stat"
+            onClick={(e) => {
+              stop(e);
+              open();
+            }}
+            style={{ flex: 1, justifyContent: "center" }}
+          >
+            <MessageCircle size={18} /> <span>{post.commentCount}</span>
           </button>
           <button
             type="button"
             className="stat"
-            onClick={() => {
-              setRepostText("");
-              setReposting(true);
-            }}
+            onClick={onRepost}
+            aria-label="Repost"
+            style={{ flex: 1, justifyContent: "center" }}
           >
-            <Repeat2 size={18} /> <span>Repost</span>
+            <Repeat2 size={18} /> <span className="stat-label">Repost</span>
           </button>
-          <button type="button" className="stat" onClick={onShare}>
-            <Share2 size={18} /> <span>Share</span>
+          <button
+            type="button"
+            className="stat"
+            onClick={onShare}
+            aria-label="Share"
+            style={{ flex: 1, justifyContent: "center" }}
+          >
+            <Share2 size={18} /> <span className="stat-label">Share</span>
           </button>
           {post.likeCount > 0 && (
             <button
@@ -583,8 +609,10 @@ export default function PostPage() {
               className="stat"
               onClick={onShowReactions}
               aria-label="See reactions"
+              style={{ flex: 1, justifyContent: "center" }}
             >
-              <Eye size={16} /> <span>See reactions</span>
+              <Eye size={16} />{" "}
+              <span className="stat-label">See reactions</span>
             </button>
           )}
         </footer>

@@ -517,12 +517,13 @@ select {
 }
 
 .sheet-body {
-  padding: var(--space-5) var(--space-4);
+  padding: var(--space-4) var(--space-4) 0;
 }
 .sheet-body p {
   font-size: 1.05rem;
   white-space: pre-wrap;
   word-break: break-word;
+  margin-bottom: var(--space-4);
 }
 
 .sheet-foot {
@@ -1886,6 +1887,15 @@ select {
   }
   .rail-right {
     display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-label {
+    display: none;
+  }
+  .sheet-foot .stat {
+    gap: 0;
   }
 }
 

@@ -289,6 +289,28 @@ export default function SheetCard({ post }) {
           <p>{post.content}</p>
         )}
 
+        {post.tags?.length > 0 && !editing && (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 6,
+              marginTop: 12,
+            }}
+          >
+            {post.tags.map((pt) => (
+              <Link
+                key={pt.tag?.id || pt.tag?.name}
+                to={`/tag/${pt.tag?.name}`}
+                className="tag"
+                onClick={stop}
+              >
+                #{pt.tag?.name}
+              </Link>
+            ))}
+          </div>
+        )}
+
         {post.imageUrl && !editing && (
           <div className="sheet-media">
             <img
@@ -379,28 +401,6 @@ export default function SheetCard({ post }) {
             This sheet was deleted.
           </div>
         )}
-
-        {post.tags?.length > 0 && !editing && (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 6,
-              marginTop: 12,
-            }}
-          >
-            {post.tags.map((pt) => (
-              <Link
-                key={pt.tag?.id || pt.tag?.name}
-                to={`/tag/${pt.tag?.name}`}
-                className="tag"
-                onClick={stop}
-              >
-                #{pt.tag?.name}
-              </Link>
-            ))}
-          </div>
-        )}
       </div>
 
       <footer
@@ -453,17 +453,19 @@ export default function SheetCard({ post }) {
           type="button"
           className="stat"
           onClick={onRepost}
+          aria-label="Repost"
           style={{ flex: 1, justifyContent: "center" }}
         >
-          <Repeat2 size={18} /> <span>Repost</span>
+          <Repeat2 size={18} /> <span className="stat-label">Repost</span>
         </button>
         <button
           type="button"
           className="stat"
           onClick={onShare}
+          aria-label="Share"
           style={{ flex: 1, justifyContent: "center" }}
         >
-          <Share2 size={18} /> <span>Share</span>
+          <Share2 size={18} /> <span className="stat-label">Share</span>
         </button>
         {post.likeCount > 0 && (
           <button
@@ -473,7 +475,7 @@ export default function SheetCard({ post }) {
             aria-label="See reactions"
             style={{ flex: 1, justifyContent: "center" }}
           >
-            <Eye size={16} /> <span>See reactions</span>
+            <Eye size={16} /> <span className="stat-label">See reactions</span>
           </button>
         )}
       </footer>
