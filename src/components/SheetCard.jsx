@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   MessageCircle,
@@ -12,6 +12,7 @@ import {
   Crown,
   Cake,
   Eye,
+  Heart,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -23,6 +24,8 @@ import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 import ReactionPicker from "./ReactionPicker.jsx";
 import ReactionsModal from "./ReactionsModal.jsx";
+
+const DOUBLE_TAP_DELAY = 280;
 
 export default function SheetCard({ post }) {
   const {
@@ -44,7 +47,10 @@ export default function SheetCard({ post }) {
   const [reposting, setReposting] = useState(false);
   const [repostText, setRepostText] = useState("");
   const [reactionsModal, setReactionsModal] = useState(null);
+  const [showHeartBurst, setShowHeartBurst] = useState(false);
   const menuRef = useRef(null);
+  const lastTapRef = useRef(0);
+  const tapTimeoutRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
   const mine = currentUser && post.author?.id === currentUser.id;
@@ -55,6 +61,38 @@ export default function SheetCard({ post }) {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       open();
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current);
+    };
+  }, []);
+
+  const onImageTap = (e) => {
+    stop(e);
+    const now = Date.now();
+    const delta = now - lastTapRef.current;
+
+    if (delta > 0 && delta < DOUBLE_TAP_DELAY) {
+      // Double tap/click — like it, cancel the pending single-tap navigation
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current);
+        tapTimeoutRef.current = null;
+      }
+      lastTapRef.current = 0;
+      if (!post.likedByMe) {
+        reactToPost(post.id, post.myReaction || "heart");
+      }
+      setShowHeartBurst(true);
+      setTimeout(() => setShowHeartBurst(false), 700);
+    } else {
+      // First tap — wait to see if a second one follows
+      lastTapRef.current = now;
+      tapTimeoutRef.current = setTimeout(() => {
+        open();
+      }, DOUBLE_TAP_DELAY);
     }
   };
 
@@ -312,7 +350,11 @@ export default function SheetCard({ post }) {
         )}
 
         {post.imageUrl && !editing && (
-          <div className="sheet-media">
+          <div
+            className="sheet-media"
+            onClick={onImageTap}
+            style={{ position: "relative" }}
+          >
             <img
               src={post.imageUrl}
               alt=""
@@ -322,8 +364,19 @@ export default function SheetCard({ post }) {
                 maxHeight: 560,
                 objectFit: "contain",
                 display: "block",
+                userSelect: "none",
+                WebkitUserSelect: "none",
               }}
+              draggable={false}
             />
+            {showHeartBurst && (
+              <Heart
+                className="heart-burst"
+                size={90}
+                fill="#fff"
+                color="#fff"
+              />
+            )}
           </div>
         )}
 

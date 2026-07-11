@@ -26,6 +26,16 @@ import AvatarPicker from "../components/AvatarPicker.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://192.168.1.4:5000/api";
 
+const PRONOUN_OPTIONS = [
+  "He/Him",
+  "She/Her",
+  "They/Them",
+  "He/They",
+  "She/They",
+  "Ze/Zir",
+  "Xe/Xem",
+];
+
 function fileToAvatarDataUrl(file, max = 256) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -114,7 +124,15 @@ export default function SettingsPage() {
   const [birthday, setBirthday] = useState(
     currentUser?.birthday ? currentUser.birthday.slice(0, 10) : "",
   );
-  const [pronouns, setPronouns] = useState(currentUser?.pronouns || "");
+
+  const storedPronouns = currentUser?.pronouns || "";
+  const pronounsIsPreset = PRONOUN_OPTIONS.includes(storedPronouns);
+  const [pronounsChoice, setPronounsChoice] = useState(
+    storedPronouns ? (pronounsIsPreset ? storedPronouns : SELF) : "",
+  );
+  const [pronounsCustom, setPronounsCustom] = useState(
+    storedPronouns && !pronounsIsPreset ? storedPronouns : "",
+  );
 
   const [currentCity, setCurrentCity] = useState(
     currentUser?.currentCity || "",
@@ -203,7 +221,8 @@ export default function SettingsPage() {
     avatarUrl,
     coverUrl,
     birthday,
-    pronouns,
+    pronounsChoice,
+    pronounsCustom,
     currentCity,
     work,
     education,
@@ -263,6 +282,8 @@ export default function SettingsPage() {
 
     const gender = genderChoice === SELF ? genderCustom.trim() : genderChoice;
     const orientation = oriChoice === SELF ? oriCustom.trim() : oriChoice;
+    const pronouns =
+      pronounsChoice === SELF ? pronounsCustom.trim() : pronounsChoice;
 
     const res = await updateProfile({
       name: displayName.trim() || currentUser.displayName,
@@ -466,18 +487,6 @@ export default function SettingsPage() {
               </div>
 
               <div className="field">
-                <label htmlFor="bday">Birthday</label>
-                <input
-                  id="bday"
-                  type="date"
-                  value={birthday}
-                  onChange={(e) => setBirthday(e.target.value)}
-                />
-                <span className="hint">
-                  A cake appears on your posts on your birthday.
-                </span>
-              </div>
-              <div className="field">
                 <label htmlFor="dn">Display name</label>
                 <input
                   id="dn"
@@ -486,19 +495,6 @@ export default function SettingsPage() {
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Your name"
                 />
-              </div>
-              <div className="field">
-                <label htmlFor="pronouns">Pronouns</label>
-                <input
-                  id="pronouns"
-                  type="text"
-                  value={pronouns}
-                  onChange={(e) => setPronouns(e.target.value)}
-                  placeholder="e.g. he/him, she/her, they/them"
-                />
-                <span className="hint">
-                  Shown next to your name on your profile.
-                </span>
               </div>
               <div className="field">
                 <label htmlFor="un">Username</label>
@@ -538,6 +534,48 @@ export default function SettingsPage() {
           {tab === "about" && (
             <>
               <h3>About</h3>
+
+              <div className="field">
+                <label htmlFor="bday">Birthday</label>
+                <input
+                  id="bday"
+                  type="date"
+                  value={birthday}
+                  onChange={(e) => setBirthday(e.target.value)}
+                />
+                <span className="hint">
+                  A cake appears on your posts on your birthday.
+                </span>
+              </div>
+
+              <div className="field">
+                <label htmlFor="pronouns">Pronouns</label>
+                <select
+                  id="pronouns"
+                  value={pronounsChoice}
+                  onChange={(e) => setPronounsChoice(e.target.value)}
+                >
+                  <option value="">Select…</option>
+                  {PRONOUN_OPTIONS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                  <option value={SELF}>{SELF}</option>
+                </select>
+                {pronounsChoice === SELF && (
+                  <input
+                    type="text"
+                    value={pronounsCustom}
+                    onChange={(e) => setPronounsCustom(e.target.value)}
+                    placeholder="Describe your pronouns"
+                    style={{ marginTop: 8 }}
+                  />
+                )}
+                <span className="hint">
+                  Shown next to your name on your profile.
+                </span>
+              </div>
 
               <div className="field">
                 <label>Life details</label>

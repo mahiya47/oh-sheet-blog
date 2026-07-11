@@ -13,6 +13,7 @@ import {
   Repeat2,
   CornerDownRight,
   Cake,
+  Heart,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -58,6 +59,15 @@ export default function PostPage() {
   const [justFollowed, setJustFollowed] = useState(false);
   const menuRef = useRef(null);
   const commentBoxRef = useRef(null);
+  const [showHeartBurst, setShowHeartBurst] = useState(false);
+
+  const onImageTap = () => {
+    if (!post.likedByMe) {
+      reactToPost(post.id, post.myReaction || "heart");
+    }
+    setShowHeartBurst(true);
+    setTimeout(() => setShowHeartBurst(false), 700);
+  };
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
   const normalizeUser = (u) => ({
@@ -454,7 +464,11 @@ export default function PostPage() {
           )}
 
           {post.imageUrl && !editing && (
-            <div className="sheet-media">
+            <div
+              className="sheet-media"
+              onClick={onImageTap}
+              style={{ position: "relative" }}
+            >
               <img
                 src={post.imageUrl}
                 alt=""
@@ -464,8 +478,19 @@ export default function PostPage() {
                   maxHeight: 640,
                   objectFit: "contain",
                   display: "block",
+                  userSelect: "none",
+                  WebkitUserSelect: "none",
                 }}
+                draggable={false}
               />
+              {showHeartBurst && (
+                <Heart
+                  className="heart-burst"
+                  size={100}
+                  fill="#fff"
+                  color="#fff"
+                />
+              )}
             </div>
           )}
 
