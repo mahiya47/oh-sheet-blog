@@ -18,7 +18,7 @@ function MiniRow({ post }) {
         border: "none",
         display: "flex",
         flexDirection: "column",
-        gap: 6,
+        gap: 4,
       }}
       onClick={() => navigate(`/post/${post.id}`)}
     >
@@ -49,7 +49,7 @@ function SuggestionRow({ user, onFollowed, isLast }) {
         display: "flex",
         alignItems: "center",
         gap: 10,
-        padding: "10px var(--space-4)",
+        padding: "8px var(--space-4)",
         borderBottom: isLast ? "none" : "1px solid var(--border-soft)",
       }}
     >
