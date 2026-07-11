@@ -99,7 +99,7 @@
 [data-theme="dark"] .content-card,
 [data-theme="dark"] .settings-side,
 [data-theme="dark"] .settings-main {
-  box-shadow: 4px 4px 0 var(--border);
+  box-shadow: 2px 2px 0 var(--border);
 }
 /* ---- Reset ---- */
 *,
@@ -509,10 +509,6 @@ select {
 .sheet.clickable {
   cursor: pointer;
 }
-.sheet.clickable:hover {
-  transform: translate(-3px, -3px);
-  border-color: var(--shadow-strong);
-}
 .sheet-head {
   display: flex;
   align-items: center;
@@ -727,7 +723,12 @@ select {
 
 .mini-row:hover {
   background: var(--surface-2);
+  cursor: pointer;
 }
+.mini-row {
+  transition: background 0.15s ease;
+}
+
 .mini-row .meta {
   color: var(--accent);
   font-size: 0.78rem;
