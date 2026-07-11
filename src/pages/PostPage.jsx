@@ -60,6 +60,7 @@ export default function PostPage() {
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const menuRef = useRef(null);
   const commentBoxRef = useRef(null);
+  const touchStartPosRef = useRef({ x: 0, y: 0 });
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
   const normalizeUser = (u) => ({
@@ -194,6 +195,25 @@ export default function PostPage() {
     }
     setShowHeartBurst(true);
     setTimeout(() => setShowHeartBurst(false), 700);
+  };
+
+  const onImageClick = (e) => {
+    stop(e);
+    onImageTap();
+  };
+
+  const onImageTouchStart = (e) => {
+    const t = e.touches[0];
+    touchStartPosRef.current = { x: t.clientX, y: t.clientY };
+  };
+
+  const onImageTouchEnd = (e) => {
+    const t = e.changedTouches[0];
+    const dx = Math.abs(t.clientX - touchStartPosRef.current.x);
+    const dy = Math.abs(t.clientY - touchStartPosRef.current.y);
+    if (dx > 10 || dy > 10) return; // this was a scroll, not a tap
+    e.preventDefault(); // suppress the synthetic click mobile would fire next
+    onImageTap();
   };
 
   const onGoToComments = () => {
@@ -475,8 +495,14 @@ export default function PostPage() {
           {post.imageUrl && !editing && (
             <div
               className="sheet-media"
-              onClick={onImageTap}
-              style={{ position: "relative", cursor: "pointer" }}
+              onClick={onImageClick}
+              onTouchStart={onImageTouchStart}
+              onTouchEnd={onImageTouchEnd}
+              style={{
+                position: "relative",
+                cursor: "pointer",
+                touchAction: "pan-y",
+              }}
             >
               <img
                 src={post.imageUrl}

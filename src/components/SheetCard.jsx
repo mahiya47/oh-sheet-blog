@@ -51,6 +51,7 @@ export default function SheetCard({ post }) {
   const menuRef = useRef(null);
   const lastTapRef = useRef(0);
   const tapTimeoutRef = useRef(null);
+  const touchStartPosRef = useRef({ x: 0, y: 0 });
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
   const mine = currentUser && post.author?.id === currentUser.id;
@@ -75,7 +76,6 @@ export default function SheetCard({ post }) {
     const delta = now - lastTapRef.current;
 
     if (delta > 0 && delta < DOUBLE_TAP_DELAY) {
-      // Double tap — like it, cancel the pending single-tap navigation
       if (tapTimeoutRef.current) {
         clearTimeout(tapTimeoutRef.current);
         tapTimeoutRef.current = null;
@@ -87,7 +87,6 @@ export default function SheetCard({ post }) {
       setShowHeartBurst(true);
       setTimeout(() => setShowHeartBurst(false), 700);
     } else {
-      // First tap — wait to see if a second one follows
       lastTapRef.current = now;
       tapTimeoutRef.current = setTimeout(() => {
         open();
@@ -100,8 +99,22 @@ export default function SheetCard({ post }) {
     handleTap();
   };
 
+  const onImageTouchStart = (e) => {
+    const t = e.touches[0];
+    touchStartPosRef.current = { x: t.clientX, y: t.clientY };
+  };
+
   const onImageTouchEnd = (e) => {
     stop(e);
+    const t = e.changedTouches[0];
+    const dx = Math.abs(t.clientX - touchStartPosRef.current.x);
+    const dy = Math.abs(t.clientY - touchStartPosRef.current.y);
+    const moved = dx > 10 || dy > 10;
+
+    if (moved) {
+      // this was a scroll/swipe, not a tap — let it scroll, don't treat as tap
+      return;
+    }
     e.preventDefault(); // suppress the synthetic click mobile would fire next
     handleTap();
   };
@@ -363,11 +376,12 @@ export default function SheetCard({ post }) {
           <div
             className="sheet-media"
             onClick={onImageClick}
+            onTouchStart={onImageTouchStart}
             onTouchEnd={onImageTouchEnd}
             style={{
               position: "relative",
               cursor: "pointer",
-              touchAction: "manipulation",
+              touchAction: "pan-y",
             }}
           >
             <img
