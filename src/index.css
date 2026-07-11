@@ -701,6 +701,11 @@ select {
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-soft);
 }
+
+.mini-row:last-of-type {
+  border-bottom: none;
+}
+
 .mini-row:hover {
   background: var(--surface-2);
 }

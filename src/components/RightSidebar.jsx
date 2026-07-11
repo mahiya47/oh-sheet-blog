@@ -16,6 +16,9 @@ function MiniRow({ post }) {
         textAlign: "left",
         background: "transparent",
         border: "none",
+        display: "flex",
+        flexDirection: "column",
+        gap: 6,
       }}
       onClick={() => navigate(`/post/${post.id}`)}
     >
@@ -25,7 +28,7 @@ function MiniRow({ post }) {
   );
 }
 
-function SuggestionRow({ user, onFollowed }) {
+function SuggestionRow({ user, onFollowed, isLast }) {
   const { toggleFollow } = useStore();
   const [following, setFollowing] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -47,6 +50,7 @@ function SuggestionRow({ user, onFollowed }) {
         alignItems: "center",
         gap: 10,
         padding: "10px var(--space-4)",
+        borderBottom: isLast ? "none" : "1px solid var(--border-soft)",
       }}
     >
       <Link to={`/profile/${user.id}`} style={{ flexShrink: 0 }}>
@@ -73,7 +77,7 @@ function SuggestionRow({ user, onFollowed }) {
       </Link>
       <button
         type="button"
-        className="btn btn-ghost"
+        className="btn btn-accent"
         onClick={onFollow}
         disabled={busy || following}
         style={{ fontSize: "0.7rem", padding: "6px 10px", flexShrink: 0 }}
@@ -83,6 +87,8 @@ function SuggestionRow({ user, onFollowed }) {
     </div>
   );
 }
+
+const MAX_ITEMS = 5;
 
 export default function RightSidebar() {
   const {
@@ -94,13 +100,13 @@ export default function RightSidebar() {
   } = useStore();
   const [following, setFollowing] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  const trending = getTrending(8);
-  const trendingTags = getTrendingTags(10);
+  const trending = getTrending(MAX_ITEMS);
+  const trendingTags = getTrendingTags(MAX_ITEMS);
   const railRef = useBidirectionalSticky(72, 16);
 
   useEffect(() => {
     if (currentUser) {
-      getFollowingSidebar(5).then(setFollowing);
+      getFollowingSidebar(MAX_ITEMS).then(setFollowing);
     } else {
       setFollowing([]);
     }
@@ -111,13 +117,17 @@ export default function RightSidebar() {
     setSuggestions((prev) => prev.filter((u) => u.id !== userId));
   };
 
+  const visibleSuggestions = suggestions.slice(0, MAX_ITEMS);
+
   return (
     <aside className="rail-right-wrapper" aria-label="Activity">
       <div className="rail-right" ref={railRef}>
         <section className="panel">
           <h2 className="panel-head">Following activity</h2>
           {following.length > 0 ? (
-            following.map((p) => <MiniRow key={p.id} post={p} />)
+            following
+              .slice(0, MAX_ITEMS)
+              .map((p) => <MiniRow key={p.id} post={p} />)
           ) : (
             <p className="empty-note">
               No recent posts from people you follow.
@@ -131,7 +141,9 @@ export default function RightSidebar() {
         <section className="panel">
           <h2 className="panel-head">Trending sheets</h2>
           {trending.length > 0 ? (
-            trending.map((p) => <MiniRow key={p.id} post={p} />)
+            trending
+              .slice(0, MAX_ITEMS)
+              .map((p) => <MiniRow key={p.id} post={p} />)
           ) : (
             <p className="empty-note">Nothing trending yet.</p>
           )}
@@ -151,7 +163,7 @@ export default function RightSidebar() {
                 padding: "var(--space-4)",
               }}
             >
-              {trendingTags.map((t) => (
+              {trendingTags.slice(0, MAX_ITEMS).map((t) => (
                 <Link key={t.name} to={`/tag/${t.name}`} className="tag">
                   #{t.name}
                 </Link>
@@ -162,14 +174,15 @@ export default function RightSidebar() {
           )}
         </section>
 
-        {suggestions.length > 0 && (
+        {visibleSuggestions.length > 0 && (
           <section className="panel">
             <h2 className="panel-head">People you may know</h2>
-            {suggestions.map((u) => (
+            {visibleSuggestions.map((u, i) => (
               <SuggestionRow
                 key={u.id}
                 user={u}
                 onFollowed={dismissSuggestion}
+                isLast={i === visibleSuggestions.length - 1}
               />
             ))}
           </section>
