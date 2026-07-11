@@ -47,6 +47,7 @@ export default function ReactionPicker({ current, onPick, children }) {
 
   const cancelOpen = () => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    setOpen(false);
   };
 
   // Mobile: long-press. Quick tap (<400ms) falls through to the child
