@@ -722,7 +722,7 @@ select {
 }
 
 .mini-row:hover {
-  background: var(--surface-2);
+  background: var(--surface-2) !important;
   cursor: pointer;
 }
 .mini-row {
