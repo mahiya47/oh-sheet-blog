@@ -476,6 +476,20 @@ select {
   flex-direction: column;
   gap: var(--space-5);
 }
+
+.rail-right .panel + .panel {
+  position: relative;
+  margin-top: calc(var(--space-5) + 1px);
+}
+.rail-right .panel + .panel::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--space-5) / 2 - 1px);
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border-soft);
+}
 /* =========================================================================
    Cards (sheets)
    ========================================================================= */
