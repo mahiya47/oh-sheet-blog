@@ -477,8 +477,11 @@ select {
   gap: var(--space-5);
 }
 
-.rail-right .panel + .panel {
-  border-top: 3px solid var(--border);
+.rail-divider {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 var(--space-2);
 }
 /* =========================================================================
    Cards (sheets)
