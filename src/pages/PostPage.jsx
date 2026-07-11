@@ -26,6 +26,8 @@ import ReactionPicker from "../components/ReactionPicker.jsx";
 import ReactionsModal from "../components/ReactionsModal.jsx";
 import { useClickAway } from "../lib/useClickAway.js";
 
+const DOUBLE_TAP_DELAY = 350;
+
 export default function PostPage() {
   const { id } = useParams();
   const {
@@ -61,6 +63,8 @@ export default function PostPage() {
   const menuRef = useRef(null);
   const commentBoxRef = useRef(null);
   const touchStartPosRef = useRef({ x: 0, y: 0 });
+  const lastClickRef = useRef(0);
+  const clickTimeoutRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
   const normalizeUser = (u) => ({
@@ -94,6 +98,12 @@ export default function PostPage() {
   useEffect(() => {
     load();
   }, [id]);
+
+  useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+    };
+  }, []);
 
   // Reacting updates the global store, but this page keeps its own local
   // copy of the post — so after any reaction we refetch just this post
@@ -189,7 +199,7 @@ export default function PostPage() {
     toast("Reposted to your profile.", "accent");
   };
 
-  const onImageTap = () => {
+  const triggerLike = () => {
     if (!post.likedByMe) {
       handleReact(post.myReaction || "heart");
     }
@@ -197,9 +207,29 @@ export default function PostPage() {
     setTimeout(() => setShowHeartBurst(false), 700);
   };
 
+  const registerDoubleClick = () => {
+    const now = Date.now();
+    const delta = now - lastClickRef.current;
+
+    if (delta > 0 && delta < DOUBLE_TAP_DELAY) {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+        clickTimeoutRef.current = null;
+      }
+      lastClickRef.current = 0;
+      triggerLike();
+    } else {
+      lastClickRef.current = now;
+      // single click/tap does nothing — just arms the double window
+      clickTimeoutRef.current = setTimeout(() => {
+        lastClickRef.current = 0;
+      }, DOUBLE_TAP_DELAY);
+    }
+  };
+
   const onImageClick = (e) => {
     stop(e);
-    onImageTap();
+    registerDoubleClick();
   };
 
   const onImageTouchStart = (e) => {
@@ -213,7 +243,7 @@ export default function PostPage() {
     const dy = Math.abs(t.clientY - touchStartPosRef.current.y);
     if (dx > 10 || dy > 10) return; // this was a scroll, not a tap
     e.preventDefault(); // suppress the synthetic click mobile would fire next
-    onImageTap();
+    registerDoubleClick();
   };
 
   const onGoToComments = () => {
