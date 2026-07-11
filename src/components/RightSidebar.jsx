@@ -17,7 +17,6 @@ function MiniRow({ post }) {
         width: "100%",
         textAlign: "left",
         background: "transparent",
-        border: "none",
         display: "flex",
         flexDirection: "column",
         gap: 4,
