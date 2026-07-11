@@ -57,17 +57,9 @@ export default function PostPage() {
   const [reposting, setReposting] = useState(false);
   const [repostText, setRepostText] = useState("");
   const [justFollowed, setJustFollowed] = useState(false);
+  const [showHeartBurst, setShowHeartBurst] = useState(false);
   const menuRef = useRef(null);
   const commentBoxRef = useRef(null);
-  const [showHeartBurst, setShowHeartBurst] = useState(false);
-
-  const onImageTap = () => {
-    if (!post.likedByMe) {
-      reactToPost(post.id, post.myReaction || "heart");
-    }
-    setShowHeartBurst(true);
-    setTimeout(() => setShowHeartBurst(false), 700);
-  };
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
 
   const normalizeUser = (u) => ({
@@ -101,6 +93,15 @@ export default function PostPage() {
   useEffect(() => {
     load();
   }, [id]);
+
+  // Reacting updates the global store, but this page keeps its own local
+  // copy of the post — so after any reaction we refetch just this post
+  // and sync it into local state, instead of needing a full page reload.
+  const handleReact = async (type) => {
+    await reactToPost(post.id, type);
+    const fresh = await getPost(post.id);
+    if (fresh) setPost(fresh);
+  };
 
   if (loading) {
     return (
@@ -185,6 +186,14 @@ export default function PostPage() {
     await createPost(repostText.trim(), [], "", originalId);
     setReposting(false);
     toast("Reposted to your profile.", "accent");
+  };
+
+  const onImageTap = () => {
+    if (!post.likedByMe) {
+      handleReact(post.myReaction || "heart");
+    }
+    setShowHeartBurst(true);
+    setTimeout(() => setShowHeartBurst(false), 700);
   };
 
   const onGoToComments = () => {
@@ -467,7 +476,7 @@ export default function PostPage() {
             <div
               className="sheet-media"
               onClick={onImageTap}
-              style={{ position: "relative" }}
+              style={{ position: "relative", cursor: "pointer" }}
             >
               <img
                 src={post.imageUrl}
@@ -584,14 +593,14 @@ export default function PostPage() {
         >
           <ReactionPicker
             current={post.myReaction}
-            onPick={(type) => reactToPost(post.id, type)}
+            onPick={(type) => handleReact(type)}
           >
             <button
               type="button"
               className={`stat ${post.likedByMe ? "liked" : ""}`}
               onClick={(e) => {
                 stop(e);
-                reactToPost(post.id, post.myReaction || "heart");
+                handleReact(post.myReaction || "heart");
               }}
               aria-pressed={post.likedByMe}
               style={{ flex: 1, justifyContent: "center" }}

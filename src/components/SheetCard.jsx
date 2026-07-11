@@ -25,7 +25,7 @@ import { CREATOR_ID, isBirthday } from "../lib/creator.js";
 import ReactionPicker from "./ReactionPicker.jsx";
 import ReactionsModal from "./ReactionsModal.jsx";
 
-const DOUBLE_TAP_DELAY = 280;
+const DOUBLE_TAP_DELAY = 350;
 
 export default function SheetCard({ post }) {
   const {
@@ -70,13 +70,12 @@ export default function SheetCard({ post }) {
     };
   }, []);
 
-  const onImageTap = (e) => {
-    stop(e);
+  const handleTap = () => {
     const now = Date.now();
     const delta = now - lastTapRef.current;
 
     if (delta > 0 && delta < DOUBLE_TAP_DELAY) {
-      // Double tap/click — like it, cancel the pending single-tap navigation
+      // Double tap — like it, cancel the pending single-tap navigation
       if (tapTimeoutRef.current) {
         clearTimeout(tapTimeoutRef.current);
         tapTimeoutRef.current = null;
@@ -94,6 +93,17 @@ export default function SheetCard({ post }) {
         open();
       }, DOUBLE_TAP_DELAY);
     }
+  };
+
+  const onImageClick = (e) => {
+    stop(e);
+    handleTap();
+  };
+
+  const onImageTouchEnd = (e) => {
+    stop(e);
+    e.preventDefault(); // suppress the synthetic click mobile would fire next
+    handleTap();
   };
 
   const onShowReactions = async (e) => {
@@ -352,8 +362,13 @@ export default function SheetCard({ post }) {
         {post.imageUrl && !editing && (
           <div
             className="sheet-media"
-            onClick={onImageTap}
-            style={{ position: "relative" }}
+            onClick={onImageClick}
+            onTouchEnd={onImageTouchEnd}
+            style={{
+              position: "relative",
+              cursor: "pointer",
+              touchAction: "manipulation",
+            }}
           >
             <img
               src={post.imageUrl}
