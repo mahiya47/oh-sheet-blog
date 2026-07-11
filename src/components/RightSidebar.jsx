@@ -132,9 +132,6 @@ export default function RightSidebar() {
               No recent posts from people you follow.
             </p>
           )}
-          <Link to="/following" className="more-link">
-            View following feed
-          </Link>
         </section>
 
         <section className="panel">
@@ -146,9 +143,6 @@ export default function RightSidebar() {
           ) : (
             <p className="empty-note">Nothing trending yet.</p>
           )}
-          <Link to="/trending" className="more-link">
-            View all trending
-          </Link>
         </section>
 
         <section className="panel">

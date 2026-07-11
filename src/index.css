@@ -707,7 +707,7 @@ select {
 .mini-row {
   display: block;
   padding: 10px var(--space-4);
-  border-bottom: 3px solid var(--border);
+  border-bottom: 3px solid var(--border-soft);
 }
 
 .mini-row:last-of-type {
