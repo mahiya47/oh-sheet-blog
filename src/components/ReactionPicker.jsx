@@ -15,7 +15,8 @@ const REACTIONS = [
 export default function ReactionPicker({ current, onPick, children }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
-  const hoverTimerRef = useRef(null);
+  const openTimerRef = useRef(null);
+  const closeTimerRef = useRef(null);
   const longPressFiredRef = useRef(false);
 
   useEffect(() => {
@@ -35,19 +36,24 @@ export default function ReactionPicker({ current, onPick, children }) {
 
   useEffect(() => {
     return () => {
-      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+      if (openTimerRef.current) clearTimeout(openTimerRef.current);
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     };
   }, []);
 
-  // Desktop: hover-and-hold
+  // Desktop: hover-and-hold to open
   const openPicker = () => {
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    hoverTimerRef.current = setTimeout(() => setOpen(true), 400);
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
+    openTimerRef.current = setTimeout(() => setOpen(true), 400);
   };
 
+  // Desktop: delayed close, so a quick cursor slip doesn't kill it.
+  // Re-entering before the delay fires cancels the close entirely.
   const cancelOpen = () => {
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    setOpen(false);
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => setOpen(false), 500);
   };
 
   // Mobile: long-press. Quick tap (<400ms) falls through to the child
@@ -55,15 +61,15 @@ export default function ReactionPicker({ current, onPick, children }) {
   // the picker and suppresses the click that would otherwise fire.
   const handleTouchStart = () => {
     longPressFiredRef.current = false;
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    hoverTimerRef.current = setTimeout(() => {
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
+    openTimerRef.current = setTimeout(() => {
       setOpen(true);
       longPressFiredRef.current = true;
     }, 400);
   };
 
   const handleTouchEnd = (e) => {
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (longPressFiredRef.current) {
       // picker just opened via long-press — don't let the
       // trailing click also fire the default reaction
@@ -83,6 +89,8 @@ export default function ReactionPicker({ current, onPick, children }) {
       {children}
       {open && (
         <div
+          onMouseEnter={openPicker}
+          onMouseLeave={cancelOpen}
           style={{
             position: "absolute",
             bottom: "100%",
