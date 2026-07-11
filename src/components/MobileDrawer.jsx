@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Scale,
   FileText,
+  HelpCircle,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -86,6 +87,9 @@ export default function MobileDrawer({ open, onClose }) {
           </NavLink>
           <NavLink to="/agreement" className={item} onClick={onClose}>
             <FileText size={18} /> Agreement
+          </NavLink>
+          <NavLink to="/support" className={item} onClick={onClose}>
+            <HelpCircle size={18} /> Support
           </NavLink>
 
           <div className="drawer-sep" />
