@@ -5,6 +5,7 @@ import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
 import { StoreProvider } from "./lib/store.jsx";
 import App from "./App.jsx";
+import InstallGate from "./components/InstallGate.jsx";
 import "./index.css";
 
 if ("serviceWorker" in navigator) {
@@ -19,6 +20,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <ToastProvider>
         <StoreProvider>
           <BrowserRouter basename={import.meta.env.BASE_URL}>
+            <InstallGate />
             <App />
           </BrowserRouter>
         </StoreProvider>
