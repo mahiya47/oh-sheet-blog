@@ -27,7 +27,7 @@ export default function InstallGate() {
 
   useEffect(() => {
     const p = getMobilePlatform();
-    const alreadyDismissed = localStorage.getItem(DISMISS_KEY) === "true";
+    const alreadyDismissed = sessionStorage.getItem(DISMISS_KEY) === "true";
 
     if (!p || isStandalone() || alreadyDismissed) {
       setVisible(false);
@@ -63,7 +63,7 @@ export default function InstallGate() {
   }, []);
 
   const dismiss = () => {
-    localStorage.setItem(DISMISS_KEY, "true");
+    sessionStorage.setItem(DISMISS_KEY, "true");
     setVisible(false);
   };
 
