@@ -10,7 +10,7 @@ export default function Login() {
   const { currentUser, login } = useStore();
   const toast = useToast();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -20,7 +20,7 @@ export default function Login() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const res = await login(email, password);
+    const res = await login(identifier, password);
     if (res.ok) {
       toast("Welcome back!", "accent");
       navigate("/feed");
@@ -40,11 +40,12 @@ export default function Login() {
           {error && <div className="form-error">{error}</div>}
           <div className="field">
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              autoComplete="email"
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="Email or username"
+              autoComplete="username"
+              style={{ width: "100%" }}
             />
           </div>
           <div className="field" style={{ position: "relative" }}>
@@ -54,7 +55,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               autoComplete="current-password"
-              style={{ paddingRight: 42 }}
+              style={{ width: "100%", paddingRight: 42 }}
             />
             <button
               type="button"
