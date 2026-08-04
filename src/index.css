@@ -60,6 +60,13 @@
   --shadow-color: rgba(255, 255, 255, 0.12);
   --shadow-strong: var(--accent);
   --overlay: rgba(0, 0, 0, 0.86);
+  /* Center is dark for text readability, edges fade lighter */
+  --cover-fade: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(0, 0, 0, 0.75) 50%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
 }
 
 /* ---- Light theme (functional companion, classic light neobrutalism) ---- */
@@ -76,6 +83,13 @@
   --shadow-color: rgba(0, 0, 0, 0.9);
   --shadow-strong: #0a0a0a;
   --overlay: rgba(0, 0, 0, 0.7);
+  /* Center is light for text readability, edges fade darker */
+  --cover-fade: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
 }
 
 [data-theme="light"] .sheet,
@@ -101,6 +115,7 @@
 [data-theme="dark"] .settings-main {
   box-shadow: 2px 2px 0 var(--border);
 }
+
 /* ---- Reset ---- */
 *,
 *::before,
@@ -231,9 +246,9 @@ select {
   font-size: 0.78rem;
   color: var(--text);
 }
+
 /* =========================================================================
-   App shell: sticky nav + centered 3-column grid (scrolls naturally,
-   unlike the original's three independently-fixed panels)
+   App shell: sticky nav + centered 3-column grid
    ========================================================================= */
 .navbar {
   position: sticky;
@@ -274,7 +289,7 @@ select {
   gap: var(--space-4);
 }
 
-/* Icon button used in nav + rails */
+/* Icon button */
 .icon-btn {
   position: relative;
   display: inline-flex;
@@ -301,7 +316,7 @@ select {
   border-color: var(--border);
 }
 
-/* Tooltip that appears on hover for rail icons */
+/* Tooltip */
 .tip {
   position: relative;
   display: inline-flex;
@@ -494,6 +509,7 @@ select {
   border-radius: 2px;
   margin: 0 var(--space-2);
 }
+
 /* =========================================================================
    Cards (sheets)
    ========================================================================= */
@@ -515,6 +531,9 @@ select {
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
   border-bottom: var(--border-w) solid var(--border);
+  background-image: var(--cover-fade), var(--cover-image, none);
+  background-size: cover;
+  background-position: center;
 }
 .sheet-author {
   display: flex;
@@ -531,14 +550,14 @@ select {
 .sheet-author .display {
   font-weight: 700;
   text-transform: uppercase;
-  color: #000;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .sheet-author .handle {
   font-size: 0.8rem;
-  color: rgba(0, 0, 0, 0.65);
+  color: var(--text-muted);
 }
 
 .sheet-body {
@@ -577,11 +596,6 @@ select {
   color: var(--danger);
 }
 
-/* Per-post header color (set inline via CSS var --head) */
-.sheet-head {
-  background: var(--head, var(--c2));
-}
-
 /* "More" dropdown on a card */
 .more {
   position: relative;
@@ -590,12 +604,12 @@ select {
   display: inline-flex;
   border: none;
   background: transparent;
-  color: #000;
+  color: var(--text);
   padding: 4px;
   border-radius: 6px;
 }
 .more-trigger:hover {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(128, 128, 128, 0.12);
 }
 .more-menu {
   position: absolute;
@@ -1030,7 +1044,9 @@ select {
 }
 .profile-cover {
   height: 150px;
-  background: linear-gradient(115deg, var(--c1), var(--c2) 55%, var(--c8));
+  background-image: var(--cover-fade), var(--cover-image, none);
+  background-size: cover;
+  background-position: center;
   border-bottom: var(--border-w) solid var(--border);
 }
 .profile-info {

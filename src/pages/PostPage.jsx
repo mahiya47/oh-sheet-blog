@@ -379,7 +379,11 @@ export default function PostPage() {
       <article className="sheet">
         <header
           className="sheet-head"
-          style={{ "--head": post.color || "var(--accent)" }}
+          style={{
+            "--cover-image": author?.coverUrl
+              ? `url(${author.coverUrl})`
+              : "none",
+          }}
         >
           <Link to={`/profile/${author.id}`} className="sheet-author">
             <Avatar user={author} size={44} />

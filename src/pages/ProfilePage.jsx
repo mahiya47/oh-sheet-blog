@@ -241,8 +241,9 @@ export default function ProfilePage() {
         <div
           className="profile-cover"
           style={{
-            background: isImageCover
-              ? `url(${profile.coverUrl}) center/cover no-repeat`
+            // Passes the image/fallback to your new index.css gradient
+            "--cover-image": isImageCover
+              ? `url(${profile.coverUrl})`
               : profile.coverUrl || DEFAULT_COVER,
             animation: "fadeIn 0.4s ease",
           }}

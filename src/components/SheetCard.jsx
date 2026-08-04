@@ -186,9 +186,6 @@ export default function SheetCard({ post }) {
     setEditing(false);
   };
 
-  // 🐛 DEBUG LOG: To verify the coverUrl is arriving at the frontend
-  console.log("Author data for this post:", post.author);
-
   return (
     <article
       className="sheet clickable"
@@ -201,14 +198,9 @@ export default function SheetCard({ post }) {
       <header
         className="sheet-head"
         style={{
-          "--head": post.color,
-          // Checks for coverUrl. If found, add gradient overlay + image.
-          backgroundImage: post.author?.coverUrl
-            ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${post.author.coverUrl})`
+          "--cover-image": post.author?.coverUrl
+            ? `url(${post.author.coverUrl})`
             : "none",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          color: post.author?.coverUrl ? "#ffffff" : "inherit",
         }}
       >
         <Link
