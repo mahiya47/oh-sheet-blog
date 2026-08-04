@@ -517,10 +517,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div
-          className="profile-tabs"
-          style={{ display: "flex", width: "100%" }}
-        >
+        <div className="profile-tabs">
           <button
             type="button"
             className={`tab ${tab === "sheets" ? "active" : ""}`}
@@ -529,6 +526,7 @@ export default function ProfilePage() {
           >
             Sheets
           </button>
+
           <button
             type="button"
             className={`tab ${tab === "photos" ? "active" : ""}`}
@@ -538,22 +536,20 @@ export default function ProfilePage() {
             Photos ({photoPosts.length})
           </button>
 
-          {profile?.pinterestUrl && (
-            <button
-              type="button"
-              className={`tab ${tab === "pins" ? "active" : ""}`}
-              onClick={() => setTab("pins")}
-              style={{
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <PinterestIcon size={14} /> Pins
-            </button>
-          )}
+          <button
+            type="button"
+            className={`tab ${tab === "pins" ? "active" : ""}`}
+            onClick={() => setTab("pins")}
+            style={{
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            <PinterestIcon size={14} /> Pins
+          </button>
 
           {hasAbout && (
             <button
@@ -566,7 +562,6 @@ export default function ProfilePage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 4,
-                marginLeft: "auto", // This pushes the About tab to the far right
               }}
             >
               <InfoIcon size={14} /> About
@@ -632,7 +627,21 @@ export default function ProfilePage() {
 
       {tab === "pins" && (
         <div style={{ paddingTop: 16 }}>
-          {pinsLoading ? (
+          {!profile?.pinterestUrl ? (
+            <div className="empty">
+              <p>No Pinterest account linked.</p>
+              {isMe && (
+                <p style={{ marginTop: 12 }}>
+                  <Link
+                    to="/settings"
+                    style={{ color: "var(--accent)", fontWeight: 700 }}
+                  >
+                    Link your Pinterest in Settings
+                  </Link>
+                </p>
+              )}
+            </div>
+          ) : pinsLoading ? (
             <div
               className="loading"
               style={{ textAlign: "center", color: "var(--text-dim)" }}
