@@ -63,9 +63,9 @@
   /* Center is dark for text readability, edges fade lighter */
   --cover-fade: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(0, 0, 0, 0.75) 50%,
-    rgba(255, 255, 255, 0.2) 100%
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 1) 100%
   );
 }
 
@@ -86,9 +86,9 @@
   /* Center is light for text readability, edges fade darker */
   --cover-fade: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.2) 0%,
-    rgba(255, 255, 255, 0.85) 50%,
-    rgba(0, 0, 0, 0.2) 100%
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 1) 100%
   );
 }
 
