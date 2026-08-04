@@ -115,41 +115,59 @@ export default function ProfilePage() {
   // Fetch Pinterest RSS Feed
   useEffect(() => {
     if (tab === "pins" && profile?.pinterestUrl && pins.length === 0) {
-      const username = profile.pinterestUrl
-        .split("pinterest.com/")[1]
-        ?.replace(/\/$/, "");
-      if (!username) {
-        setPinsError("Invalid Pinterest URL on profile.");
-        return;
+      try {
+        // Safely extract the username regardless of how they typed the URL
+        let username = "";
+
+        // Handle URLs correctly even if they lack 'https://'
+        let cleanUrl = profile.pinterestUrl.trim();
+        if (!cleanUrl.startsWith("http")) {
+          cleanUrl = "https://" + cleanUrl;
+        }
+
+        const urlObj = new URL(cleanUrl);
+        const pathSegments = urlObj.pathname.split("/").filter(Boolean);
+
+        if (pathSegments.length > 0) {
+          username = pathSegments[0];
+        }
+
+        if (!username) throw new Error("No username found");
+
+        setPinsLoading(true);
+        fetch(
+          `https://api.rss2json.com/v1/api.json?rss_url=https://www.pinterest.com/${username}/feed.rss`,
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "ok") {
+              const fetchedPins = data.items
+                .map((item) => {
+                  const imgMatch = item.description.match(/src="([^"]+)"/);
+                  const img = item.thumbnail || (imgMatch ? imgMatch[1] : null);
+                  // Pinterest RSS usually gives small thumbnails, attempting to fetch higher res
+                  const hdImage = img ? img.replace("236x", "736x") : null;
+
+                  return {
+                    id: item.guid,
+                    link: item.link,
+                    title: item.title,
+                    image: hdImage,
+                  };
+                })
+                .filter((p) => p.image);
+              setPins(fetchedPins);
+            } else {
+              setPinsError(
+                "Could not load pins. Make sure the board is public.",
+              );
+            }
+          })
+          .catch(() => setPinsError("Failed to fetch pins."))
+          .finally(() => setPinsLoading(false));
+      } catch (err) {
+        setPinsError("Invalid Pinterest URL. Please check your Settings.");
       }
-      setPinsLoading(true);
-      fetch(
-        `https://api.rss2json.com/v1/api.json?rss_url=https://www.pinterest.com/${username}/feed.rss`,
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.status === "ok") {
-            const fetchedPins = data.items
-              .map((item) => {
-                const imgMatch = item.description.match(/src="([^"]+)"/);
-                const img = item.thumbnail || (imgMatch ? imgMatch[1] : null);
-                // Pinterest RSS usually gives small thumbnails, attempting to fetch higher res
-                const hdImage = img ? img.replace("236x", "736x") : null;
-                return {
-                  id: item.guid,
-                  link: item.link,
-                  title: item.title,
-                  image: hdImage,
-                };
-              })
-              .filter((p) => p.image);
-            setPins(fetchedPins);
-          } else {
-            setPinsError("Could not load pins.");
-          }
-        })
-        .catch(() => setPinsError("Failed to fetch pins."))
-        .finally(() => setPinsLoading(false));
     }
   }, [tab, profile?.pinterestUrl, pins.length]);
 
@@ -517,7 +535,10 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div className="profile-tabs">
+        <div
+          className="profile-tabs"
+          style={{ display: "flex", width: "100%" }}
+        >
           <button
             type="button"
             className={`tab ${tab === "sheets" ? "active" : ""}`}
@@ -536,20 +557,22 @@ export default function ProfilePage() {
             Photos ({photoPosts.length})
           </button>
 
-          <button
-            type="button"
-            className={`tab ${tab === "pins" ? "active" : ""}`}
-            onClick={() => setTab("pins")}
-            style={{
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            <PinterestIcon size={14} /> Pins
-          </button>
+          {profile?.pinterestUrl && (
+            <button
+              type="button"
+              className={`tab ${tab === "pins" ? "active" : ""}`}
+              onClick={() => setTab("pins")}
+              style={{
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <PinterestIcon size={14} /> Pins
+            </button>
+          )}
 
           {hasAbout && (
             <button
@@ -562,6 +585,7 @@ export default function ProfilePage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 4,
+                marginLeft: "auto", // This pushes the About tab all the way to the right
               }}
             >
               <InfoIcon size={14} /> About
