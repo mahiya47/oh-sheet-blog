@@ -130,9 +130,9 @@ export function StoreProvider({ children }) {
     githubId: profile.githubId || null,
   });
 
-  const login = async (email, password) => {
+  const login = async (identifier, password) => {
     try {
-      const res = await api.post("/auth/login", { email, password });
+      const res = await api.post("/auth/login", { identifier, password });
       localStorage.setItem("token", res.data.token);
       const payload = JSON.parse(atob(res.data.token.split(".")[1]));
       const profile = await fetchFullProfile(payload.userId);
