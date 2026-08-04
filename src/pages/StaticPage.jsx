@@ -1,5 +1,5 @@
-import { GitBranch, Info } from 'lucide-react';
-import { STATIC_PAGES } from '../data/staticContent.js';
+import { GitBranch, Info } from "lucide-react";
+import { STATIC_PAGES } from "../data/staticContent.js";
 
 const ICONS = { GitBranch, Info };
 
@@ -13,16 +13,18 @@ export default function StaticPage({ page }) {
     <div className="content-card">
       <h1>{data.title}</h1>
       {data.blocks.map((block, i) => {
-        if (block.type === 'h2') return <h2 key={i}>{block.text}</h2>;
-        if (block.type === 'p') return <p key={i}>{block.text}</p>;
-        if (block.type === 'ul') {
+        if (block.type === "h2") return <h2 key={i}>{block.text}</h2>;
+        if (block.type === "p") return <p key={i}>{block.text}</p>;
+        if (block.type === "ul") {
           return (
             <ul key={i}>
-              {block.items.map((item, j) => <li key={j}>{item}</li>)}
+              {block.items.map((item, j) => (
+                <li key={j}>{item}</li>
+              ))}
             </ul>
           );
         }
-        if (block.type === 'callout') {
+        if (block.type === "callout") {
           const Icon = ICONS[block.icon] || Info;
           return (
             <div className="callout" key={i}>

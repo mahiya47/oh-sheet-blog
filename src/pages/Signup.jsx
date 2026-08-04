@@ -14,6 +14,8 @@ export default function Signup() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
     username: "",
     email: "",
     password: "",
@@ -56,6 +58,10 @@ export default function Signup() {
     e.preventDefault();
     setError("");
 
+    if (!form.firstName.trim() || !form.lastName.trim()) {
+      setError("First and last name are required.");
+      return;
+    }
     if (usernameAvailable === false) {
       setError("That username is already taken.");
       return;
@@ -70,6 +76,8 @@ export default function Signup() {
     }
 
     const res = await signup({
+      firstName: form.firstName,
+      lastName: form.lastName,
       username: form.username,
       email: form.email,
       password: form.password,
@@ -166,6 +174,27 @@ export default function Signup() {
 
         <form className="auth-form" onSubmit={onSubmit}>
           {error && <div className="form-error">{error}</div>}
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <div className="field" style={{ flex: 1 }}>
+              <input
+                type="text"
+                value={form.firstName}
+                onChange={set("firstName")}
+                placeholder="First name"
+                autoComplete="given-name"
+              />
+            </div>
+            <div className="field" style={{ flex: 1 }}>
+              <input
+                type="text"
+                value={form.lastName}
+                onChange={set("lastName")}
+                placeholder="Last name"
+                autoComplete="family-name"
+              />
+            </div>
+          </div>
 
           <div className="field">
             <div style={{ position: "relative" }}>

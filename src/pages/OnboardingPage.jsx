@@ -38,9 +38,6 @@ export default function OnboardingPage() {
   const fileRef = useRef(null);
 
   const [username, setUsername] = useState(currentUser?.username || "");
-  const [displayName, setDisplayName] = useState(
-    currentUser?.displayName || "",
-  );
   const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || "");
   const [bio, setBio] = useState("");
   const [birthday, setBirthday] = useState("");
@@ -77,7 +74,6 @@ export default function OnboardingPage() {
     const orientation = oriChoice === SELF ? oriCustom.trim() : oriChoice;
 
     const res = await updateProfile({
-      name: displayName.trim() || username.trim(),
       username: username.trim(),
       bio,
       avatarUrl,
@@ -142,17 +138,6 @@ export default function OnboardingPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="username"
-            />
-          </div>
-
-          <div className="field">
-            <label htmlFor="ob-name">Display name</label>
-            <input
-              id="ob-name"
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your name"
             />
           </div>
 
