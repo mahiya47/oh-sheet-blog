@@ -195,7 +195,19 @@ export default function SheetCard({ post }) {
       onKeyDown={editing || reposting ? undefined : onKey}
       aria-label={`Open sheet by ${post.author?.displayName}`}
     >
-      <header className="sheet-head" style={{ "--head": post.color }}>
+      <header
+        className="sheet-head"
+        style={{
+          "--head": post.color, // Keeps your random color fallback!
+          backgroundImage: post.author?.coverImg
+            ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${post.author.coverImg})`
+            : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          // Optional: Forces text to be white if they have a cover image so it's readable
+          color: post.author?.coverImg ? "#ffffff" : "inherit",
+        }}
+      >
         <Link
           to={`/profile/${post.author?.id}`}
           className="sheet-author"
