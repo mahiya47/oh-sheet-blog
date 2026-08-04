@@ -186,6 +186,9 @@ export default function SheetCard({ post }) {
     setEditing(false);
   };
 
+  // 🐛 DEBUG LOG: Check your browser console (F12) to see if coverImg exists!
+  console.log("Author data for this post:", post.author);
+
   return (
     <article
       className="sheet clickable"
@@ -198,13 +201,13 @@ export default function SheetCard({ post }) {
       <header
         className="sheet-head"
         style={{
-          "--head": post.color, // Keeps your random color fallback!
+          "--head": post.color,
+          // Checks for coverImg. If found, add gradient overlay + image.
           backgroundImage: post.author?.coverImg
             ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${post.author.coverImg})`
             : "none",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          // Optional: Forces text to be white if they have a cover image so it's readable
           color: post.author?.coverImg ? "#ffffff" : "inherit",
         }}
       >
