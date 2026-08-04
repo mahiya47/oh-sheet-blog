@@ -175,36 +175,37 @@ export default function Signup() {
         <form className="auth-form" onSubmit={onSubmit}>
           {error && <div className="form-error">{error}</div>}
 
-          <div style={{ display: "flex", gap: 10 }}>
-            <div className="field" style={{ flex: 1 }}>
-              <input
-                type="text"
-                value={form.firstName}
-                onChange={set("firstName")}
-                placeholder="First name"
-                autoComplete="given-name"
-              />
-            </div>
-            <div className="field" style={{ flex: 1 }}>
-              <input
-                type="text"
-                value={form.lastName}
-                onChange={set("lastName")}
-                placeholder="Last name"
-                autoComplete="family-name"
-              />
-            </div>
+          <div className="field">
+            <input
+              type="text"
+              value={form.firstName}
+              onChange={set("firstName")}
+              placeholder="First name"
+              autoComplete="given-name"
+              style={{ width: "100%" }}
+            />
           </div>
 
           <div className="field">
-            <div style={{ position: "relative" }}>
+            <input
+              type="text"
+              value={form.lastName}
+              onChange={set("lastName")}
+              placeholder="Last name"
+              autoComplete="family-name"
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <div className="field">
+            <div style={{ position: "relative", width: "100%" }}>
               <input
                 type="text"
                 value={form.username}
                 onChange={set("username")}
                 placeholder="Username"
                 autoComplete="username"
-                style={{ paddingRight: 36 }}
+                style={{ width: "100%", paddingRight: 36 }}
               />
               {form.username.trim().length >= 3 && (
                 <span
@@ -258,38 +259,43 @@ export default function Signup() {
               onChange={set("email")}
               placeholder="Email address"
               autoComplete="email"
+              style={{ width: "100%" }}
             />
           </div>
 
-          <div className="field" style={{ position: "relative" }}>
-            <input
-              type={showPassword ? "text" : "password"}
-              value={form.password}
-              onChange={set("password")}
-              placeholder="Password"
-              autoComplete="new-password"
-              style={{ paddingRight: 42 }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((s) => !s)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              style={{
-                position: "absolute",
-                right: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--text-muted)",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-            </button>
+          <div className="field">
+            {/* Input and Eye Icon Wrapper */}
+            <div style={{ position: "relative", width: "100%" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={set("password")}
+                placeholder="Password"
+                autoComplete="new-password"
+                style={{ width: "100%", paddingRight: 42 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--text-muted)",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
 
+            {/* Strength Meter sits outside the relative wrapper so it doesn't break the vertical centering of the eye icon */}
             {form.password && (
               <div style={{ marginTop: 8 }}>
                 <div
@@ -321,34 +327,36 @@ export default function Signup() {
             )}
           </div>
 
-          <div className="field" style={{ position: "relative" }}>
-            <input
-              type={showConfirm ? "text" : "password"}
-              value={form.confirm}
-              onChange={set("confirm")}
-              placeholder="Confirm password"
-              autoComplete="new-password"
-              style={{ paddingRight: 42 }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirm((s) => !s)}
-              aria-label={showConfirm ? "Hide password" : "Show password"}
-              style={{
-                position: "absolute",
-                right: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--text-muted)",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              {showConfirm ? <EyeOff size={17} /> : <Eye size={17} />}
-            </button>
+          <div className="field">
+            <div style={{ position: "relative", width: "100%" }}>
+              <input
+                type={showConfirm ? "text" : "password"}
+                value={form.confirm}
+                onChange={set("confirm")}
+                placeholder="Confirm password"
+                autoComplete="new-password"
+                style={{ width: "100%", paddingRight: 42 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm((s) => !s)}
+                aria-label={showConfirm ? "Hide password" : "Show password"}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--text-muted)",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {showConfirm ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
           </div>
 
           <button type="submit" className="btn btn-accent btn-block">
