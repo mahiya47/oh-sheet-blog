@@ -35,6 +35,19 @@ import AchievementsModal from "../components/AchievementsModal.jsx";
 import ProfileSkeleton from "../components/ProfileSkeleton.jsx";
 import ReportModal from "../components/ReportModal.jsx";
 
+// Custom Pinterest Icon matching Lucide sizing
+const PinterestIcon = ({ size = 18, style }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    style={style}
+  >
+    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.951-7.252 4.163 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.367 18.633 0 12.017 0z" />
+  </svg>
+);
+
 export default function ProfilePage() {
   const { userId } = useParams();
   const {
@@ -65,13 +78,18 @@ export default function ProfilePage() {
   const [listModal, setListModal] = useState(null);
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [showAchievements, setShowAchievements] = useState(false);
-  const [tab, setTab] = useState("sheets"); // "sheets" | "photos" | "about"
+  const [tab, setTab] = useState("sheets"); // "sheets" | "photos" | "pins" | "about"
   const [blockStatus, setBlockStatus] = useState({
     iBlockedThem: false,
     theyBlockedMe: false,
   });
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
+
+  // Pinterest State
+  const [pins, setPins] = useState([]);
+  const [pinsLoading, setPinsLoading] = useState(false);
+  const [pinsError, setPinsError] = useState(null);
 
   useEffect(() => {
     getFeed();
@@ -93,6 +111,47 @@ export default function ProfilePage() {
       setLoading(false);
     });
   }, [targetId]);
+
+  // Fetch Pinterest RSS Feed
+  useEffect(() => {
+    if (tab === "pins" && profile?.pinterestUrl && pins.length === 0) {
+      const username = profile.pinterestUrl
+        .split("pinterest.com/")[1]
+        ?.replace(/\/$/, "");
+      if (!username) {
+        setPinsError("Invalid Pinterest URL on profile.");
+        return;
+      }
+      setPinsLoading(true);
+      fetch(
+        `https://api.rss2json.com/v1/api.json?rss_url=https://www.pinterest.com/${username}/feed.rss`,
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === "ok") {
+            const fetchedPins = data.items
+              .map((item) => {
+                const imgMatch = item.description.match(/src="([^"]+)"/);
+                const img = item.thumbnail || (imgMatch ? imgMatch[1] : null);
+                // Pinterest RSS usually gives small thumbnails, attempting to fetch higher res
+                const hdImage = img ? img.replace("236x", "736x") : null;
+                return {
+                  id: item.guid,
+                  link: item.link,
+                  title: item.title,
+                  image: hdImage,
+                };
+              })
+              .filter((p) => p.image);
+            setPins(fetchedPins);
+          } else {
+            setPinsError("Could not load pins.");
+          }
+        })
+        .catch(() => setPinsError("Failed to fetch pins."))
+        .finally(() => setPinsLoading(false));
+    }
+  }, [tab, profile?.pinterestUrl, pins.length]);
 
   if (loading) {
     return <ProfileSkeleton />;
@@ -123,11 +182,13 @@ export default function ProfilePage() {
   const scoreBadge = getScoreBadge(profile.score);
   const postBadge = getPostCountBadge(userPosts.length);
   const earnedBadges = [ageBadge, scoreBadge, postBadge].filter(Boolean);
+
   const socialLinks = [
     { url: profile.githubUrl, Icon: Github, label: "GitHub" },
     { url: profile.twitterUrl, Icon: Twitter, label: "Twitter/X" },
     { url: profile.linkedinUrl, Icon: Linkedin, label: "LinkedIn" },
     { url: profile.instagramUrl, Icon: Instagram, label: "Instagram" },
+    { url: profile.pinterestUrl, Icon: PinterestIcon, label: "Pinterest" },
   ].filter((s) => s.url);
 
   const hasAbout =
@@ -241,7 +302,6 @@ export default function ProfilePage() {
         <div
           className="profile-cover"
           style={{
-            // Passes the image/fallback to your new index.css gradient
             "--cover-image": isImageCover
               ? `url(${profile.coverUrl})`
               : profile.coverUrl || DEFAULT_COVER,
@@ -366,7 +426,6 @@ export default function ProfilePage() {
             {profile.bio?.trim() ? profile.bio : "No bio yet."}
           </p>
 
-          {/* Following / Followers row */}
           <div
             style={{
               display: "flex",
@@ -405,7 +464,6 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          {/* Achievements — its own row, icon-only, only if earned */}
           {(earnedBadges.length > 0 || socialLinks.length > 0) && (
             <div
               style={{
@@ -459,7 +517,10 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div className="profile-tabs">
+        <div
+          className="profile-tabs"
+          style={{ display: "flex", width: "100%" }}
+        >
           <button
             type="button"
             className={`tab ${tab === "sheets" ? "active" : ""}`}
@@ -476,6 +537,24 @@ export default function ProfilePage() {
           >
             Photos ({photoPosts.length})
           </button>
+
+          {profile?.pinterestUrl && (
+            <button
+              type="button"
+              className={`tab ${tab === "pins" ? "active" : ""}`}
+              onClick={() => setTab("pins")}
+              style={{
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <PinterestIcon size={14} /> Pins
+            </button>
+          )}
+
           {hasAbout && (
             <button
               type="button"
@@ -487,6 +566,7 @@ export default function ProfilePage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 4,
+                marginLeft: "auto", // This pushes the About tab to the far right
               }}
             >
               <InfoIcon size={14} /> About
@@ -549,6 +629,64 @@ export default function ProfilePage() {
             ))}
           </div>
         ))}
+
+      {tab === "pins" && (
+        <div style={{ paddingTop: 16 }}>
+          {pinsLoading ? (
+            <div
+              className="loading"
+              style={{ textAlign: "center", color: "var(--text-dim)" }}
+            >
+              Loading pins...
+            </div>
+          ) : pinsError ? (
+            <div className="empty">
+              <p>{pinsError}</p>
+            </div>
+          ) : pins.length === 0 ? (
+            <div className="empty">
+              <p>No pins found on this board.</p>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+                gap: 8,
+              }}
+            >
+              {pins.map((pin) => (
+                <a
+                  key={pin.id}
+                  href={pin.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "block",
+                    border: "2px solid var(--border, #333)",
+                    borderRadius: "var(--radius)",
+                    padding: 0,
+                    aspectRatio: "1 / 1",
+                    overflow: "hidden",
+                    cursor: "pointer",
+                  }}
+                  title={pin.title}
+                >
+                  <img
+                    src={pin.image}
+                    alt={pin.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {tab === "about" && (
         <div className="panel" style={{ padding: 20 }}>
