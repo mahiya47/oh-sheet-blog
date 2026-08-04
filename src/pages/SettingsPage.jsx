@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -15,7 +15,9 @@ import {
   MapPin,
   Briefcase,
   GraduationCap,
+  X,
 } from "lucide-react";
+import Cropper from "react-easy-crop";
 import { useStore } from "../lib/store.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -36,52 +38,6 @@ const PRONOUN_OPTIONS = [
   "Xe/Xem",
 ];
 
-function fileToAvatarDataUrl(file, max = 256) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const scale = Math.min(1, max / Math.max(img.width, img.height));
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.85));
-      };
-      img.onerror = reject;
-      img.src = reader.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function fileToCoverDataUrl(file, maxW = 1200) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const scale = Math.min(1, maxW / img.width);
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.85));
-      };
-      img.onerror = reject;
-      img.src = reader.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 const SELF = "Prefer to self-describe";
 
 function isValidUrl(value) {
@@ -94,6 +50,59 @@ function isValidUrl(value) {
   }
 }
 
+// --- Cropper Utility Functions ---
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+async function getCroppedImageDataUrl(imageSrc, cropPixels, max = 1200) {
+  const img = await loadImage(imageSrc);
+
+  const cropCanvas = document.createElement("canvas");
+  cropCanvas.width = cropPixels.width;
+  cropCanvas.height = cropPixels.height;
+  const cropCtx = cropCanvas.getContext("2d");
+  cropCtx.drawImage(
+    img,
+    cropPixels.x,
+    cropPixels.y,
+    cropPixels.width,
+    cropPixels.height,
+    0,
+    0,
+    cropPixels.width,
+    cropPixels.height,
+  );
+
+  const scale = Math.min(
+    1,
+    max / Math.max(cropCanvas.width, cropCanvas.height),
+  );
+  const w = Math.round(cropCanvas.width * scale);
+  const h = Math.round(cropCanvas.height * scale);
+  const outCanvas = document.createElement("canvas");
+  outCanvas.width = w;
+  outCanvas.height = h;
+  outCanvas.getContext("2d").drawImage(cropCanvas, 0, 0, w, h);
+
+  return outCanvas.toDataURL("image/jpeg", 0.85);
+}
+// ---------------------------------
+
 export default function SettingsPage() {
   const {
     currentUser,
@@ -102,7 +111,6 @@ export default function SettingsPage() {
     getBlockedUsers,
     unblockUser,
     deleteAccount,
-    logout,
   } = useStore();
   const { theme, toggleTheme } = useTheme();
   const toast = useToast();
@@ -113,6 +121,13 @@ export default function SettingsPage() {
   const [tab, setTab] = useState("profile");
   const [dirty, setDirty] = useState(false);
   const [sendingVerify, setSendingVerify] = useState(false);
+
+  // --- Crop Modal State ---
+  const [cropSrc, setCropSrc] = useState(null);
+  const [cropType, setCropType] = useState(null); // "avatar" or "cover"
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const [displayName, setDisplayName] = useState(
     currentUser?.displayName || "",
@@ -248,29 +263,72 @@ export default function SettingsPage() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
 
+  // --- Crop Triggers & Handlers ---
   const onPickFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const dataUrl = await fileToAvatarDataUrl(file);
-      setAvatarUrl(dataUrl);
-      toast("Photo ready — hit Save changes.", "accent");
+      const dataUrl = await readFileAsDataUrl(file);
+      setCropType("avatar");
+      setCropSrc(dataUrl);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
     } catch {
       toast("Couldn't load that image.", "danger");
     }
+    e.target.value = "";
   };
 
   const onPickCover = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const dataUrl = await fileToCoverDataUrl(file);
-      setCoverUrl(dataUrl);
-      toast("Cover ready — hit Save changes.", "accent");
+      const dataUrl = await readFileAsDataUrl(file);
+      setCropType("cover");
+      setCropSrc(dataUrl);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
     } catch {
       toast("Couldn't load that image.", "danger");
     }
+    e.target.value = "";
   };
+
+  const onCropComplete = useCallback((_, pixels) => {
+    setCroppedAreaPixels(pixels);
+  }, []);
+
+  const onConfirmCrop = async () => {
+    if (!cropSrc || !croppedAreaPixels) return;
+    try {
+      // 256 for avatars, 1200 for cover images
+      const maxSize = cropType === "avatar" ? 256 : 1200;
+      const dataUrl = await getCroppedImageDataUrl(
+        cropSrc,
+        croppedAreaPixels,
+        maxSize,
+      );
+
+      if (cropType === "avatar") {
+        setAvatarUrl(dataUrl);
+        toast("Photo ready — hit Save changes.", "accent");
+      } else {
+        setCoverUrl(dataUrl);
+        toast("Cover ready — hit Save changes.", "accent");
+      }
+
+      setCropSrc(null);
+      setCropType(null);
+    } catch {
+      toast("Couldn't crop that image.", "danger");
+    }
+  };
+
+  const onCancelCrop = () => {
+    setCropSrc(null);
+    setCropType(null);
+  };
+  // --------------------------------
 
   const onSave = async () => {
     const urls = { githubUrl, twitterUrl, linkedinUrl, instagramUrl };
@@ -1101,6 +1159,73 @@ export default function SettingsPage() {
           )}
         </main>
       </div>
+
+      {/* ============ CROP MODAL ============ */}
+      {cropSrc && (
+        <div className="overlay" onClick={onCancelCrop}>
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: 420,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ position: "relative", width: "100%", height: 420 }}>
+              <Cropper
+                image={cropSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={cropType === "avatar" ? 1 : 3}
+                cropShape={cropType === "avatar" ? "round" : "rect"}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+            <div style={{ padding: "var(--space-4)" }}>
+              <label
+                style={{
+                  fontSize: "0.8rem",
+                  color: "var(--text-muted)",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                }}
+              >
+                Zoom
+              </label>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.05}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                style={{ width: "100%" }}
+              />
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <button
+                  type="button"
+                  className="btn btn-accent"
+                  onClick={onConfirmCrop}
+                  style={{ flex: 1 }}
+                >
+                  Crop & use
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={onCancelCrop}
+                  style={{ flex: 1 }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
