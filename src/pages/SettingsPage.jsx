@@ -40,6 +40,19 @@ const PRONOUN_OPTIONS = [
 
 const SELF = "Prefer to self-describe";
 
+// Custom Pinterest Icon matching Lucide sizing
+const PinterestIcon = ({ size = 18, style }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    style={style}
+  >
+    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.951-7.252 4.163 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.367 18.633 0 12.017 0z" />
+  </svg>
+);
+
 function isValidUrl(value) {
   if (!value) return true;
   try {
@@ -163,6 +176,9 @@ export default function SettingsPage() {
     currentUser?.linkedinUrl || "",
   );
   const [twitterUrl, setTwitterUrl] = useState(currentUser?.twitterUrl || "");
+  const [pinterestUrl, setPinterestUrl] = useState(
+    currentUser?.pinterestUrl || "",
+  );
 
   const storedGender = currentUser?.gender || "";
   const genderIsPreset = GENDER_OPTIONS.includes(storedGender);
@@ -245,6 +261,7 @@ export default function SettingsPage() {
     instagramUrl,
     linkedinUrl,
     twitterUrl,
+    pinterestUrl,
     genderChoice,
     genderCustom,
     showGender,
@@ -331,7 +348,13 @@ export default function SettingsPage() {
   // --------------------------------
 
   const onSave = async () => {
-    const urls = { githubUrl, twitterUrl, linkedinUrl, instagramUrl };
+    const urls = {
+      githubUrl,
+      twitterUrl,
+      linkedinUrl,
+      instagramUrl,
+      pinterestUrl,
+    };
     const hasInvalidUrl = Object.values(urls).some((u) => !isValidUrl(u));
     if (hasInvalidUrl) {
       toast("Please fix the invalid social links before saving.", "danger");
@@ -359,6 +382,7 @@ export default function SettingsPage() {
       instagramUrl,
       linkedinUrl,
       twitterUrl,
+      pinterestUrl,
       currentCity,
       work,
       education,
@@ -879,7 +903,7 @@ export default function SettingsPage() {
                   )}
                 </div>
 
-                <div>
+                <div style={{ marginBottom: 8 }}>
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
@@ -900,6 +924,39 @@ export default function SettingsPage() {
                     />
                   </div>
                   {!isValidUrl(instagramUrl) && (
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--danger, #ff3e3e)",
+                        marginLeft: 26,
+                      }}
+                    >
+                      That doesn't look like a valid URL.
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <PinterestIcon
+                      size={18}
+                      style={{ flexShrink: 0, opacity: 0.7 }}
+                    />
+                    <input
+                      type="url"
+                      value={pinterestUrl}
+                      onChange={(e) => setPinterestUrl(e.target.value)}
+                      placeholder="https://pinterest.com/yourusername"
+                      style={{
+                        borderColor: !isValidUrl(pinterestUrl)
+                          ? "var(--danger, #ff3e3e)"
+                          : undefined,
+                      }}
+                    />
+                  </div>
+                  {!isValidUrl(pinterestUrl) && (
                     <span
                       style={{
                         fontSize: "0.75rem",
