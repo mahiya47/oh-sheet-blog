@@ -78,7 +78,7 @@ export default function ProfilePage() {
   const [listModal, setListModal] = useState(null);
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [showAchievements, setShowAchievements] = useState(false);
-  const [tab, setTab] = useState("sheets"); // "sheets" | "photos" | "pins" | "about"
+  const [tab, setTab] = useState("sheets");
   const [blockStatus, setBlockStatus] = useState({
     iBlockedThem: false,
     theyBlockedMe: false,
@@ -116,10 +116,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (tab === "pins" && profile?.pinterestUrl && pins.length === 0) {
       try {
-        // Safely extract the username regardless of how they typed the URL
         let username = "";
-
-        // Handle URLs correctly even if they lack 'https://'
         let cleanUrl = profile.pinterestUrl.trim();
         if (!cleanUrl.startsWith("http")) {
           cleanUrl = "https://" + cleanUrl;
@@ -141,25 +138,29 @@ export default function ProfilePage() {
           .then((res) => res.json())
           .then((data) => {
             if (data.status === "ok") {
-              const fetchedPins = data.items
+              const fetchedPins = (data.items || [])
                 .map((item) => {
-                  const imgMatch = item.description.match(/src="([^"]+)"/);
-                  const img = item.thumbnail || (imgMatch ? imgMatch[1] : null);
-                  // Pinterest RSS usually gives small thumbnails, attempting to fetch higher res
-                  const hdImage = img ? img.replace("236x", "736x") : null;
+                  const imgMatch = item.description?.match(/src="([^"]+)"/);
+                  let img = item.thumbnail || (imgMatch ? imgMatch[1] : null);
+
+                  if (!img && item.enclosure && item.enclosure.link) {
+                    img = item.enclosure.link;
+                  }
+
+                  const hdImage = img ? img.replace(/\d+x/, "736x") : null;
 
                   return {
-                    id: item.guid,
+                    id: item.guid || item.link,
                     link: item.link,
-                    title: item.title,
-                    image: hdImage,
+                    title: item.title || "Pin",
+                    image: hdImage || img,
                   };
                 })
                 .filter((p) => p.image);
               setPins(fetchedPins);
             } else {
               setPinsError(
-                "Could not load pins. Make sure the board is public.",
+                "Could not load pins. (Is the Pinterest board public?)",
               );
             }
           })
@@ -302,7 +303,6 @@ export default function ProfilePage() {
     </div>
   );
 
-  // If they've blocked me, show a minimal "unavailable" state instead of their content
   if (!isMe && blockStatus.theyBlockedMe) {
     return (
       <div className="empty">
@@ -535,10 +535,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div
-          className="profile-tabs"
-          style={{ display: "flex", width: "100%" }}
-        >
+        <div className="profile-tabs">
           <button
             type="button"
             className={`tab ${tab === "sheets" ? "active" : ""}`}
@@ -585,7 +582,6 @@ export default function ProfilePage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 4,
-                marginLeft: "auto", // This pushes the About tab all the way to the right
               }}
             >
               <InfoIcon size={14} /> About
@@ -679,6 +675,16 @@ export default function ProfilePage() {
           ) : pins.length === 0 ? (
             <div className="empty">
               <p>No pins found on this board.</p>
+              <p
+                style={{
+                  fontSize: "0.8rem",
+                  color: "var(--text-muted)",
+                  marginTop: 8,
+                }}
+              >
+                Note: It can take up to 24 hours for new pins to appear here due
+                to RSS delays.
+              </p>
             </div>
           ) : (
             <div
