@@ -20,6 +20,12 @@ export default function Login() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!identifier.trim()) {
+      setError("Please enter your email or username");
+      return;
+    }
+
     const res = await login(identifier, password);
     if (res.ok) {
       toast("Welcome back!", "accent");
