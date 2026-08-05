@@ -72,6 +72,7 @@ const normalizePost = (post) => ({
   likeCount: post.likeCount ?? 0,
   commentCount: post.commentCount ?? 0,
   likedByMe: post.likedByMe ?? false,
+  isBookmarked: post.isBookmarked ?? false,
   reactionCounts: post.reactionCounts ?? {},
   myReaction: post.myReaction ?? null,
   author: {
@@ -292,6 +293,33 @@ export function StoreProvider({ children }) {
     } catch (err) {
       console.error(err);
       return false;
+    }
+  };
+
+  // ---- Bookmarks ------------------------------------------------------------
+
+  const toggleBookmark = async (postId, currentlySaved) => {
+    // Optimistic UI update: instantly toggle the icon for a snappy feel
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId ? { ...p, isBookmarked: !currentlySaved } : p,
+      ),
+    );
+
+    try {
+      if (currentlySaved) {
+        await api.delete(`/posts/${postId}/bookmark`);
+      } else {
+        await api.post(`/posts/${postId}/bookmark`);
+      }
+    } catch (err) {
+      console.error(err);
+      // Revert if the API call fails
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, isBookmarked: currentlySaved } : p,
+        ),
+      );
     }
   };
 
@@ -995,6 +1023,7 @@ export function StoreProvider({ children }) {
         addComment,
         deleteComment,
         reactToPost,
+        toggleBookmark,
         getPostReactions,
         getPostLikers,
         REACTION_EMOJI,

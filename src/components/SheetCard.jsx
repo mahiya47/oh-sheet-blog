@@ -13,6 +13,7 @@ import {
   Cake,
   Eye,
   Heart,
+  Bookmark,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -37,6 +38,7 @@ export default function SheetCard({ post }) {
     toggleFollow,
     getPostReactions,
     reactToPost,
+    toggleBookmark,
     REACTION_EMOJI,
   } = useStore();
   const navigate = useNavigate();
@@ -555,6 +557,26 @@ export default function SheetCard({ post }) {
           style={{ flex: 1, justifyContent: "center" }}
         >
           <Share2 size={18} /> <span className="stat-label">Share</span>
+        </button>
+        <button
+          type="button"
+          className="stat"
+          onClick={(e) => {
+            stop(e);
+            toggleBookmark(post.id, post.isBookmarked);
+          }}
+          aria-label={post.isBookmarked ? "Remove Bookmark" : "Bookmark"}
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            color: post.isBookmarked ? "var(--accent)" : "inherit",
+          }}
+        >
+          <Bookmark
+            size={18}
+            fill={post.isBookmarked ? "var(--accent)" : "none"}
+          />
+          <span className="stat-label">Save</span>
         </button>
         {post.likeCount > 0 && (
           <button
