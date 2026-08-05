@@ -1097,17 +1097,27 @@ select {
   border-top: var(--border-w) solid var(--border);
   position: relative;
   overflow: visible;
+  gap: 4px; /* Adds a little space between the bordered buttons */
+  padding: 8px; /* Gives the container some breathing room */
 }
+
 .profile-tabs .tab {
   padding: var(--space-3) var(--space-5);
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-muted);
   flex-shrink: 0;
+  /* Added grey borders! */
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
 }
+
 .profile-tabs .tab.active {
   color: var(--accent-ink);
   background: var(--accent);
+  border-color: var(--accent);
 }
 
 .profile-tabs::-webkit-scrollbar {
@@ -1124,6 +1134,7 @@ select {
 
 .overflow-tabs {
   display: flex;
+  gap: 4px;
 }
 
 /* --- MOBILE VIEW --- */
@@ -1151,6 +1162,7 @@ select {
     min-width: 140px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
     padding: 4px;
+    gap: 4px;
   }
 
   .overflow-tabs.open {
@@ -1163,6 +1175,7 @@ select {
     justify-content: flex-start;
     padding: 10px 14px;
     border-radius: 4px;
+    border: none; /* Remove individual borders inside the dropdown */
   }
 }
 
