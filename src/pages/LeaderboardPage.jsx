@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Trophy, Crown, Info } from "lucide-react";
+import { Trophy, Crown, Info, Flame } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { CREATOR_ID } from "../lib/creator.js";
 import Avatar from "../components/Avatar.jsx";
@@ -91,6 +91,19 @@ export default function LeaderboardPage() {
                   {u.id === CREATOR_ID && (
                     <span className="creator-badge">
                       <Crown size={10} /> Creator
+                    </span>
+                  )}
+                  {u.currentStreak > 2 && (
+                    <span
+                      style={{
+                        color: "#ff8c3e",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      <Flame size={14} fill="currentColor" /> {u.currentStreak}
                     </span>
                   )}
                 </span>

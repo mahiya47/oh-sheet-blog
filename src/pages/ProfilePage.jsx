@@ -17,6 +17,7 @@ import {
   MoreHorizontal,
   Menu,
   Bookmark,
+  Flame,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -432,6 +433,21 @@ export default function ProfilePage() {
                 size={18}
                 variant={getVerifiedVariant(profile, isCreatorProfile)}
               />
+            )}
+            {profile.currentStreak > 2 && (
+              <span
+                style={{
+                  color: "#ff8c3e",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 2,
+                  fontSize: "1rem",
+                  marginLeft: 8,
+                  verticalAlign: "middle",
+                }}
+              >
+                <Flame size={20} fill="currentColor" /> {profile.currentStreak}
+              </span>
             )}
             {profile.pronouns && (
               <span

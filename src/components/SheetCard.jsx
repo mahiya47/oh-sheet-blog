@@ -14,6 +14,7 @@ import {
   Eye,
   Heart,
   Bookmark,
+  Flame,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -228,6 +229,22 @@ export default function SheetCard({ post }) {
                   color="#000"
                   style={{ marginLeft: 4, verticalAlign: "middle" }}
                 />
+              )}
+              {post.author?.currentStreak > 2 && (
+                <span
+                  style={{
+                    color: "#ff8c3e",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 2,
+                    fontSize: "0.8rem",
+                    marginLeft: 4,
+                    verticalAlign: "middle",
+                  }}
+                >
+                  <Flame size={14} fill="currentColor" />{" "}
+                  {post.author.currentStreak}
+                </span>
               )}
             </span>
             <span className="handle">
