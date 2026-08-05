@@ -15,6 +15,8 @@ import {
   Heart,
   Bookmark,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { useClickAway } from "../lib/useClickAway.js";
@@ -371,7 +373,11 @@ export default function SheetCard({ post }) {
             </div>
           </div>
         ) : (
-          <p>{post.content}</p>
+          <div className="markdown-content">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {post.content}
+            </ReactMarkdown>
+          </div>
         )}
 
         {post.tags?.length > 0 && !editing && (
@@ -464,7 +470,14 @@ export default function SheetCard({ post }) {
                 {timeAgo(post.repostOf.createdAt)}
               </span>
             </div>
-            <p style={{ fontSize: "0.9rem" }}>{post.repostOf.content}</p>
+
+            {/* Reposts also get Markdown rendering! */}
+            <div className="markdown-content" style={{ fontSize: "0.9rem" }}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {post.repostOf.content}
+              </ReactMarkdown>
+            </div>
+
             {post.repostOf.imageUrl && (
               <div
                 style={{
