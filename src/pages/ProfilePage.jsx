@@ -537,7 +537,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* Profile Tabs */}
+        {/* Clean, singular Tabs Section using `.more-menu` */}
         <div className="profile-tabs">
           <button
             type="button"
@@ -561,46 +561,85 @@ export default function ProfilePage() {
             Photos ({photoPosts.length})
           </button>
 
-          {/* Wrapper for the mobile dropdown logic */}
+          {/* Desktop Tabs (Hidden on mobile) */}
+          {profile?.pinterestUrl && (
+            <button
+              type="button"
+              className={`tab hide-on-mobile ${tab === "pins" ? "active" : ""}`}
+              onClick={() => {
+                setTab("pins");
+                setTabMenuOpen(false);
+              }}
+            >
+              <PinterestIcon size={14} /> Pins
+            </button>
+          )}
+
+          {hasAbout && (
+            <button
+              type="button"
+              className={`tab hide-on-mobile ${tab === "about" ? "active" : ""}`}
+              onClick={() => {
+                setTab("about");
+                setTabMenuOpen(false);
+              }}
+            >
+              <InfoIcon size={14} /> About
+            </button>
+          )}
+
+          {/* Mobile Burger Menu (Hidden on desktop) */}
           {(profile?.pinterestUrl || hasAbout) && (
-            <div className="more-tabs-wrapper">
-              {/* Hamburger Button (Visible only on mobile) */}
+            <div
+              className="show-on-mobile"
+              style={{ marginLeft: "auto", position: "relative" }}
+            >
               <button
                 type="button"
-                className={`tab mobile-more-btn ${["pins", "about"].includes(tab) ? "active" : ""}`}
+                className={`tab ${["pins", "about"].includes(tab) ? "active" : ""}`}
                 onClick={() => setTabMenuOpen((prev) => !prev)}
               >
                 <Menu size={18} />
               </button>
 
-              {/* Overflow Tabs (Row on desktop, Dropdown on mobile) */}
-              <div className={`overflow-tabs ${tabMenuOpen ? "open" : ""}`}>
-                {profile?.pinterestUrl && (
-                  <button
-                    type="button"
-                    className={`tab ${tab === "pins" ? "active" : ""}`}
-                    onClick={() => {
-                      setTab("pins");
-                      setTabMenuOpen(false);
-                    }}
-                  >
-                    <PinterestIcon size={14} /> Pins
-                  </button>
-                )}
-
-                {hasAbout && (
-                  <button
-                    type="button"
-                    className={`tab ${tab === "about" ? "active" : ""}`}
-                    onClick={() => {
-                      setTab("about");
-                      setTabMenuOpen(false);
-                    }}
-                  >
-                    <InfoIcon size={14} /> About
-                  </button>
-                )}
-              </div>
+              {/* The Dropdown Menu */}
+              {tabMenuOpen && (
+                <div
+                  className="more-menu"
+                  style={{ right: 0, top: "100%", zIndex: 100, minWidth: 150 }}
+                >
+                  {profile?.pinterestUrl && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setTab("pins");
+                        setTabMenuOpen(false);
+                      }}
+                      style={{
+                        color: tab === "pins" ? "var(--accent)" : "inherit",
+                      }}
+                    >
+                      <PinterestIcon size={14} /> Pins
+                    </button>
+                  )}
+                  {hasAbout && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setTab("about");
+                        setTabMenuOpen(false);
+                      }}
+                      style={{
+                        color: tab === "about" ? "var(--accent)" : "inherit",
+                      }}
+                    >
+                      <InfoIcon size={14} /> About
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

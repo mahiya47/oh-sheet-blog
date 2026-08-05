@@ -1097,7 +1097,9 @@ select {
   border-top: var(--border-w) solid var(--border);
   position: relative;
   overflow: visible;
-  z-index: 40; /* <-- Add this to push the dropdown above the feed */
+  z-index: 40;
+  gap: 6px;
+  padding: 8px;
 }
 .profile-tabs .tab {
   padding: var(--space-3) var(--space-5);
@@ -1105,8 +1107,9 @@ select {
   text-transform: uppercase;
   color: var(--text-muted);
   flex-shrink: 0;
-  background: none;
-  border: none;
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1116,6 +1119,7 @@ select {
 .profile-tabs .tab.active {
   color: var(--accent-ink);
   background: var(--accent);
+  border-color: var(--accent);
 }
 
 .profile-tabs::-webkit-scrollbar {
@@ -1133,6 +1137,10 @@ select {
 .overflow-tabs.open {
   display: flex !important; /* <-- Add !important here */
   flex-direction: column;
+}
+
+.show-on-mobile {
+  display: none !important;
 }
 
 /* --- MOBILE VIEW --- */
@@ -1172,6 +1180,12 @@ select {
     justify-content: flex-start;
     padding: 10px 14px;
     border-radius: 4px;
+  }
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .show-on-mobile {
+    display: flex !important;
   }
 }
 
