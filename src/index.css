@@ -1092,6 +1092,7 @@ select {
   margin-left: 6px;
   text-transform: uppercase;
 }
+
 .profile-tabs {
   display: flex;
   border-top: var(--border-w) solid var(--border);
@@ -1100,6 +1101,7 @@ select {
   z-index: 40;
   gap: 6px;
   padding: 8px;
+  flex-wrap: wrap; /* Allows wrapping if the screen is super tiny */
 }
 .profile-tabs .tab {
   padding: var(--space-3) var(--space-5);
@@ -1180,6 +1182,12 @@ select {
     justify-content: flex-start;
     padding: 10px 14px;
     border-radius: 4px;
+  }
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .show-on-mobile {
+    display: flex !important;
   }
   .hide-on-mobile {
     display: none !important;

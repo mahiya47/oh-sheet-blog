@@ -318,7 +318,15 @@ export default function ProfilePage() {
 
   return (
     <>
-      <section className="profile">
+      {/* 
+        CRITICAL FIX: 
+        Added position: relative and zIndex: 20 so the profile section 
+        forces the dropdown to render explicitly above the Feed component!
+      */}
+      <section
+        className="profile"
+        style={{ position: "relative", zIndex: 20, overflow: "visible" }}
+      >
         <div
           className="profile-cover"
           style={{
@@ -537,7 +545,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* Clean, singular Tabs Section using `.more-menu` */}
+        {/* Clean, singular Tabs Section */}
         <div className="profile-tabs">
           <button
             type="button"
@@ -598,6 +606,15 @@ export default function ProfilePage() {
                 type="button"
                 className={`tab ${["pins", "about"].includes(tab) ? "active" : ""}`}
                 onClick={() => setTabMenuOpen((prev) => !prev)}
+                style={{
+                  width: "38px",
+                  height: "38px",
+                  padding: "0",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
               >
                 <Menu size={18} />
               </button>
