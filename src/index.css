@@ -1099,6 +1099,8 @@ select {
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
 }
 .profile-tabs .tab {
   padding: var(--space-3) var(--space-5);
