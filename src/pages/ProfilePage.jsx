@@ -16,6 +16,7 @@ import {
   Flag,
   MoreHorizontal,
   Menu,
+  Bookmark,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -57,6 +58,7 @@ export default function ProfilePage() {
     posts,
     getProfile,
     getUserPosts,
+    getSavedPosts,
     getFollowInfo,
     toggleFollow,
     getFollowers,
@@ -81,6 +83,7 @@ export default function ProfilePage() {
   const [showAchievements, setShowAchievements] = useState(false);
   const [tab, setTab] = useState("sheets");
   const [tabMenuOpen, setTabMenuOpen] = useState(false);
+  const [savedPosts, setSavedPosts] = useState([]);
   const [blockStatus, setBlockStatus] = useState({
     iBlockedThem: false,
     theyBlockedMe: false,
@@ -92,6 +95,8 @@ export default function ProfilePage() {
   const [pins, setPins] = useState([]);
   const [pinsLoading, setPinsLoading] = useState(false);
   const [pinsError, setPinsError] = useState(null);
+
+  const isMe = currentUser?.id === targetId;
 
   useEffect(() => {
     getFeed();
@@ -112,7 +117,14 @@ export default function ProfilePage() {
       setBlockStatus(block);
       setLoading(false);
     });
-  }, [targetId]);
+  }, [targetId, currentUser?.id, getProfile, getFollowInfo, getBlockStatus]);
+
+  // Fetch Saved Posts
+  useEffect(() => {
+    if (tab === "saved" && isMe && savedPosts.length === 0) {
+      getSavedPosts().then(setSavedPosts);
+    }
+  }, [tab, isMe, getSavedPosts, savedPosts.length]);
 
   // Fetch Pinterest RSS Feed
   useEffect(() => {
@@ -191,7 +203,6 @@ export default function ProfilePage() {
 
   const userPosts = getUserPosts(profile.id);
   const photoPosts = userPosts.filter((p) => p.imageUrl);
-  const isMe = currentUser?.id === profile.id;
   const following = counts.isFollowing;
   const isCreatorProfile = profile.id === CREATOR_ID;
 
@@ -318,15 +329,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      {/* 
-        CRITICAL FIX: 
-        Added position: relative and zIndex: 20 so the profile section 
-        forces the dropdown to render explicitly above the Feed component!
-      */}
-      <section
-        className="profile"
-        style={{ position: "relative", zIndex: 20, overflow: "visible" }}
-      >
+      <section className="profile">
         <div
           className="profile-cover"
           style={{
@@ -570,6 +573,20 @@ export default function ProfilePage() {
           </button>
 
           {/* Desktop Tabs (Hidden on mobile) */}
+          {isMe && (
+            <button
+              type="button"
+              className={`tab hide-on-mobile ${tab === "saved" ? "active" : ""}`}
+              onClick={() => {
+                setTab("saved");
+                setTabMenuOpen(false);
+              }}
+              style={{ display: "flex", alignItems: "center", gap: 4 }}
+            >
+              <Bookmark size={14} /> Saved
+            </button>
+          )}
+
           {profile?.pinterestUrl && (
             <button
               type="button"
@@ -597,14 +614,14 @@ export default function ProfilePage() {
           )}
 
           {/* Mobile Burger Menu (Hidden on desktop) */}
-          {(profile?.pinterestUrl || hasAbout) && (
+          {(profile?.pinterestUrl || hasAbout || isMe) && (
             <div
               className="show-on-mobile"
               style={{ marginLeft: "auto", position: "relative" }}
             >
               <button
                 type="button"
-                className={`tab ${["pins", "about"].includes(tab) ? "active" : ""}`}
+                className={`tab ${["pins", "about", "saved"].includes(tab) ? "active" : ""}`}
                 onClick={() => setTabMenuOpen((prev) => !prev)}
                 style={{
                   width: "38px",
@@ -625,6 +642,21 @@ export default function ProfilePage() {
                   className="more-menu"
                   style={{ right: 0, top: "100%", zIndex: 100, minWidth: 150 }}
                 >
+                  {isMe && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setTab("saved");
+                        setTabMenuOpen(false);
+                      }}
+                      style={{
+                        color: tab === "saved" ? "var(--accent)" : "inherit",
+                      }}
+                    >
+                      <Bookmark size={14} /> Saved
+                    </button>
+                  )}
                   {profile?.pinterestUrl && (
                     <button
                       type="button"
@@ -672,6 +704,15 @@ export default function ProfilePage() {
           }
           emptyTo={isMe ? "/create" : undefined}
           emptyToLabel="Post your first sheet"
+        />
+      )}
+
+      {tab === "saved" && isMe && (
+        <Feed
+          posts={savedPosts}
+          emptyTitle="You haven't saved any sheets yet."
+          emptyTo="/feed"
+          emptyToLabel="Go explore the feed"
         />
       )}
 

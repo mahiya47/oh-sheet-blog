@@ -222,6 +222,16 @@ export function StoreProvider({ children }) {
     }
   }, []);
 
+  const getSavedPosts = async () => {
+    try {
+      const res = await api.get("/posts/saved/me");
+      return res.data.map(normalizePost);
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
   const loadMorePosts = useCallback(async () => {
     if (!nextCursor) return false;
     try {
@@ -1080,6 +1090,7 @@ export function StoreProvider({ children }) {
         adminUpdateReport,
         adminGetSupport,
         adminUpdateSupport,
+        getSavedPosts,
       }}
     >
       {children}

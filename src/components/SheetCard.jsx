@@ -113,11 +113,8 @@ export default function SheetCard({ post }) {
     const dy = Math.abs(t.clientY - touchStartPosRef.current.y);
     const moved = dx > 10 || dy > 10;
 
-    if (moved) {
-      // this was a scroll/swipe, not a tap — let it scroll, don't treat as tap
-      return;
-    }
-    e.preventDefault(); // suppress the synthetic click mobile would fire next
+    if (moved) return;
+    e.preventDefault();
     handleTap();
   };
 
@@ -261,6 +258,24 @@ export default function SheetCard({ post }) {
             </button>
             {menuOpen && (
               <div className="more-menu" role="menu">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={(e) => {
+                    stop(e);
+                    setMenuOpen(false);
+                    toggleBookmark(post.id, post.isBookmarked);
+                  }}
+                  style={{
+                    color: post.isBookmarked ? "var(--accent)" : "inherit",
+                  }}
+                >
+                  <Bookmark
+                    size={15}
+                    fill={post.isBookmarked ? "var(--accent)" : "none"}
+                  />
+                  {post.isBookmarked ? "Remove Bookmark" : "Save Sheet"}
+                </button>
                 <Link
                   to={`/profile/${post.author?.id}`}
                   role="menuitem"
@@ -557,26 +572,6 @@ export default function SheetCard({ post }) {
           style={{ flex: 1, justifyContent: "center" }}
         >
           <Share2 size={18} /> <span className="stat-label">Share</span>
-        </button>
-        <button
-          type="button"
-          className="stat"
-          onClick={(e) => {
-            stop(e);
-            toggleBookmark(post.id, post.isBookmarked);
-          }}
-          aria-label={post.isBookmarked ? "Remove Bookmark" : "Bookmark"}
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            color: post.isBookmarked ? "var(--accent)" : "inherit",
-          }}
-        >
-          <Bookmark
-            size={18}
-            fill={post.isBookmarked ? "var(--accent)" : "none"}
-          />
-          <span className="stat-label">Save</span>
         </button>
         {post.likeCount > 0 && (
           <button
