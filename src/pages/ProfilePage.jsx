@@ -329,73 +329,89 @@ export default function ProfilePage() {
           }}
         />
         <div className="profile-info">
-          <div className="profile-tabs">
+          <div className="profile-top">
             <button
               type="button"
-              className={`tab ${tab === "sheets" ? "active" : ""}`}
-              onClick={() => {
-                setTab("sheets");
-                setTabMenuOpen(false);
+              onClick={() =>
+                profile.avatarUrl && setLightboxSrc(profile.avatarUrl)
+              }
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: profile.avatarUrl ? "zoom-in" : "default",
+                animation: "fadeIn 0.4s ease 0.1s both",
               }}
+              aria-label="View profile photo"
             >
-              Sheets
+              <Avatar user={profile} size={104} />
             </button>
-
-            <button
-              type="button"
-              className={`tab ${tab === "photos" ? "active" : ""}`}
-              onClick={() => {
-                setTab("photos");
-                setTabMenuOpen(false);
-              }}
-            >
-              Photos ({photoPosts.length})
-            </button>
-
-            {/* This wrapper handles the desktop row vs mobile dropdown based on your CSS */}
-            {(profile?.pinterestUrl || hasAbout) && (
-              <div className="more-tabs-wrapper">
-                {/* Hamburger button (Visible ONLY on mobile) */}
-                <button
-                  type="button"
-                  className={`tab mobile-more-btn ${["pins", "about"].includes(tab) ? "active" : ""}`}
-                  onClick={() => setTabMenuOpen((prev) => !prev)}
+            <div style={{ display: "flex", gap: 8 }}>
+              {isMe ? (
+                <Link
+                  to="/settings"
+                  className="btn btn-ghost"
+                  aria-label="Edit profile"
+                  style={{ width: 38, height: 38, padding: 0 }}
                 >
-                  <Menu size={18} />
-                </button>
-
-                {/* The remaining tabs (Row on desktop, Dropdown on mobile) */}
-                <div className={`overflow-tabs ${tabMenuOpen ? "open" : ""}`}>
-                  {profile?.pinterestUrl && (
+                  <Pencil size={15} />
+                </Link>
+              ) : (
+                <>
+                  {!blockStatus.iBlockedThem && (
                     <button
                       type="button"
-                      className={`tab ${tab === "pins" ? "active" : ""}`}
-                      onClick={() => {
-                        setTab("pins");
-                        setTabMenuOpen(false);
-                      }}
-                      style={{ display: "flex", alignItems: "center", gap: 4 }}
+                      className={`btn ${following ? "btn-danger" : "btn-accent"}`}
+                      onClick={onFollow}
+                      style={{ fontSize: "0.75rem", padding: "7px 14px" }}
                     >
-                      <PinterestIcon size={14} /> Pins
+                      {following ? "Unfollow" : "Follow"}
                     </button>
                   )}
-
-                  {hasAbout && (
+                  <div style={{ position: "relative" }}>
                     <button
                       type="button"
-                      className={`tab ${tab === "about" ? "active" : ""}`}
-                      onClick={() => {
-                        setTab("about");
-                        setTabMenuOpen(false);
-                      }}
-                      style={{ display: "flex", alignItems: "center", gap: 4 }}
+                      className="btn btn-ghost"
+                      onClick={() => setMenuOpen((o) => !o)}
+                      aria-label="More options"
+                      style={{ width: 38, height: 38, padding: 0 }}
                     >
-                      <InfoIcon size={14} /> About
+                      <MoreHorizontal size={15} />
                     </button>
-                  )}
-                </div>
-              </div>
-            )}
+                    {menuOpen && (
+                      <div
+                        className="more-menu"
+                        role="menu"
+                        style={{ right: 0, minWidth: 180 }}
+                      >
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            setShowReport(true);
+                          }}
+                        >
+                          <Flag size={15} />
+                          Report @{profile.username}
+                        </button>
+                        <button
+                          type="button"
+                          className="danger"
+                          role="menuitem"
+                          onClick={onToggleBlock}
+                        >
+                          <ShieldOff size={15} />
+                          {blockStatus.iBlockedThem
+                            ? "Unblock"
+                            : `Block @${profile.username}`}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           <h1 className="profile-name">
@@ -521,11 +537,8 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* Updated Profile Tabs with Mobile Responsiveness */}
-        <div
-          className="profile-tabs"
-          style={{ display: "flex", position: "relative" }}
-        >
+        {/* Profile Tabs */}
+        <div className="profile-tabs">
           <button
             type="button"
             className={`tab ${tab === "sheets" ? "active" : ""}`}
@@ -533,7 +546,6 @@ export default function ProfilePage() {
               setTab("sheets");
               setTabMenuOpen(false);
             }}
-            style={{ border: "none", cursor: "pointer" }}
           >
             Sheets
           </button>
@@ -545,109 +557,50 @@ export default function ProfilePage() {
               setTab("photos");
               setTabMenuOpen(false);
             }}
-            style={{ border: "none", cursor: "pointer" }}
           >
             Photos ({photoPosts.length})
           </button>
 
-          {profile?.pinterestUrl && (
-            <button
-              type="button"
-              className={`tab hide-on-mobile ${tab === "pins" ? "active" : ""}`}
-              onClick={() => {
-                setTab("pins");
-                setTabMenuOpen(false);
-              }}
-              style={{
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <PinterestIcon size={14} /> Pins
-            </button>
-          )}
-
-          {hasAbout && (
-            <button
-              type="button"
-              className={`tab hide-on-mobile ${tab === "about" ? "active" : ""}`}
-              onClick={() => {
-                setTab("about");
-                setTabMenuOpen(false);
-              }}
-              style={{
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <InfoIcon size={14} /> About
-            </button>
-          )}
-
-          {/* Mobile Burger Menu for hidden tabs */}
+          {/* Wrapper for the mobile dropdown logic */}
           {(profile?.pinterestUrl || hasAbout) && (
-            <div
-              className="show-on-mobile"
-              style={{ marginLeft: "auto", position: "relative" }}
-            >
+            <div className="more-tabs-wrapper">
+              {/* Hamburger Button (Visible only on mobile) */}
               <button
                 type="button"
-                className={`tab ${["pins", "about"].includes(tab) ? "active" : ""}`}
+                className={`tab mobile-more-btn ${["pins", "about"].includes(tab) ? "active" : ""}`}
                 onClick={() => setTabMenuOpen((prev) => !prev)}
-                style={{
-                  border: "none",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  height: "100%",
-                }}
               >
                 <Menu size={18} />
               </button>
 
-              {tabMenuOpen && (
-                <div
-                  className="more-menu"
-                  style={{ right: 0, top: "100%", zIndex: 50, minWidth: 130 }}
-                >
-                  {profile?.pinterestUrl && (
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setTab("pins");
-                        setTabMenuOpen(false);
-                      }}
-                      style={{
-                        color: tab === "pins" ? "var(--accent)" : "inherit",
-                      }}
-                    >
-                      <PinterestIcon size={14} /> Pins
-                    </button>
-                  )}
-                  {hasAbout && (
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setTab("about");
-                        setTabMenuOpen(false);
-                      }}
-                      style={{
-                        color: tab === "about" ? "var(--accent)" : "inherit",
-                      }}
-                    >
-                      <InfoIcon size={14} /> About
-                    </button>
-                  )}
-                </div>
-              )}
+              {/* Overflow Tabs (Row on desktop, Dropdown on mobile) */}
+              <div className={`overflow-tabs ${tabMenuOpen ? "open" : ""}`}>
+                {profile?.pinterestUrl && (
+                  <button
+                    type="button"
+                    className={`tab ${tab === "pins" ? "active" : ""}`}
+                    onClick={() => {
+                      setTab("pins");
+                      setTabMenuOpen(false);
+                    }}
+                  >
+                    <PinterestIcon size={14} /> Pins
+                  </button>
+                )}
+
+                {hasAbout && (
+                  <button
+                    type="button"
+                    className={`tab ${tab === "about" ? "active" : ""}`}
+                    onClick={() => {
+                      setTab("about");
+                      setTabMenuOpen(false);
+                    }}
+                  >
+                    <InfoIcon size={14} /> About
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
