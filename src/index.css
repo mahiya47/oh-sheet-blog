@@ -1095,12 +1095,8 @@ select {
 .profile-tabs {
   display: flex;
   border-top: var(--border-w) solid var(--border);
-  overflow-x: auto;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  mask-image: linear-gradient(to right, black 85%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  position: relative;
+  overflow: visible;
 }
 .profile-tabs .tab {
   padding: var(--space-3) var(--space-5);
@@ -1116,6 +1112,58 @@ select {
 
 .profile-tabs::-webkit-scrollbar {
   display: none; /* Hide scrollbar for Chrome/Safari */
+}
+
+.more-tabs-wrapper {
+  display: flex;
+}
+
+.mobile-more-btn {
+  display: none !important;
+}
+
+.overflow-tabs {
+  display: flex;
+}
+
+/* --- MOBILE VIEW --- */
+@media (max-width: 600px) {
+  .more-tabs-wrapper {
+    position: relative;
+    margin-left: auto;
+  }
+
+  .mobile-more-btn {
+    display: flex !important;
+    align-items: center;
+  }
+
+  .overflow-tabs {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--bg, #000);
+    border: 2px solid var(--border, #333);
+    border-radius: var(--radius, 8px);
+    flex-direction: column;
+    z-index: 50;
+    min-width: 140px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+    padding: 4px;
+  }
+
+  .overflow-tabs.open {
+    display: flex;
+  }
+
+  .overflow-tabs .tab {
+    width: 100%;
+    text-align: left;
+    justify-content: flex-start;
+    padding: 10px 14px;
+    border-radius: 4px;
+  }
 }
 
 /* =========================================================================

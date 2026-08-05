@@ -15,6 +15,7 @@ import {
   ShieldOff,
   Flag,
   MoreHorizontal,
+  Menu,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -79,6 +80,7 @@ export default function ProfilePage() {
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [showAchievements, setShowAchievements] = useState(false);
   const [tab, setTab] = useState("sheets");
+  const [tabMenuOpen, setTabMenuOpen] = useState(false);
   const [blockStatus, setBlockStatus] = useState({
     iBlockedThem: false,
     theyBlockedMe: false,
@@ -535,11 +537,18 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div className="profile-tabs">
+        {/* Updated Profile Tabs with Mobile Responsiveness */}
+        <div
+          className="profile-tabs"
+          style={{ display: "flex", position: "relative" }}
+        >
           <button
             type="button"
             className={`tab ${tab === "sheets" ? "active" : ""}`}
-            onClick={() => setTab("sheets")}
+            onClick={() => {
+              setTab("sheets");
+              setTabMenuOpen(false);
+            }}
             style={{ border: "none", cursor: "pointer" }}
           >
             Sheets
@@ -548,7 +557,10 @@ export default function ProfilePage() {
           <button
             type="button"
             className={`tab ${tab === "photos" ? "active" : ""}`}
-            onClick={() => setTab("photos")}
+            onClick={() => {
+              setTab("photos");
+              setTabMenuOpen(false);
+            }}
             style={{ border: "none", cursor: "pointer" }}
           >
             Photos ({photoPosts.length})
@@ -557,8 +569,11 @@ export default function ProfilePage() {
           {profile?.pinterestUrl && (
             <button
               type="button"
-              className={`tab ${tab === "pins" ? "active" : ""}`}
-              onClick={() => setTab("pins")}
+              className={`tab hide-on-mobile ${tab === "pins" ? "active" : ""}`}
+              onClick={() => {
+                setTab("pins");
+                setTabMenuOpen(false);
+              }}
               style={{
                 border: "none",
                 cursor: "pointer",
@@ -574,8 +589,11 @@ export default function ProfilePage() {
           {hasAbout && (
             <button
               type="button"
-              className={`tab ${tab === "about" ? "active" : ""}`}
-              onClick={() => setTab("about")}
+              className={`tab hide-on-mobile ${tab === "about" ? "active" : ""}`}
+              onClick={() => {
+                setTab("about");
+                setTabMenuOpen(false);
+              }}
               style={{
                 border: "none",
                 cursor: "pointer",
@@ -586,6 +604,67 @@ export default function ProfilePage() {
             >
               <InfoIcon size={14} /> About
             </button>
+          )}
+
+          {/* Mobile Burger Menu for hidden tabs */}
+          {(profile?.pinterestUrl || hasAbout) && (
+            <div
+              className="show-on-mobile"
+              style={{ marginLeft: "auto", position: "relative" }}
+            >
+              <button
+                type="button"
+                className={`tab ${["pins", "about"].includes(tab) ? "active" : ""}`}
+                onClick={() => setTabMenuOpen((prev) => !prev)}
+                style={{
+                  border: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  height: "100%",
+                }}
+              >
+                <Menu size={18} />
+              </button>
+
+              {tabMenuOpen && (
+                <div
+                  className="more-menu"
+                  style={{ right: 0, top: "100%", zIndex: 50, minWidth: 130 }}
+                >
+                  {profile?.pinterestUrl && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setTab("pins");
+                        setTabMenuOpen(false);
+                      }}
+                      style={{
+                        color: tab === "pins" ? "var(--accent)" : "inherit",
+                      }}
+                    >
+                      <PinterestIcon size={14} /> Pins
+                    </button>
+                  )}
+                  {hasAbout && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setTab("about");
+                        setTabMenuOpen(false);
+                      }}
+                      style={{
+                        color: tab === "about" ? "var(--accent)" : "inherit",
+                      }}
+                    >
+                      <InfoIcon size={14} /> About
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </section>
