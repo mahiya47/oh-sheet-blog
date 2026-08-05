@@ -1097,8 +1097,8 @@ select {
   border-top: var(--border-w) solid var(--border);
   position: relative;
   overflow: visible;
+  z-index: 40; /* <-- Add this to push the dropdown above the feed */
 }
-
 .profile-tabs .tab {
   padding: var(--space-3) var(--space-5);
   font-weight: 700;
@@ -1130,8 +1130,9 @@ select {
   display: none !important;
 }
 
-.overflow-tabs {
-  display: flex;
+.overflow-tabs.open {
+  display: flex !important; /* <-- Add !important here */
+  flex-direction: column;
 }
 
 /* --- MOBILE VIEW --- */
