@@ -1095,16 +1095,25 @@ select {
 .profile-tabs {
   display: flex;
   border-top: var(--border-w) solid var(--border);
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 .profile-tabs .tab {
   padding: var(--space-3) var(--space-5);
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 .profile-tabs .tab.active {
   color: var(--accent-ink);
   background: var(--accent);
+}
+
+.profile-tabs::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome/Safari */
 }
 
 /* =========================================================================
