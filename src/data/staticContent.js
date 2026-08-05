@@ -30,6 +30,7 @@ export const STATIC_PAGES = {
           "Comment to ask, correct, or extend.",
           "Follow people and get a feed that is only them.",
           "Browse by tag to find sheets on a topic.",
+          "Link your Pinterest account to display your live pin feed on your profile.",
           "Pick a custom avatar and personalize your profile.",
         ],
       },
@@ -115,22 +116,22 @@ export const STATIC_PAGES = {
   privacy: {
     title: "Privacy Policy",
     blocks: [
-      { type: "p", text: "Last updated: July 2026" },
+      { type: "p", text: "Last updated: August 2026" },
 
       { type: "h2", text: "What we collect" },
       {
         type: "p",
-        text: "To create an account, we collect your username, email address, and password. As you use the app, we store the sheets, comments, likes, follows, and direct messages you create.",
+        text: "To create an account, we collect your first name, last name, email address, and password. During account onboarding, you select your custom username. As you use the app, we store the sheets, comments, likes, follows, linked social media profiles (such as Pinterest), and direct messages you create.",
       },
       {
         type: "p",
-        text: "You can optionally add profile details: a display name, bio, avatar or cover photo, birthday, pronouns, gender, sexual orientation, current city, workplace, education, and links to your social media profiles.",
+        text: "You can optionally add profile details: a bio, avatar or cover photo, birthday, pronouns, gender, sexual orientation, current city, workplace, education, and links to your external social media profiles.",
       },
 
       { type: "h2", text: "How we use it" },
       {
         type: "p",
-        text: "Your data builds your feed, powers notifications, and lets you interact with other people on the platform. We do not sell your personal data to advertisers or third parties.",
+        text: "Your data builds your feed, powers notifications, and lets you interact with other people on the platform. You can log in using either your email address or your chosen username. We do not sell your personal data to advertisers or third parties.",
       },
       {
         type: "p",
@@ -152,7 +153,7 @@ export const STATIC_PAGES = {
       { type: "h2", text: "Images you upload" },
       {
         type: "p",
-        text: "Photos and avatars you upload are stored with Cloudinary, a third-party media hosting provider, and served over secure HTTPS connections.",
+        text: "Photos, sheets, and avatars you upload are processed securely and stored directly within our application infrastructure, served over encrypted HTTPS connections.",
       },
 
       { type: "h2", text: "Cookies & local storage" },
@@ -202,7 +203,7 @@ export const STATIC_PAGES = {
       { type: "h2", text: "Eligibility" },
       {
         type: "p",
-        text: "You must provide accurate information when creating an account. One person, one account — creating multiple accounts to evade a restriction or manipulate the leaderboard is not allowed.",
+        text: "You must provide accurate information (first name, last name, and email) when creating an account, and select an available username during onboarding. One person, one account — creating multiple accounts to evade a restriction or manipulate the leaderboard is not allowed.",
       },
 
       { type: "h2", text: "Who owns your content" },
@@ -232,7 +233,7 @@ export const STATIC_PAGES = {
         type: "ul",
         items: [
           "Your account is deactivated immediately and hidden from other users.",
-          "For 7 days, your data is kept in a recovery state. Logging back in during this window automatically reactivates your account, and you'll get a notification confirming the reactivation.",
+          "For 7 days, your data is kept in a recovery state. Logging back in (using your email or username) during this window automatically reactivates your account, and you'll get a notification confirming the reactivation.",
           "After 7 days with no login, your account and all associated data (posts, comments, messages, profile info) are permanently and irreversibly deleted.",
         ],
       },

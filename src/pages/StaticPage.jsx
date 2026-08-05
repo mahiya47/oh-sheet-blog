@@ -3,8 +3,6 @@ import { STATIC_PAGES } from "../data/staticContent.js";
 
 const ICONS = { GitBranch, Info };
 
-// One component renders all four info pages from data in staticContent.js,
-// instead of the four near-identical HTML files the original shipped.
 export default function StaticPage({ page }) {
   const data = STATIC_PAGES[page];
   if (!data) return null;
