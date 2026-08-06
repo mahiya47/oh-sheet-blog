@@ -38,6 +38,18 @@ export default function AdminPage() {
     return <Navigate to="/feed" replace />;
   }
 
+  // Load right sidebar data if the user refreshes directly on the Admin page
+  useEffect(() => {
+    try {
+      if (store.getTrendingPosts) store.getTrendingPosts();
+      if (store.getTrendingTags) store.getTrendingTags();
+      if (store.getSuggestedUsers) store.getSuggestedUsers();
+      if (store.getRecommendations) store.getRecommendations();
+    } catch (e) {
+      console.error("Failed to load sidebar data", e);
+    }
+  }, []); // Run once on mount
+
   const load = async () => {
     setLoading(true);
     try {
@@ -71,12 +83,10 @@ export default function AdminPage() {
     load();
   };
 
-  // Bulletproof confirm function with Error Handling
   const confirmAndRun = async (message, action) => {
     if (!window.confirm(message)) return;
     try {
       const res = await action();
-      // Treat as success if it returns true, an object with ok:true, or undefined (no error thrown)
       const isOk = typeof res === "object" ? res?.ok : res !== false;
 
       if (isOk) {
@@ -91,13 +101,11 @@ export default function AdminPage() {
     }
   };
 
-  // Safe fallback for updating reports in case the store method is missing
   const safeUpdateReport = async (id, status) => {
     if (store.adminUpdateReport) {
       return await store.adminUpdateReport(id, status);
     }
 
-    // Fallback if the store function doesn't exist
     const token = localStorage.getItem("token");
     const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
     const res = await fetch(`${apiBase}/admin/reports/${id}`, {
@@ -126,6 +134,22 @@ export default function AdminPage() {
       {children}
     </div>
   );
+
+  // --- 24 Hour Logic for Reports ---
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+  const currentTime = Date.now();
+
+  const visibleReports =
+    tab === "reports"
+      ? data.filter((r) => {
+          // Keep it if it's still pending
+          if (r.status !== "reviewed" && r.status !== "dismissed") return true;
+
+          // If it is reviewed/dismissed, calculate how long ago that happened
+          const timeStamp = new Date(r.updatedAt || r.createdAt).getTime();
+          return currentTime - timeStamp < ONE_DAY;
+        })
+      : [];
 
   return (
     <div>
@@ -386,11 +410,13 @@ export default function AdminPage() {
               <h3>Reports</h3>
               {loading ? (
                 <p className="hint">Loading…</p>
-              ) : data.length === 0 ? (
-                <p className="hint">No reports.</p>
+              ) : visibleReports.length === 0 ? (
+                <p className="hint">
+                  No recent reports require your attention.
+                </p>
               ) : (
                 <div className="panel">
-                  {data.map((r) =>
+                  {visibleReports.map((r) =>
                     row(
                       <>
                         <div style={{ minWidth: 0 }}>
@@ -417,7 +443,6 @@ export default function AdminPage() {
                           </div>
                         </div>
 
-                        {/* Only show these buttons if the report is NOT already resolved */}
                         {r.status !== "reviewed" &&
                           r.status !== "dismissed" && (
                             <div style={{ display: "flex", gap: 6 }}>
