@@ -1126,7 +1126,7 @@ select {
 }
 @media (max-width: 480px) {
   .profile-name {
-    font-size: 1.3rem;
+    font-size: 0.8rem;
   }
 }
 .profile-handle {
