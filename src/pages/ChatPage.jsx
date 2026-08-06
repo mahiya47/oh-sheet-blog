@@ -16,6 +16,7 @@ import { useStore } from "../lib/store";
 import { useToast } from "../context/ToastContext.jsx";
 import Avatar from "../components/Avatar";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
+import ReportModal from "../components/ReportModal.jsx"; // <-- Imported the modal!
 import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID } from "../lib/creator.js";
 import { timeAgo } from "../lib/time";
@@ -32,7 +33,6 @@ export default function ChatPage() {
     sendDm,
     getFollowingList,
     blockUser,
-    reportUser, // <-- Ensure this matches exactly what is in your store.jsx!
   } = useStore();
 
   const navigate = useNavigate();
@@ -42,6 +42,7 @@ export default function ChatPage() {
 
   const [mobileOpen, setMobileOpen] = useState(!!dmUserId);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null); // <-- State for the report modal
 
   const [messages, setMessages] = useState([]);
   const [conversations, setConversations] = useState([]);
@@ -53,6 +54,7 @@ export default function ChatPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const bottomRef = useRef(null);
   const pollRef = useRef(null);
   const sidePollRef = useRef(null);
@@ -117,11 +119,15 @@ export default function ChatPage() {
     return () => clearInterval(sidePollRef.current);
   }, []);
 
+  // FIXED SCROLL BUG: Only scroll when the total NUMBER of messages increases,
+  // or when you switch chats. It no longer fights you every 8 seconds!
+  const msgCount = messages.length;
+  const threadCount = thread.length;
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, thread]);
+  }, [msgCount, threadCount, dmUserId]);
 
   const send = async (e) => {
     e.preventDefault();
@@ -171,25 +177,11 @@ export default function ChatPage() {
     if (activeUser) navigate(`/profile/${activeUser.id}`);
   };
 
-  const onReport = async () => {
+  // Opens the Report Modal Instead of crashing!
+  const onReport = () => {
     setMenuOpen(false);
-    if (!activeUser) return;
-
-    const confirmReport = window.confirm(
-      `Are you sure you want to report ${displayName(activeUser)}?`,
-    );
-    if (!confirmReport) return;
-
-    try {
-      // Adding a reason so the backend accepts it!
-      await reportUser(activeUser.id, "Inappropriate behavior in Chat");
-      toast(
-        `✅ Reported @${activeUser.username || "user"} successfully.`,
-        "accent",
-      );
-    } catch (error) {
-      console.error(error);
-      toast("Something went wrong reporting this user.", "danger");
+    if (activeUser) {
+      setReportTarget(activeUser);
     }
   };
 
@@ -643,6 +635,14 @@ export default function ChatPage() {
             </div>
           )}
       </aside>
+
+      {/* Render the Report Modal if a target is set! */}
+      {reportTarget && (
+        <ReportModal
+          user={reportTarget}
+          onClose={() => setReportTarget(null)}
+        />
+      )}
     </div>
   );
 }
