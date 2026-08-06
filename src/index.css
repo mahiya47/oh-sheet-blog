@@ -2176,6 +2176,15 @@ select {
   .chat-shell.chat-shell--open .chat-list {
     display: none !important;
   }
+  .sheet-body p {
+    font-size: 0.7rem;
+  }
+  .sheet-author .names {
+    font-size: 0.8rem;
+  }
+  .sheet-author .handle {
+    font-size: 0.6rem;
+  }
 }
 
 /* Small Mobile / Specific Adjustments */
