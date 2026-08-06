@@ -2238,3 +2238,25 @@ select {
     font-size: 1rem;
   }
 }
+
+/* Mobile-specific Chat Layout Fixes */
+@media (max-width: 768px) {
+  .chat-shell {
+    /* Uses dvh (dynamic viewport height) to account for mobile browser UI and keyboards */
+    height: calc(100dvh - 70px) !important;
+    gap: 0 !important;
+  }
+
+  .chat-main,
+  .chat-list {
+    height: 100% !important;
+    border-radius: 0 !important; /* Removes rounded corners for true full-screen mobile feel */
+    border-left: none !important;
+    border-right: none !important;
+  }
+
+  /* Optional: Make the chat header a bit more compact on mobile */
+  .chat-page-header {
+    padding: 10px 14px !important;
+  }
+}
