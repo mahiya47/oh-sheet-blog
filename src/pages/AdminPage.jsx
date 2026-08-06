@@ -40,20 +40,24 @@ export default function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    if (tab === "overview") {
-      setStats(await store.adminGetStats());
-    } else if (tab === "users") {
-      setData(await store.adminListUsers(query));
-    } else if (tab === "posts") {
-      setData(await store.adminListPosts(query));
-    } else if (tab === "comments") {
-      setData(await store.adminListComments(query));
-    } else if (tab === "chat") {
-      setData(await store.adminListChat(query));
-    } else if (tab === "reports") {
-      setData(await store.adminGetReports());
-    } else if (tab === "support") {
-      setData(await store.adminGetSupport());
+    try {
+      if (tab === "overview") {
+        setStats(await store.adminGetStats());
+      } else if (tab === "users") {
+        setData(await store.adminListUsers(query));
+      } else if (tab === "posts") {
+        setData(await store.adminListPosts(query));
+      } else if (tab === "comments") {
+        setData(await store.adminListComments(query));
+      } else if (tab === "chat") {
+        setData(await store.adminListChat(query));
+      } else if (tab === "reports") {
+        setData(await store.adminGetReports());
+      } else if (tab === "support") {
+        setData(await store.adminGetSupport());
+      }
+    } catch (err) {
+      console.error("Failed to load admin data:", err);
     }
     setLoading(false);
   };
@@ -67,15 +71,44 @@ export default function AdminPage() {
     load();
   };
 
+  // Bulletproof confirm function with Error Handling
   const confirmAndRun = async (message, action) => {
     if (!window.confirm(message)) return;
-    const ok = await action();
-    if (ok) {
-      toast("Done.", "accent");
-      load();
-    } else {
+    try {
+      const res = await action();
+      // Treat as success if it returns true, an object with ok:true, or undefined (no error thrown)
+      const isOk = typeof res === "object" ? res?.ok : res !== false;
+
+      if (isOk) {
+        toast("Done.", "accent");
+        load();
+      } else {
+        toast("Action failed. Check console.", "danger");
+      }
+    } catch (err) {
+      console.error("Admin Action Error:", err);
       toast("Something went wrong.", "danger");
     }
+  };
+
+  // Safe fallback for updating reports in case the store method is missing
+  const safeUpdateReport = async (id, status) => {
+    if (store.adminUpdateReport) {
+      return await store.adminUpdateReport(id, status);
+    }
+
+    // Fallback if the store function doesn't exist
+    const token = localStorage.getItem("token");
+    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    const res = await fetch(`${apiBase}/admin/reports/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    });
+    return res.ok;
   };
 
   const row = (children, key) => (
@@ -229,8 +262,8 @@ export default function AdminPage() {
                                   color: "var(--text-muted)",
                                 }}
                               >
-                                @{u.username} · {u.email} · {u._count.posts}{" "}
-                                posts
+                                @{u.username} · {u.email} ·{" "}
+                                {u._count?.posts || 0} posts
                               </div>
                             </div>
                           </div>
@@ -293,7 +326,8 @@ export default function AdminPage() {
                         <>
                           <div style={{ minWidth: 0 }}>
                             <div style={{ fontWeight: 700 }}>
-                              @{c.user?.username} on "{c.post?.title}"
+                              @{c.user?.username} on "
+                              {c.post?.title || "a post"}"
                             </div>
                             <div style={{ fontSize: "0.85rem" }}>
                               {c.content}
@@ -378,34 +412,39 @@ export default function AdminPage() {
                           <div style={{ fontSize: "0.85rem" }}>
                             {r.reason} ·{" "}
                             <span style={{ color: "var(--text-muted)" }}>
-                              {r.status}
+                              {r.status || "pending"}
                             </span>
                           </div>
                         </div>
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <button
-                            type="button"
-                            className="btn btn-ghost"
-                            onClick={() =>
-                              confirmAndRun("Mark reviewed?", () =>
-                                store.adminUpdateReport(r.id, "reviewed"),
-                              )
-                            }
-                          >
-                            Reviewed
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-ghost"
-                            onClick={() =>
-                              confirmAndRun("Dismiss report?", () =>
-                                store.adminUpdateReport(r.id, "dismissed"),
-                              )
-                            }
-                          >
-                            Dismiss
-                          </button>
-                        </div>
+
+                        {/* Only show these buttons if the report is NOT already resolved */}
+                        {r.status !== "reviewed" &&
+                          r.status !== "dismissed" && (
+                            <div style={{ display: "flex", gap: 6 }}>
+                              <button
+                                type="button"
+                                className="btn btn-ghost"
+                                onClick={() =>
+                                  confirmAndRun("Mark reviewed?", () =>
+                                    safeUpdateReport(r.id, "reviewed"),
+                                  )
+                                }
+                              >
+                                Reviewed
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-ghost"
+                                onClick={() =>
+                                  confirmAndRun("Dismiss report?", () =>
+                                    safeUpdateReport(r.id, "dismissed"),
+                                  )
+                                }
+                              >
+                                Dismiss
+                              </button>
+                            </div>
+                          )}
                       </>,
                       r.id,
                     ),
