@@ -57,6 +57,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(true);
 
   const bottomRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const pollRef = useRef(null);
   const sidePollRef = useRef(null);
 
@@ -123,8 +124,9 @@ export default function ChatPage() {
   const msgCount = messages.length;
   const threadCount = thread.length;
   useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
     }
   }, [msgCount, threadCount, dmUserId]);
 
@@ -342,6 +344,7 @@ export default function ChatPage() {
 
         <div
           className="chat-page-messages"
+          ref={messagesContainerRef}
           onClick={() => setMenuOpen(false)}
           style={{ flex: 1, overflowY: "auto" }}
         >
