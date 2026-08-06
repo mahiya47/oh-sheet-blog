@@ -1877,6 +1877,36 @@ select {
   display: none;
 }
 
+/* Mobile Chat Layout Fix */
+@media (max-width: 768px) {
+  .chat-shell {
+    flex-direction: column;
+    height: 100%;
+  }
+
+  /* Hide the chat window by default on mobile */
+  .chat-main {
+    display: none !important;
+  }
+
+  /* Show the sidebar by default on mobile */
+  .chat-list {
+    display: flex !important;
+    width: 100% !important;
+    border-left: none !important;
+  }
+
+  /* When a chat is open on mobile, reverse it */
+  .chat-shell.chat-shell--open .chat-list {
+    display: none !important;
+  }
+
+  .chat-shell.chat-shell--open .chat-main {
+    display: flex !important;
+    width: 100% !important;
+  }
+}
+
 /* ---- loading skeletons ---- */
 .skel {
   background: var(--border, #333);

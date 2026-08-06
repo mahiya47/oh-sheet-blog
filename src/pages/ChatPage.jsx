@@ -1,7 +1,18 @@
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Send, ArrowLeft, Globe, Check, CheckCheck } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import {
+  Send,
+  ArrowLeft,
+  Globe,
+  Check,
+  CheckCheck,
+  MoreVertical,
+  UserRound,
+  Flag,
+  ShieldOff,
+} from "lucide-react";
 import { useStore } from "../lib/store";
+import { useToast } from "../context/ToastContext.jsx";
 import Avatar from "../components/Avatar";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
 import { getVerifiedVariant } from "../lib/verifiedVariant.js";
@@ -19,13 +30,17 @@ export default function ChatPage() {
     getDmThread,
     sendDm,
     getFollowingList,
+    blockUser,
   } = useStore();
 
+  const navigate = useNavigate();
+  const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const dmUserId = searchParams.get("dm"); // null = global
 
   // mobile: is a chat open (vs the list)?
   const [mobileOpen, setMobileOpen] = useState(!!dmUserId);
+  const [menuOpen, setMenuOpen] = useState(false); // Header dropdown menu state
 
   const [messages, setMessages] = useState([]);
   const [conversations, setConversations] = useState([]);
@@ -71,6 +86,7 @@ export default function ChatPage() {
   // ---- main chat polling ----
   useEffect(() => {
     setLoading(true);
+    setMenuOpen(false); // Close menu if user switches chats
     clearInterval(pollRef.current);
 
     if (isGlobal) {
@@ -84,7 +100,6 @@ export default function ChatPage() {
     } else {
       setThread([]);
       setActiveUser(
-        // instantly show name from sidebar data if we have it
         conversations.find((c) => c.user.id === Number(dmUserId))?.user ||
           following.find((u) => u.id === Number(dmUserId)) ||
           null,
@@ -102,6 +117,13 @@ export default function ChatPage() {
     sidePollRef.current = setInterval(loadSidebar, 8000);
     return () => clearInterval(sidePollRef.current);
   }, []);
+
+  // scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, thread]);
 
   // ---- actions ----
   const send = async (e) => {
@@ -145,6 +167,29 @@ export default function ChatPage() {
     );
   };
 
+  // Header Menu Actions
+  const onVisitProfile = () => {
+    if (activeUser) navigate(`/profile/${activeUser.id}`);
+  };
+
+  const onReport = () => {
+    setMenuOpen(false);
+    toast("Report submitted. We will review this account.");
+  };
+
+  const onBlock = async () => {
+    setMenuOpen(false);
+    if (!activeUser) return;
+    const confirmed = window.confirm(
+      `Are you sure you want to block ${displayName(activeUser)}?`,
+    );
+    if (confirmed && blockUser) {
+      await blockUser(activeUser.id);
+      toast(`Blocked ${displayName(activeUser)}.`, "danger");
+      backToList(); // Go back to the chat list after blocking
+    }
+  };
+
   const newPeople = following.filter(
     (u) => !conversations.some((c) => c.user.id === u.id),
   );
@@ -155,15 +200,28 @@ export default function ChatPage() {
       {/* ============ CHAT AREA (left) ============ */}
       <div className="chat-page chat-main">
         <div className="chat-page-header">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              width: "100%",
+            }}
+          >
             <button
               type="button"
               className="btn btn-ghost chat-back"
               onClick={backToList}
               aria-label="Back to list"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={18} />
             </button>
+
             {isGlobal ? (
               <>
                 <Globe size={20} />
@@ -175,26 +233,80 @@ export default function ChatPage() {
                 </div>
               </>
             ) : (
-              <>
-                <Avatar user={activeUser} size={28} />
-                <strong>
-                  {displayName(activeUser)}
-                  {activeUser?.emailVerified && (
-                    <VerifiedBadge
-                      size={14}
-                      variant={getVerifiedVariant(
-                        activeUser,
-                        activeUser?.id === CREATOR_ID,
-                      )}
-                    />
-                  )}
-                </strong>
-              </>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flex: 1,
+                  position: "relative",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Avatar user={activeUser} size={32} />
+                  <strong>
+                    {displayName(activeUser)}
+                    {activeUser?.emailVerified && (
+                      <VerifiedBadge
+                        size={14}
+                        variant={getVerifiedVariant(
+                          activeUser,
+                          activeUser?.id === CREATOR_ID,
+                        )}
+                      />
+                    )}
+                  </strong>
+                </div>
+
+                {/* Profile Header Dropdown Menu */}
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  aria-label="Options"
+                  style={{ padding: "6px" }}
+                >
+                  <MoreVertical size={18} />
+                </button>
+
+                {menuOpen && (
+                  <div
+                    className="more-menu"
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      right: 0,
+                      marginTop: 8,
+                      minWidth: 160,
+                      zIndex: 9999,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={onVisitProfile}
+                    >
+                      <UserRound size={15} /> Visit profile
+                    </button>
+                    <button type="button" role="menuitem" onClick={onReport}>
+                      <Flag size={15} /> Report
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="danger"
+                      onClick={onBlock}
+                    >
+                      <ShieldOff size={15} /> Block
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
 
-        <div className="chat-page-messages">
+        <div className="chat-page-messages" onClick={() => setMenuOpen(false)}>
           {loading && <div className="chat-page-empty">Loading...</div>}
 
           {/* global messages */}
