@@ -547,7 +547,7 @@ select {
   flex-direction: column;
   line-height: 1.15;
   min-width: 0;
-  font-size: 0.7rem;
+  font-size: 1.2rem;
 }
 .sheet-author .display {
   font-weight: 700;
