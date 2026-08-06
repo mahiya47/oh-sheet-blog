@@ -195,7 +195,7 @@ export default function SheetCard({ post }) {
       tabIndex={0}
       onClick={editing || reposting ? undefined : open}
       onKeyDown={editing || reposting ? undefined : onKey}
-      aria-label={`Open sheet by ${post.author?.displayName}`}
+      aria-label={`Open sheet by ${post.author?.displayName || post.author?.name || "User"}`}
     >
       <header
         className="sheet-head"
@@ -213,7 +213,11 @@ export default function SheetCard({ post }) {
           <Avatar user={post.author} size={40} />
           <span className="names">
             <span className="display">
-              {post.author?.displayName || "User"}
+              {/* FIXED: Now falls back to name properly */}
+              {post.author?.displayName ||
+                post.author?.name ||
+                post.author?.username ||
+                "User"}
               {post.author?.emailVerified && (
                 <VerifiedBadge
                   size={14}
@@ -480,7 +484,9 @@ export default function SheetCard({ post }) {
             >
               <Avatar user={post.repostOf.author} size={24} />
               <b style={{ fontSize: "0.85rem" }}>
-                {post.repostOf.author?.name || post.repostOf.author?.username}
+                {post.repostOf.author?.displayName ||
+                  post.repostOf.author?.name ||
+                  post.repostOf.author?.username}
               </b>
               <span style={{ fontSize: "0.75rem", opacity: 0.6 }}>
                 @{post.repostOf.author?.username} ·{" "}

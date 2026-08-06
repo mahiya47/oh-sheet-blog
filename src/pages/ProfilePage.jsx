@@ -427,7 +427,8 @@ export default function ProfilePage() {
           </div>
 
           <h1 className="profile-name">
-            {profile.displayName}
+            {/* FIXED: Now falls back to name properly */}
+            {profile.displayName || profile.name || profile.username || "User"}
             {profile?.emailVerified && (
               <VerifiedBadge
                 size={18}

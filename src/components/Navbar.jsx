@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Home,
@@ -67,8 +67,13 @@ export default function Navbar() {
     navigate("/login");
   };
 
+  // FIXED: Now properly checks for name before falling back to User
   const displayName = (u) =>
-    u?.name || u?.username || u?.email?.split("@")[0] || "User";
+    u?.displayName ||
+    u?.name ||
+    u?.username ||
+    u?.email?.split("@")[0] ||
+    "User";
 
   const hasResults =
     results && (results.users?.length > 0 || results.tags?.length > 0);
@@ -202,8 +207,12 @@ export default function Navbar() {
             aria-expanded={menuOpen}
           >
             <Avatar user={currentUser} size={28} />
+            {/* FIXED: Now falls back to name properly */}
             <span>
-              {currentUser?.displayName || currentUser?.username || "guest"}
+              {currentUser?.displayName ||
+                currentUser?.name ||
+                currentUser?.username ||
+                "guest"}
             </span>
             <ChevronDown size={14} />
           </button>
