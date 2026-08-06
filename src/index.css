@@ -613,7 +613,6 @@ select {
   background: rgba(128, 128, 128, 0.12);
 }
 .more-menu {
-  position: absolute;
   top: calc(100% + 6px);
   right: 0;
   min-width: 180px;
@@ -622,7 +621,8 @@ select {
   border-radius: var(--radius, 12px);
   padding: 6px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  z-index: 100 !important;
+  position: absolute !important;
+  z-index: 9999 !important;
 }
 
 .more-menu a,
@@ -1101,7 +1101,7 @@ select {
   background: var(--surface);
   border: var(--border-w) solid var(--border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: visible !important;
 }
 .profile-cover {
   height: 150px;
@@ -1157,8 +1157,8 @@ select {
   display: flex;
   border-top: var(--border-w) solid var(--border);
   position: relative;
-  overflow: visible;
-  z-index: 40;
+  overflow: visible !important;
+  z-index: 50;
   gap: 6px;
   padding: 8px;
   flex-wrap: wrap; /* Allows wrapping if the screen is super tiny */
