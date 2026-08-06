@@ -535,6 +535,7 @@ select {
   background-image: var(--cover-fade), var(--cover-image, none);
   background-size: cover;
   background-position: center;
+  border-radius: var(--radius-lg) !important;
 }
 .sheet-author {
   display: flex;
