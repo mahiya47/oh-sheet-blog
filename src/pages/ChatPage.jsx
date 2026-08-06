@@ -219,10 +219,9 @@ export default function ChatPage() {
       className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}
       style={{
         display: "flex",
-        height: "calc(100vh - 100px)", // Locks it to the screen size
-        minHeight: 0, // CRITICAL: This forces flexbox to allow internal scrolling!
+        height: "calc(100vh - 100px)", // Locked height for the wrapper
         width: "100%",
-        gap: "12px",
+        gap: "16px",
       }}
     >
       {/* ============ CHAT AREA (left) ============ */}
@@ -232,11 +231,12 @@ export default function ChatPage() {
           display: "flex",
           flexDirection: "column",
           flex: 1,
-          minHeight: 0, // CRITICAL: Prevents the container from stretching endlessly
-          backgroundColor: "rgba(255, 255, 255, 0.03)", // Light background
+          height: "calc(100vh - 100px)", // Hardcoded to match wrapper
+          minHeight: 0,
+          backgroundColor: "rgba(255, 255, 255, 0.04)",
           borderRadius: "12px",
           border: "1px solid var(--border)",
-          overflow: "hidden", // Keeps everything neat inside the rounded corners
+          overflow: "hidden",
         }}
       >
         <div
@@ -245,7 +245,6 @@ export default function ChatPage() {
             flexShrink: 0,
             padding: "16px",
             borderBottom: "1px solid var(--border)",
-            // Dynamic Cover Photo Background with a dark fade so text is readable
             background:
               !isGlobal && activeUser?.coverUrl
                 ? `linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9)), url(${activeUser.coverUrl})`
@@ -308,7 +307,7 @@ export default function ChatPage() {
                         gap: 4,
                         textShadow: activeUser?.coverUrl
                           ? "0 2px 4px rgba(0,0,0,0.8)"
-                          : "none", // Makes text pop over cover images
+                          : "none",
                       }}
                     >
                       {displayName(activeUser)}
@@ -526,8 +525,8 @@ export default function ChatPage() {
         style={{
           display: "flex",
           flexDirection: "column",
-          height: "100%",
-          minHeight: 0, // CRITICAL: Allows the sidebar list to scroll independently
+          height: "calc(100vh - 100px)", // Hardcoded to perfectly match the chat area
+          minHeight: 0,
           overflowY: "auto",
         }}
       >
