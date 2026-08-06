@@ -517,7 +517,7 @@ select {
 .sheet {
   background: var(--surface);
   border: var(--border-w) solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 10%;
   overflow: visible !important;
   transition:
     transform 0.12s ease,
