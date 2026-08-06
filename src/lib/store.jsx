@@ -163,11 +163,10 @@ export function StoreProvider({ children }) {
     }
   };
 
-  const signup = async ({ username, email, password }) => {
+  const signup = async ({ firstName, lastName, email, password }) => {
     try {
       await api.post("/auth/register", {
-        name: username,
-        username,
+        name: `${firstName} ${lastName}`.trim(),
         email,
         password,
       });

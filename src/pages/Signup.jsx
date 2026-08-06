@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Github } from "lucide-react";
+import { Eye, EyeOff, Github, Check, X } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { getPasswordStrength } from "../lib/passwordStrength.js";
+import api from "../api.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://192.168.1.4:5000/api";
 
@@ -15,6 +16,7 @@ export default function Signup() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+    username: "",
     email: "",
     password: "",
     confirm: "",
@@ -23,10 +25,35 @@ export default function Signup() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
 
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
+
   if (currentUser) return <Navigate to="/feed" replace />;
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
   const strength = getPasswordStrength(form.password);
+
+  // Live username availability check
+  useEffect(() => {
+    const uname = form.username.trim();
+    if (uname.length < 3) {
+      setUsernameAvailable(null);
+      return;
+    }
+    setCheckingUsername(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await api.get(
+          `/users/check-username/${encodeURIComponent(uname)}`,
+        );
+        setUsernameAvailable(res.data.available);
+      } catch {
+        setUsernameAvailable(null);
+      }
+      setCheckingUsername(false);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [form.username]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -34,6 +61,14 @@ export default function Signup() {
 
     if (!form.firstName.trim() || !form.lastName.trim()) {
       setError("First and last name are required.");
+      return;
+    }
+    if (!form.username.trim() || form.username.trim().length < 3) {
+      setError("Please choose a username (at least 3 characters).");
+      return;
+    }
+    if (usernameAvailable === false) {
+      setError("That username is already taken.");
       return;
     }
     if (form.password !== form.confirm) {
@@ -48,6 +83,7 @@ export default function Signup() {
     const res = await signup({
       firstName: form.firstName,
       lastName: form.lastName,
+      username: form.username.trim(),
       email: form.email,
       password: form.password,
     });
@@ -167,6 +203,64 @@ export default function Signup() {
           </div>
 
           <div className="field">
+            <div style={{ position: "relative", width: "100%" }}>
+              <input
+                type="text"
+                value={form.username}
+                onChange={set("username")}
+                placeholder="Username"
+                autoComplete="username"
+                style={{ width: "100%", paddingRight: 36 }}
+              />
+              {form.username.trim().length >= 3 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    right: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
+                >
+                  {checkingUsername ? (
+                    <span
+                      style={{
+                        width: 14,
+                        height: 14,
+                        border: "2px solid var(--border-soft)",
+                        borderTopColor: "var(--accent)",
+                        borderRadius: "50%",
+                        display: "inline-block",
+                        animation: "spin 0.7s linear infinite",
+                      }}
+                    />
+                  ) : usernameAvailable === true ? (
+                    <Check size={16} color="#3eff8b" />
+                  ) : usernameAvailable === false ? (
+                    <X size={16} color="#ff3e3e" />
+                  ) : null}
+                </span>
+              )}
+            </div>
+            {usernameAvailable === false && (
+              <span
+                style={{ fontSize: "0.75rem", color: "var(--danger, #ff3e3e)" }}
+              >
+                That username is taken.
+              </span>
+            )}
+            {usernameAvailable === true && (
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  color: "var(--accent, #3eff8b)",
+                }}
+              >
+                Available!
+              </span>
+            )}
+          </div>
+
+          <div className="field">
             <input
               type="email"
               value={form.email}
@@ -271,7 +365,11 @@ export default function Signup() {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-accent btn-block">
+          <button
+            type="submit"
+            className="btn btn-accent btn-block"
+            disabled={usernameAvailable === false}
+          >
             Create account
           </button>
         </form>
