@@ -1210,6 +1210,7 @@ select {
   .more-tabs-wrapper {
     position: relative;
     margin-left: auto; /* Pushes the burger menu to the far right */
+    z-index: 500 !important;
   }
 
   .mobile-more-btn {
@@ -1226,7 +1227,7 @@ select {
     border: 2px solid var(--border, #333);
     border-radius: var(--radius, 8px);
     flex-direction: column;
-    z-index: 500 !important;
+    z-index: 50;
     min-width: 140px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
     padding: 4px;
