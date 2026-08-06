@@ -22,7 +22,7 @@ import { CREATOR_ID } from "../lib/creator.js";
 import { timeAgo } from "../lib/time";
 
 export default function ChatPage() {
-  const store = useStore(); // Safely pulling the whole store
+  const store = useStore();
   const {
     getChatMessages,
     sendChatMessage,
@@ -217,8 +217,8 @@ export default function ChatPage() {
       className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}
       style={{
         display: "flex",
-        height: "82vh",
-        minHeight: "600px",
+        height: "calc(100vh - 120px)",
+        minHeight: "75vh",
         width: "100%",
       }}
     >
@@ -230,6 +230,7 @@ export default function ChatPage() {
           flexDirection: "column",
           flex: 1,
           height: "100%",
+          minHeight: "75vh",
         }}
       >
         <div className="chat-page-header" style={{ flexShrink: 0 }}>
@@ -483,7 +484,7 @@ export default function ChatPage() {
           display: "flex",
           flexDirection: "column",
           height: "100%",
-          width: "280px",
+          minHeight: "75vh",
           overflowY: "auto",
         }}
       >
@@ -629,7 +630,7 @@ export default function ChatPage() {
           )}
       </aside>
 
-      {/* Fully Bulletproof Report Modal */}
+      {/* The Fully Bulletproof Report Modal */}
       {reportTarget && (
         <ReportModal
           username={reportTarget.username || reportTarget.name || "user"}
@@ -638,34 +639,27 @@ export default function ChatPage() {
             try {
               let success = false;
 
-              // 1. Check if createReport exists in your store
               if (store.createReport) {
                 await store.createReport({
                   reportedUserId: reportTarget.id,
                   reason,
                 });
                 success = true;
-              }
-              // 2. Check if reportUser exists in your store
-              else if (store.reportUser) {
+              } else if (store.reportUser) {
                 try {
                   await store.reportUser({
                     reportedUserId: reportTarget.id,
                     reason,
                   });
                 } catch {
-                  // Fallback in case your store function takes arguments instead of an object
                   await store.reportUser(reportTarget.id, reason);
                 }
                 success = true;
-              }
-              // 3. Absolute Fallback: Direct API call if it can't find either store function
-              else {
+              } else {
                 const token = localStorage.getItem("token");
                 const apiBase =
                   import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-                // Try plural route
                 const res = await fetch(`${apiBase}/reports`, {
                   method: "POST",
                   headers: {
@@ -681,7 +675,6 @@ export default function ChatPage() {
                 if (res.ok) {
                   success = true;
                 } else {
-                  // Try singular route
                   const res2 = await fetch(`${apiBase}/report`, {
                     method: "POST",
                     headers: {
@@ -709,7 +702,7 @@ export default function ChatPage() {
               console.error("Report Error:", error);
               toast("Something went wrong reporting this user.", "danger");
             } finally {
-              setReportTarget(null); // ALWAYS close modal
+              setReportTarget(null);
             }
           }}
         />
