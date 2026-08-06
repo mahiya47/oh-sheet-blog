@@ -219,9 +219,10 @@ export default function ChatPage() {
       className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}
       style={{
         display: "flex",
-        height: "calc(100vh - 120px)",
-        minHeight: "75vh",
+        height: "calc(100vh - 100px)", // Locks it to the screen size
+        minHeight: 0, // CRITICAL: This forces flexbox to allow internal scrolling!
         width: "100%",
+        gap: "12px",
       }}
     >
       {/* ============ CHAT AREA (left) ============ */}
@@ -231,11 +232,28 @@ export default function ChatPage() {
           display: "flex",
           flexDirection: "column",
           flex: 1,
-          height: "100%",
-          minHeight: "75vh",
+          minHeight: 0, // CRITICAL: Prevents the container from stretching endlessly
+          backgroundColor: "rgba(255, 255, 255, 0.03)", // Light background
+          borderRadius: "12px",
+          border: "1px solid var(--border)",
+          overflow: "hidden", // Keeps everything neat inside the rounded corners
         }}
       >
-        <div className="chat-page-header" style={{ flexShrink: 0 }}>
+        <div
+          className="chat-page-header"
+          style={{
+            flexShrink: 0,
+            padding: "16px",
+            borderBottom: "1px solid var(--border)",
+            // Dynamic Cover Photo Background with a dark fade so text is readable
+            background:
+              !isGlobal && activeUser?.coverUrl
+                ? `linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9)), url(${activeUser.coverUrl})`
+                : "var(--bg)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
           <div
             style={{
               display: "flex",
@@ -284,7 +302,14 @@ export default function ChatPage() {
                   <Avatar user={activeUser} size={36} />
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <strong
-                      style={{ display: "flex", alignItems: "center", gap: 4 }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        textShadow: activeUser?.coverUrl
+                          ? "0 2px 4px rgba(0,0,0,0.8)"
+                          : "none", // Makes text pop over cover images
+                      }}
                     >
                       {displayName(activeUser)}
                       {activeUser?.emailVerified && (
@@ -301,7 +326,17 @@ export default function ChatPage() {
                         style={{ opacity: 0.6, marginLeft: 4 }}
                       />
                     </strong>
-                    <span className="chat-page-subtitle">Tap for options</span>
+                    <span
+                      className="chat-page-subtitle"
+                      style={{
+                        opacity: 0.8,
+                        textShadow: activeUser?.coverUrl
+                          ? "0 1px 3px rgba(0,0,0,0.8)"
+                          : "none",
+                      }}
+                    >
+                      Tap for options
+                    </span>
                   </div>
                 </button>
 
@@ -346,7 +381,7 @@ export default function ChatPage() {
           className="chat-page-messages"
           ref={messagesContainerRef}
           onClick={() => setMenuOpen(false)}
-          style={{ flex: 1, overflowY: "auto" }}
+          style={{ flex: 1, overflowY: "auto", padding: "16px", minHeight: 0 }}
         >
           {loading && <div className="chat-page-empty">Loading...</div>}
 
@@ -452,7 +487,12 @@ export default function ChatPage() {
           <form
             className="chat-page-input-row"
             onSubmit={send}
-            style={{ flexShrink: 0 }}
+            style={{
+              flexShrink: 0,
+              padding: "12px 16px",
+              borderTop: "1px solid var(--border)",
+              backgroundColor: "rgba(0, 0, 0, 0.2)",
+            }}
           >
             <input
               value={input}
@@ -487,7 +527,7 @@ export default function ChatPage() {
           display: "flex",
           flexDirection: "column",
           height: "100%",
-          minHeight: "75vh",
+          minHeight: 0, // CRITICAL: Allows the sidebar list to scroll independently
           overflowY: "auto",
         }}
       >
