@@ -199,21 +199,10 @@ export default function ChatPage() {
 
   // ---- render ----
   return (
-    <div
-      className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}
-      style={{ display: "flex", height: "100%", flex: 1 }}
-    >
+    <div className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}>
       {/* ============ CHAT AREA (left) ============ */}
-      <div
-        className="chat-page chat-main"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          height: "100%",
-        }}
-      >
-        <div className="chat-page-header" style={{ flexShrink: 0 }}>
+      <div className="chat-page chat-main">
+        <div className="chat-page-header">
           <div
             style={{
               display: "flex",
@@ -227,12 +216,7 @@ export default function ChatPage() {
               className="btn btn-ghost chat-back"
               onClick={backToList}
               aria-label="Back to list"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "8px",
-              }}
+              style={{ padding: "8px" }}
             >
               <ArrowLeft size={18} />
             </button>
@@ -327,11 +311,7 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <div
-          className="chat-page-messages"
-          onClick={() => setMenuOpen(false)}
-          style={{ flex: 1, overflowY: "auto" }}
-        >
+        <div className="chat-page-messages" onClick={() => setMenuOpen(false)}>
           {loading && <div className="chat-page-empty">Loading...</div>}
 
           {/* global messages */}
@@ -417,11 +397,7 @@ export default function ChatPage() {
         </div>
 
         {currentUser ? (
-          <form
-            className="chat-page-input-row"
-            onSubmit={send}
-            style={{ flexShrink: 0 }}
-          >
+          <form className="chat-page-input-row" onSubmit={send}>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -442,9 +418,7 @@ export default function ChatPage() {
             </button>
           </form>
         ) : (
-          <div className="chat-page-login-prompt" style={{ flexShrink: 0 }}>
-            Log in to join the chat
-          </div>
+          <div className="chat-page-login-prompt">Log in to join the chat</div>
         )}
       </div>
 
