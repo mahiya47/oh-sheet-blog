@@ -10,6 +10,7 @@ import {
   Flag,
   ShieldOff,
   ChevronDown,
+  Search,
 } from "lucide-react";
 import { useStore } from "../lib/store";
 import { useToast } from "../context/ToastContext.jsx";
@@ -31,16 +32,16 @@ export default function ChatPage() {
     sendDm,
     getFollowingList,
     blockUser,
+    reportUser, // Hooked up the report method for the admin panel
   } = useStore();
 
   const navigate = useNavigate();
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
-  const dmUserId = searchParams.get("dm"); // null = global
+  const dmUserId = searchParams.get("dm");
 
-  // mobile: is a chat open (vs the list)?
   const [mobileOpen, setMobileOpen] = useState(!!dmUserId);
-  const [menuOpen, setMenuOpen] = useState(false); // Header dropdown menu state
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [messages, setMessages] = useState([]);
   const [conversations, setConversations] = useState([]);
@@ -49,6 +50,7 @@ export default function ChatPage() {
   const [thread, setThread] = useState([]);
   const [activeUser, setActiveUser] = useState(null);
   const [input, setInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // Search state
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef(null);
@@ -57,7 +59,6 @@ export default function ChatPage() {
 
   const isGlobal = !dmUserId;
 
-  // ---- loaders ----
   const loadGlobal = async () => {
     try {
       setMessages(await getChatMessages());
@@ -83,10 +84,9 @@ export default function ChatPage() {
     setLoading(false);
   };
 
-  // ---- main chat polling ----
   useEffect(() => {
     setLoading(true);
-    setMenuOpen(false); // Close menu if user switches chats
+    setMenuOpen(false);
     clearInterval(pollRef.current);
 
     if (isGlobal) {
@@ -111,21 +111,18 @@ export default function ChatPage() {
     return () => clearInterval(pollRef.current);
   }, [dmUserId]);
 
-  // ---- sidebar polling (always) ----
   useEffect(() => {
     loadSidebar();
     sidePollRef.current = setInterval(loadSidebar, 8000);
     return () => clearInterval(sidePollRef.current);
   }, []);
 
-  // scroll to bottom when new messages arrive
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, thread]);
 
-  // ---- actions ----
   const send = async (e) => {
     e.preventDefault();
     if (!input.trim() || sending) return;
@@ -170,14 +167,21 @@ export default function ChatPage() {
     );
   };
 
-  // Header Menu Actions
   const onVisitProfile = () => {
     if (activeUser) navigate(`/profile/${activeUser.id}`);
   };
 
-  const onReport = () => {
+  const onReport = async () => {
     setMenuOpen(false);
-    toast("Report submitted. We will review this account.");
+    if (!activeUser) return;
+    try {
+      if (reportUser) {
+        await reportUser(activeUser.id);
+      }
+      toast(`✅ Reported @${activeUser.username || "user"} successfully.`);
+    } catch (error) {
+      toast("Something went wrong reporting this user.", "danger");
+    }
   };
 
   const onBlock = async () => {
@@ -197,12 +201,27 @@ export default function ChatPage() {
     (u) => !conversations.some((c) => c.user.id === u.id),
   );
 
-  // ---- render ----
+  // Search logic
+  const filteredConversations = conversations.filter(
+    (c) =>
+      displayName(c.user).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.user.username?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const filteredNewPeople = newPeople.filter(
+    (u) =>
+      displayName(u).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.username?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   return (
-    <div className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}>
+    <div
+      className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}
+      style={{ height: "calc(100vh - 120px)", minHeight: "500px" }}
+    >
       {/* ============ CHAT AREA (left) ============ */}
-      <div className="chat-page chat-main">
-        <div className="chat-page-header">
+      <div className="chat-page chat-main" style={{ height: "100%" }}>
+        <div className="chat-page-header" style={{ flexShrink: 0 }}>
           <div
             style={{
               display: "flex",
@@ -233,7 +252,6 @@ export default function ChatPage() {
               </>
             ) : (
               <div style={{ position: "relative", flex: 1 }}>
-                {/* Clickable Area for the Menu */}
                 <button
                   type="button"
                   onClick={() => setMenuOpen(!menuOpen)}
@@ -273,7 +291,6 @@ export default function ChatPage() {
                   </div>
                 </button>
 
-                {/* Dropdown Menu */}
                 {menuOpen && (
                   <div
                     className="more-menu"
@@ -311,10 +328,13 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <div className="chat-page-messages" onClick={() => setMenuOpen(false)}>
+        <div
+          className="chat-page-messages"
+          onClick={() => setMenuOpen(false)}
+          style={{ flex: 1, overflowY: "auto" }}
+        >
           {loading && <div className="chat-page-empty">Loading...</div>}
 
-          {/* global messages */}
           {isGlobal &&
             !loading &&
             (messages.length === 0 ? (
@@ -328,10 +348,22 @@ export default function ChatPage() {
                     key={msg.id}
                     className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
                   >
-                    <Avatar user={msgUser} size={36} />
+                    {/* Clickable Avatar */}
+                    <div
+                      onClick={() =>
+                        !isMe && navigate(`/profile/${msgUser.id}`)
+                      }
+                      style={{ cursor: isMe ? "default" : "pointer" }}
+                    >
+                      <Avatar user={msgUser} size={36} />
+                    </div>
                     <div className="chat-page-bubble-wrap">
                       {!isMe && (
-                        <span className="chat-page-author">
+                        <span
+                          className="chat-page-author"
+                          onClick={() => navigate(`/profile/${msgUser.id}`)}
+                          style={{ cursor: "pointer" }}
+                        >
                           {displayName(msgUser)}
                           {msgUser?.emailVerified && (
                             <VerifiedBadge
@@ -354,7 +386,6 @@ export default function ChatPage() {
               })
             ))}
 
-          {/* dm thread */}
           {!isGlobal &&
             !loading &&
             (thread.length === 0 ? (
@@ -369,7 +400,15 @@ export default function ChatPage() {
                     key={msg.id}
                     className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
                   >
-                    <Avatar user={msg.sender} size={36} />
+                    {/* Clickable Avatar */}
+                    <div
+                      onClick={() =>
+                        !isMe && navigate(`/profile/${msg.sender.id}`)
+                      }
+                      style={{ cursor: isMe ? "default" : "pointer" }}
+                    >
+                      <Avatar user={msg.sender} size={36} />
+                    </div>
                     <div className="chat-page-bubble-wrap">
                       <div className="chat-page-bubble">{msg.content}</div>
                       <span
@@ -397,7 +436,11 @@ export default function ChatPage() {
         </div>
 
         {currentUser ? (
-          <form className="chat-page-input-row" onSubmit={send}>
+          <form
+            className="chat-page-input-row"
+            onSubmit={send}
+            style={{ flexShrink: 0 }}
+          >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -418,13 +461,53 @@ export default function ChatPage() {
             </button>
           </form>
         ) : (
-          <div className="chat-page-login-prompt">Log in to join the chat</div>
+          <div className="chat-page-login-prompt" style={{ flexShrink: 0 }}>
+            Log in to join the chat
+          </div>
         )}
       </div>
 
       {/* ============ LIST (right sidebar / mobile full screen) ============ */}
-      <aside className="chat-list">
-        {/* global entry */}
+      <aside
+        className="chat-list"
+        style={{ height: "100%", overflowY: "auto" }}
+      >
+        {/* Search Bar */}
+        <div style={{ padding: "0 4px 12px 4px" }}>
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <Search
+              size={16}
+              style={{
+                position: "absolute",
+                left: 12,
+                color: "var(--text-muted)",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search chats..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 12px 8px 36px",
+                borderRadius: "var(--radius)",
+                border: "2px solid var(--border)",
+                background: "var(--bg)",
+                color: "inherit",
+                outline: "none",
+                fontSize: "0.85rem",
+              }}
+            />
+          </div>
+        </div>
+
         <button
           type="button"
           className={`chat-list-item ${isGlobal ? "chat-list-item--active" : ""}`}
@@ -446,8 +529,7 @@ export default function ChatPage() {
 
         <div className="chat-list-divider" />
 
-        {/* conversations */}
-        {conversations.map((conv) => (
+        {filteredConversations.map((conv) => (
           <button
             key={conv.user.id}
             type="button"
@@ -481,11 +563,10 @@ export default function ChatPage() {
           </button>
         ))}
 
-        {/* people you follow */}
-        {newPeople.length > 0 && (
+        {filteredNewPeople.length > 0 && (
           <>
             <div className="chat-list-label">People you follow</div>
-            {newPeople.map((u) => (
+            {filteredNewPeople.map((u) => (
               <button
                 key={u.id}
                 type="button"
@@ -511,6 +592,22 @@ export default function ChatPage() {
             ))}
           </>
         )}
+
+        {/* Empty Search State */}
+        {searchQuery &&
+          filteredConversations.length === 0 &&
+          filteredNewPeople.length === 0 && (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "20px 10px",
+                color: "var(--text-muted)",
+                fontSize: "0.85rem",
+              }}
+            >
+              No users found matching "{searchQuery}"
+            </div>
+          )}
       </aside>
     </div>
   );
