@@ -21,10 +21,8 @@ import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID } from "../lib/creator.js";
 import { timeAgo } from "../lib/time";
 
-// Fallback API URL just in case the store method is missing
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
 export default function ChatPage() {
+  const store = useStore(); // Safely pulling the whole store
   const {
     getChatMessages,
     sendChatMessage,
@@ -36,7 +34,7 @@ export default function ChatPage() {
     sendDm,
     getFollowingList,
     blockUser,
-  } = useStore();
+  } = store;
 
   const navigate = useNavigate();
   const toast = useToast();
@@ -219,8 +217,8 @@ export default function ChatPage() {
       className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}
       style={{
         display: "flex",
-        height: "calc(100vh - 120px)",
-        minHeight: "75vh",
+        height: "82vh",
+        minHeight: "600px",
         width: "100%",
       }}
     >
@@ -232,7 +230,6 @@ export default function ChatPage() {
           flexDirection: "column",
           flex: 1,
           height: "100%",
-          minHeight: "75vh",
         }}
       >
         <div className="chat-page-header" style={{ flexShrink: 0 }}>
@@ -486,7 +483,7 @@ export default function ChatPage() {
           display: "flex",
           flexDirection: "column",
           height: "100%",
-          minHeight: "75vh",
+          width: "280px",
           overflowY: "auto",
         }}
       >
@@ -632,66 +629,88 @@ export default function ChatPage() {
           )}
       </aside>
 
-      {/* The Fully Bulletproof Report Modal */}
+      {/* Fully Bulletproof Report Modal */}
       {reportTarget && (
         <ReportModal
           username={reportTarget.username || reportTarget.name || "user"}
           onClose={() => setReportTarget(null)}
           onSubmit={async (reason) => {
             try {
-              const store = useStore.getState();
-              // Attempt to find whatever you named the report function in the store
-              const reportFn =
-                store.createReport ||
-                store.reportUser ||
-                store.submitReport ||
-                store.reportProfile;
+              let success = false;
 
-              if (typeof reportFn === "function") {
+              // 1. Check if createReport exists in your store
+              if (store.createReport) {
+                await store.createReport({
+                  reportedUserId: reportTarget.id,
+                  reason,
+                });
+                success = true;
+              }
+              // 2. Check if reportUser exists in your store
+              else if (store.reportUser) {
                 try {
-                  // Standard payload structure based on your controller
-                  await reportFn({ reportedUserId: reportTarget.id, reason });
-                } catch (e) {
-                  await reportFn(reportTarget.id, reason);
+                  await store.reportUser({
+                    reportedUserId: reportTarget.id,
+                    reason,
+                  });
+                } catch {
+                  // Fallback in case your store function takes arguments instead of an object
+                  await store.reportUser(reportTarget.id, reason);
                 }
-              } else {
-                // If it can't find it in the store, forcefully push it to your backend
+                success = true;
+              }
+              // 3. Absolute Fallback: Direct API call if it can't find either store function
+              else {
                 const token = localStorage.getItem("token");
-                const payload = { reportedUserId: reportTarget.id, reason };
+                const apiBase =
+                  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-                let res = await fetch(`${API_URL}/reports`, {
+                // Try plural route
+                const res = await fetch(`${apiBase}/reports`, {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                   },
-                  body: JSON.stringify(payload),
+                  body: JSON.stringify({
+                    reportedUserId: reportTarget.id,
+                    reason,
+                  }),
                 });
 
-                // If plural fails, try singular route
-                if (res.status === 404) {
-                  res = await fetch(`${API_URL}/report`, {
+                if (res.ok) {
+                  success = true;
+                } else {
+                  // Try singular route
+                  const res2 = await fetch(`${apiBase}/report`, {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json",
                       Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify({
+                      reportedUserId: reportTarget.id,
+                      reason,
+                    }),
                   });
+                  if (res2.ok) success = true;
                 }
-                if (!res.ok) throw new Error("Backend API rejected the report");
               }
 
-              toast(
-                `✅ Reported @${reportTarget.username || "user"} successfully.`,
-                "accent",
-              );
+              if (success) {
+                toast(
+                  `✅ Reported @${reportTarget.username || "user"} successfully.`,
+                  "accent",
+                );
+              } else {
+                throw new Error("API completely rejected the request.");
+              }
             } catch (error) {
-              console.error("Report Submission Error:", error);
+              console.error("Report Error:", error);
               toast("Something went wrong reporting this user.", "danger");
+            } finally {
+              setReportTarget(null); // ALWAYS close modal
             }
-            // Ensure the modal ALWAYS closes, even if it errors
-            setReportTarget(null);
           }}
         />
       )}
