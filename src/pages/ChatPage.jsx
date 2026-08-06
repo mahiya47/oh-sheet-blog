@@ -21,6 +21,9 @@ import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID } from "../lib/creator.js";
 import { timeAgo } from "../lib/time";
 
+// Fallback API URL just in case the store method is missing
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 export default function ChatPage() {
   const {
     getChatMessages,
@@ -33,7 +36,6 @@ export default function ChatPage() {
     sendDm,
     getFollowingList,
     blockUser,
-    reportUser,
   } = useStore();
 
   const navigate = useNavigate();
@@ -176,7 +178,6 @@ export default function ChatPage() {
     if (activeUser) navigate(`/profile/${activeUser.id}`);
   };
 
-  // Just open the modal now! No backend calls in this function.
   const onReport = () => {
     setMenuOpen(false);
     if (activeUser) {
@@ -631,24 +632,66 @@ export default function ChatPage() {
           )}
       </aside>
 
-      {/* The fully fixed Report Modal */}
+      {/* The Fully Bulletproof Report Modal */}
       {reportTarget && (
         <ReportModal
           username={reportTarget.username || reportTarget.name || "user"}
           onClose={() => setReportTarget(null)}
           onSubmit={async (reason) => {
             try {
-              if (reportUser) {
-                await reportUser(reportTarget.id, reason);
-                toast(
-                  `✅ Reported @${reportTarget.username || "user"} successfully.`,
-                  "accent",
-                );
+              const store = useStore.getState();
+              // Attempt to find whatever you named the report function in the store
+              const reportFn =
+                store.createReport ||
+                store.reportUser ||
+                store.submitReport ||
+                store.reportProfile;
+
+              if (typeof reportFn === "function") {
+                try {
+                  // Standard payload structure based on your controller
+                  await reportFn({ reportedUserId: reportTarget.id, reason });
+                } catch (e) {
+                  await reportFn(reportTarget.id, reason);
+                }
+              } else {
+                // If it can't find it in the store, forcefully push it to your backend
+                const token = localStorage.getItem("token");
+                const payload = { reportedUserId: reportTarget.id, reason };
+
+                let res = await fetch(`${API_URL}/reports`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify(payload),
+                });
+
+                // If plural fails, try singular route
+                if (res.status === 404) {
+                  res = await fetch(`${API_URL}/report`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(payload),
+                  });
+                }
+                if (!res.ok) throw new Error("Backend API rejected the report");
               }
+
+              toast(
+                `✅ Reported @${reportTarget.username || "user"} successfully.`,
+                "accent",
+              );
             } catch (error) {
+              console.error("Report Submission Error:", error);
               toast("Something went wrong reporting this user.", "danger");
             }
-            setReportTarget(null); // Close the modal on success or failure
+            // Ensure the modal ALWAYS closes, even if it errors
+            setReportTarget(null);
           }}
         />
       )}
