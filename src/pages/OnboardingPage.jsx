@@ -1,10 +1,12 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Check, X } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { GENDER_OPTIONS, ORIENTATION_OPTIONS } from "../lib/profileOptions.js";
 import Avatar from "../components/Avatar.jsx";
 import AvatarPicker from "../components/AvatarPicker.jsx";
+import api from "../api.js";
 
 function fileToAvatarDataUrl(file, max = 256) {
   return new Promise((resolve, reject) => {
@@ -37,6 +39,12 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const fileRef = useRef(null);
 
+  // If the backend generated a temporary username starting with "user_", clear it out so they can pick their own.
+  const initialUsername = currentUser?.username?.startsWith("user_")
+    ? ""
+    : currentUser?.username || "";
+
+  const [username, setUsername] = useState(initialUsername);
   const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || "");
   const [bio, setBio] = useState("");
   const [birthday, setBirthday] = useState("");
@@ -48,6 +56,37 @@ export default function OnboardingPage() {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
+
+  // Check username availability as they type
+  useEffect(() => {
+    const uname = username.trim();
+    if (uname.length < 3) {
+      setUsernameAvailable(null);
+      return;
+    }
+    // Don't re-check if they just left their current username alone
+    if (uname === currentUser?.username) {
+      setUsernameAvailable(true);
+      return;
+    }
+
+    setCheckingUsername(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await api.get(
+          `/users/check-username/${encodeURIComponent(uname)}`,
+        );
+        setUsernameAvailable(res.data.available);
+      } catch {
+        setUsernameAvailable(null);
+      }
+      setCheckingUsername(false);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [username, currentUser?.username]);
 
   const onPickFile = async (e) => {
     const file = e.target.files?.[0];
@@ -62,6 +101,17 @@ export default function OnboardingPage() {
   };
 
   const onSave = async () => {
+    if (!username.trim() || username.length < 3) {
+      setError(
+        "Please pick a valid username (at least 3 characters) to continue.",
+      );
+      return;
+    }
+    if (usernameAvailable === false) {
+      setError("That username is already taken.");
+      return;
+    }
+
     setSaving(true);
     setError("");
 
@@ -69,6 +119,7 @@ export default function OnboardingPage() {
     const orientation = oriChoice === SELF ? oriCustom.trim() : oriChoice;
 
     const res = await updateProfile({
+      username: username.trim(),
       bio,
       avatarUrl,
       birthday: birthday || undefined,
@@ -83,7 +134,7 @@ export default function OnboardingPage() {
       toast("You're all set!", "accent");
       navigate("/feed");
     } else {
-      setError(res.error || "Could not save. Please try again.");
+      setError(res.error || "Could not save. Try a different username.");
     }
   };
 
@@ -99,10 +150,7 @@ export default function OnboardingPage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div className="pfp-row">
-            <Avatar
-              user={{ username: currentUser?.username, avatarUrl }}
-              size={72}
-            />
+            <Avatar user={{ username, avatarUrl }} size={72} />
             <input
               ref={fileRef}
               type="file"
@@ -124,8 +172,69 @@ export default function OnboardingPage() {
             <AvatarPicker
               value={avatarUrl}
               onSelect={setAvatarUrl}
-              seedBase={currentUser?.username || "newuser"}
+              seedBase={username || "newuser"}
             />
+          </div>
+
+          <div className="field">
+            <label htmlFor="ob-username">Choose your Username</label>
+            <div style={{ position: "relative", width: "100%" }}>
+              <input
+                id="ob-username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="username"
+                autoComplete="username"
+                style={{ width: "100%", paddingRight: 36 }}
+              />
+              {username.trim().length >= 3 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    right: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
+                >
+                  {checkingUsername ? (
+                    <span
+                      style={{
+                        width: 14,
+                        height: 14,
+                        border: "2px solid var(--border-soft)",
+                        borderTopColor: "var(--accent)",
+                        borderRadius: "50%",
+                        display: "inline-block",
+                        animation: "spin 0.7s linear infinite",
+                      }}
+                    />
+                  ) : usernameAvailable === true ? (
+                    <Check size={16} color="#3eff8b" />
+                  ) : usernameAvailable === false ? (
+                    <X size={16} color="#ff3e3e" />
+                  ) : null}
+                </span>
+              )}
+            </div>
+            {usernameAvailable === false && (
+              <span
+                style={{ fontSize: "0.75rem", color: "var(--danger, #ff3e3e)" }}
+              >
+                That username is taken.
+              </span>
+            )}
+            {usernameAvailable === true &&
+              username !== currentUser?.username && (
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--accent, #3eff8b)",
+                  }}
+                >
+                  Available!
+                </span>
+              )}
           </div>
 
           <div className="field">
@@ -204,7 +313,7 @@ export default function OnboardingPage() {
             type="button"
             className="btn btn-accent btn-block"
             onClick={onSave}
-            disabled={saving}
+            disabled={saving || usernameAvailable === false}
           >
             {saving ? "Saving…" : "Continue to Oh Sheet!"}
           </button>
