@@ -6,10 +6,10 @@ import {
   Globe,
   Check,
   CheckCheck,
-  MoreVertical,
   UserRound,
   Flag,
   ShieldOff,
+  ChevronDown,
 } from "lucide-react";
 import { useStore } from "../lib/store";
 import { useToast } from "../context/ToastContext.jsx";
@@ -154,7 +154,10 @@ export default function ChatPage() {
     setMobileOpen(true);
   };
 
-  const backToList = () => setMobileOpen(false);
+  const backToList = () => {
+    setMobileOpen(false);
+    setMenuOpen(false);
+  };
 
   const displayName = (user) => {
     if (!user) return "User";
@@ -186,7 +189,7 @@ export default function ChatPage() {
     if (confirmed && blockUser) {
       await blockUser(activeUser.id);
       toast(`Blocked ${displayName(activeUser)}.`, "danger");
-      backToList(); // Go back to the chat list after blocking
+      backToList();
     }
   };
 
@@ -196,15 +199,26 @@ export default function ChatPage() {
 
   // ---- render ----
   return (
-    <div className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}>
+    <div
+      className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}
+      style={{ display: "flex", height: "100%", flex: 1 }}
+    >
       {/* ============ CHAT AREA (left) ============ */}
-      <div className="chat-page chat-main">
-        <div className="chat-page-header">
+      <div
+        className="chat-page chat-main"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          height: "100%",
+        }}
+      >
+        <div className="chat-page-header" style={{ flexShrink: 0 }}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              gap: 12,
               width: "100%",
             }}
           >
@@ -217,6 +231,7 @@ export default function ChatPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                padding: "8px",
               }}
             >
               <ArrowLeft size={18} />
@@ -233,51 +248,57 @@ export default function ChatPage() {
                 </div>
               </>
             ) : (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  flex: 1,
-                  position: "relative",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <Avatar user={activeUser} size={32} />
-                  <strong>
-                    {displayName(activeUser)}
-                    {activeUser?.emailVerified && (
-                      <VerifiedBadge
-                        size={14}
-                        variant={getVerifiedVariant(
-                          activeUser,
-                          activeUser?.id === CREATOR_ID,
-                        )}
-                      />
-                    )}
-                  </strong>
-                </div>
-
-                {/* Profile Header Dropdown Menu */}
+              <div style={{ position: "relative", flex: 1 }}>
+                {/* Clickable Area for the Menu */}
                 <button
                   type="button"
-                  className="btn btn-ghost"
                   onClick={() => setMenuOpen(!menuOpen)}
-                  aria-label="Options"
-                  style={{ padding: "6px" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    color: "inherit",
+                    textAlign: "left",
+                  }}
                 >
-                  <MoreVertical size={18} />
+                  <Avatar user={activeUser} size={36} />
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <strong
+                      style={{ display: "flex", alignItems: "center", gap: 4 }}
+                    >
+                      {displayName(activeUser)}
+                      {activeUser?.emailVerified && (
+                        <VerifiedBadge
+                          size={14}
+                          variant={getVerifiedVariant(
+                            activeUser,
+                            activeUser?.id === CREATOR_ID,
+                          )}
+                        />
+                      )}
+                      <ChevronDown
+                        size={14}
+                        style={{ opacity: 0.6, marginLeft: 4 }}
+                      />
+                    </strong>
+                    <span className="chat-page-subtitle">Tap for options</span>
+                  </div>
                 </button>
 
+                {/* Dropdown Menu */}
                 {menuOpen && (
                   <div
                     className="more-menu"
                     style={{
                       position: "absolute",
                       top: "100%",
-                      right: 0,
+                      left: 0,
                       marginTop: 8,
-                      minWidth: 160,
+                      minWidth: 180,
                       zIndex: 9999,
                     }}
                   >
@@ -289,7 +310,7 @@ export default function ChatPage() {
                       <UserRound size={15} /> Visit profile
                     </button>
                     <button type="button" role="menuitem" onClick={onReport}>
-                      <Flag size={15} /> Report
+                      <Flag size={15} /> Report account
                     </button>
                     <button
                       type="button"
@@ -297,7 +318,7 @@ export default function ChatPage() {
                       className="danger"
                       onClick={onBlock}
                     >
-                      <ShieldOff size={15} /> Block
+                      <ShieldOff size={15} /> Block user
                     </button>
                   </div>
                 )}
@@ -306,7 +327,11 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <div className="chat-page-messages" onClick={() => setMenuOpen(false)}>
+        <div
+          className="chat-page-messages"
+          onClick={() => setMenuOpen(false)}
+          style={{ flex: 1, overflowY: "auto" }}
+        >
           {loading && <div className="chat-page-empty">Loading...</div>}
 
           {/* global messages */}
@@ -392,7 +417,11 @@ export default function ChatPage() {
         </div>
 
         {currentUser ? (
-          <form className="chat-page-input-row" onSubmit={send}>
+          <form
+            className="chat-page-input-row"
+            onSubmit={send}
+            style={{ flexShrink: 0 }}
+          >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -413,7 +442,9 @@ export default function ChatPage() {
             </button>
           </form>
         ) : (
-          <div className="chat-page-login-prompt">Log in to join the chat</div>
+          <div className="chat-page-login-prompt" style={{ flexShrink: 0 }}>
+            Log in to join the chat
+          </div>
         )}
       </div>
 
