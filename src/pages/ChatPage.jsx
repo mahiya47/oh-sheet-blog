@@ -32,7 +32,7 @@ export default function ChatPage() {
     sendDm,
     getFollowingList,
     blockUser,
-    reportUser, // Hooked up the report method for the admin panel
+    reportUser, // <-- Ensure this matches exactly what is in your store.jsx!
   } = useStore();
 
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ export default function ChatPage() {
   const [thread, setThread] = useState([]);
   const [activeUser, setActiveUser] = useState(null);
   const [input, setInput] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); // Search state
+  const [searchQuery, setSearchQuery] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef(null);
@@ -174,12 +174,21 @@ export default function ChatPage() {
   const onReport = async () => {
     setMenuOpen(false);
     if (!activeUser) return;
+
+    const confirmReport = window.confirm(
+      `Are you sure you want to report ${displayName(activeUser)}?`,
+    );
+    if (!confirmReport) return;
+
     try {
-      if (reportUser) {
-        await reportUser(activeUser.id);
-      }
-      toast(`✅ Reported @${activeUser.username || "user"} successfully.`);
+      // Adding a reason so the backend accepts it!
+      await reportUser(activeUser.id, "Inappropriate behavior in Chat");
+      toast(
+        `✅ Reported @${activeUser.username || "user"} successfully.`,
+        "accent",
+      );
     } catch (error) {
+      console.error(error);
       toast("Something went wrong reporting this user.", "danger");
     }
   };
@@ -201,7 +210,6 @@ export default function ChatPage() {
     (u) => !conversations.some((c) => c.user.id === u.id),
   );
 
-  // Search logic
   const filteredConversations = conversations.filter(
     (c) =>
       displayName(c.user).toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -217,10 +225,24 @@ export default function ChatPage() {
   return (
     <div
       className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}
-      style={{ height: "calc(100vh - 120px)", minHeight: "500px" }}
+      style={{
+        display: "flex",
+        height: "calc(100vh - 120px)",
+        minHeight: "75vh",
+        width: "100%",
+      }}
     >
       {/* ============ CHAT AREA (left) ============ */}
-      <div className="chat-page chat-main" style={{ height: "100%" }}>
+      <div
+        className="chat-page chat-main"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          height: "100%",
+          minHeight: "75vh",
+        }}
+      >
         <div className="chat-page-header" style={{ flexShrink: 0 }}>
           <div
             style={{
@@ -470,10 +492,16 @@ export default function ChatPage() {
       {/* ============ LIST (right sidebar / mobile full screen) ============ */}
       <aside
         className="chat-list"
-        style={{ height: "100%", overflowY: "auto" }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          minHeight: "75vh",
+          overflowY: "auto",
+        }}
       >
         {/* Search Bar */}
-        <div style={{ padding: "0 4px 12px 4px" }}>
+        <div style={{ padding: "0 4px 12px 4px", flexShrink: 0 }}>
           <div
             style={{
               position: "relative",
@@ -512,6 +540,7 @@ export default function ChatPage() {
           type="button"
           className={`chat-list-item ${isGlobal ? "chat-list-item--active" : ""}`}
           onClick={openGlobal}
+          style={{ flexShrink: 0 }}
         >
           <span className="chat-list-globe">
             <Globe size={20} />
@@ -527,7 +556,7 @@ export default function ChatPage() {
           </div>
         </button>
 
-        <div className="chat-list-divider" />
+        <div className="chat-list-divider" style={{ flexShrink: 0 }} />
 
         {filteredConversations.map((conv) => (
           <button
@@ -537,6 +566,7 @@ export default function ChatPage() {
               Number(dmUserId) === conv.user.id ? "chat-list-item--active" : ""
             }`}
             onClick={() => openThread(conv.user.id)}
+            style={{ flexShrink: 0 }}
           >
             <Avatar user={conv.user} size={40} />
             <div className="chat-list-info">
@@ -565,7 +595,9 @@ export default function ChatPage() {
 
         {filteredNewPeople.length > 0 && (
           <>
-            <div className="chat-list-label">People you follow</div>
+            <div className="chat-list-label" style={{ flexShrink: 0 }}>
+              People you follow
+            </div>
             {filteredNewPeople.map((u) => (
               <button
                 key={u.id}
@@ -574,6 +606,7 @@ export default function ChatPage() {
                   Number(dmUserId) === u.id ? "chat-list-item--active" : ""
                 }`}
                 onClick={() => openThread(u.id)}
+                style={{ flexShrink: 0 }}
               >
                 <Avatar user={u} size={40} />
                 <div className="chat-list-info">
@@ -603,6 +636,7 @@ export default function ChatPage() {
                 padding: "20px 10px",
                 color: "var(--text-muted)",
                 fontSize: "0.85rem",
+                flexShrink: 0,
               }}
             >
               No users found matching "{searchQuery}"
