@@ -547,6 +547,7 @@ select {
   flex-direction: column;
   line-height: 1.15;
   min-width: 0;
+  font-size: 0.8rem;
 }
 .sheet-author .display {
   font-weight: 700;
@@ -1136,7 +1137,7 @@ select {
 }
 .profile-bio {
   max-width: 60ch;
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   margin-bottom: var(--space-4);
 }
 .profile-stats {
