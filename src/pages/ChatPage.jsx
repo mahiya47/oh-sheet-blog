@@ -245,11 +245,12 @@ export default function ChatPage() {
             flexShrink: 0,
             padding: "16px",
             borderBottom: "1px solid var(--border)",
-            // Uses shorthand background to force the cover image, checking both coverUrl and cover
             background:
-              !isGlobal && (activeUser?.coverUrl || activeUser?.cover)
-                ? `linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9)), url("${activeUser?.coverUrl || activeUser?.cover}") center/cover no-repeat`
+              !isGlobal && activeUser?.coverUrl
+                ? `linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9)), url(${activeUser.coverUrl})`
                 : "var(--bg)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
           }}
         >
           <div
