@@ -16,7 +16,7 @@ import { useStore } from "../lib/store";
 import { useToast } from "../context/ToastContext.jsx";
 import Avatar from "../components/Avatar";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
-import ReportModal from "../components/ReportModal.jsx"; // <-- Imported the modal!
+import ReportModal from "../components/ReportModal.jsx";
 import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 import { CREATOR_ID } from "../lib/creator.js";
 import { timeAgo } from "../lib/time";
@@ -33,6 +33,7 @@ export default function ChatPage() {
     sendDm,
     getFollowingList,
     blockUser,
+    reportUser,
   } = useStore();
 
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ export default function ChatPage() {
 
   const [mobileOpen, setMobileOpen] = useState(!!dmUserId);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [reportTarget, setReportTarget] = useState(null); // <-- State for the report modal
+  const [reportTarget, setReportTarget] = useState(null);
 
   const [messages, setMessages] = useState([]);
   const [conversations, setConversations] = useState([]);
@@ -119,8 +120,6 @@ export default function ChatPage() {
     return () => clearInterval(sidePollRef.current);
   }, []);
 
-  // FIXED SCROLL BUG: Only scroll when the total NUMBER of messages increases,
-  // or when you switch chats. It no longer fights you every 8 seconds!
   const msgCount = messages.length;
   const threadCount = thread.length;
   useEffect(() => {
@@ -177,7 +176,7 @@ export default function ChatPage() {
     if (activeUser) navigate(`/profile/${activeUser.id}`);
   };
 
-  // Opens the Report Modal Instead of crashing!
+  // Just open the modal now! No backend calls in this function.
   const onReport = () => {
     setMenuOpen(false);
     if (activeUser) {
@@ -362,7 +361,6 @@ export default function ChatPage() {
                     key={msg.id}
                     className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
                   >
-                    {/* Clickable Avatar */}
                     <div
                       onClick={() =>
                         !isMe && navigate(`/profile/${msgUser.id}`)
@@ -414,7 +412,6 @@ export default function ChatPage() {
                     key={msg.id}
                     className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
                   >
-                    {/* Clickable Avatar */}
                     <div
                       onClick={() =>
                         !isMe && navigate(`/profile/${msg.sender.id}`)
@@ -492,7 +489,6 @@ export default function ChatPage() {
           overflowY: "auto",
         }}
       >
-        {/* Search Bar */}
         <div style={{ padding: "0 4px 12px 4px", flexShrink: 0 }}>
           <div
             style={{
@@ -618,7 +614,6 @@ export default function ChatPage() {
           </>
         )}
 
-        {/* Empty Search State */}
         {searchQuery &&
           filteredConversations.length === 0 &&
           filteredNewPeople.length === 0 && (
@@ -636,11 +631,25 @@ export default function ChatPage() {
           )}
       </aside>
 
-      {/* Render the Report Modal if a target is set! */}
+      {/* The fully fixed Report Modal */}
       {reportTarget && (
         <ReportModal
-          user={reportTarget}
+          username={reportTarget.username || reportTarget.name || "user"}
           onClose={() => setReportTarget(null)}
+          onSubmit={async (reason) => {
+            try {
+              if (reportUser) {
+                await reportUser(reportTarget.id, reason);
+                toast(
+                  `✅ Reported @${reportTarget.username || "user"} successfully.`,
+                  "accent",
+                );
+              }
+            } catch (error) {
+              toast("Something went wrong reporting this user.", "danger");
+            }
+            setReportTarget(null); // Close the modal on success or failure
+          }}
         />
       )}
     </div>
