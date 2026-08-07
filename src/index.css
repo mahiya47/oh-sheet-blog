@@ -2156,9 +2156,16 @@ select {
 
   /* mobile chat full screen flip */
   .chat-shell {
+    position: fixed;
+    top: 56px; /* height of your sticky .navbar */
+    bottom: 64px; /* approx height of .bottom-nav */
+    left: 0;
+    right: 0;
     flex-direction: column;
-    height: calc(100vh - 236px);
-    height: calc(100dvh - 236px); /* 140px + 96px shell padding */
+    height: auto; /* let top/bottom control the size instead of vh math */
+    z-index: 100;
+    background: var(--bg);
+    padding: 0 var(--space-3);
   }
   .chat-back {
     display: inline-flex;
