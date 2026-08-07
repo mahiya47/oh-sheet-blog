@@ -2157,8 +2157,8 @@ select {
   /* mobile chat full screen flip */
   .chat-shell {
     flex-direction: column;
-    height: calc(100vh - 140px);
-    height: calc(100dvh - 140px);
+    height: calc(100vh - 236px);
+    height: calc(100dvh - 236px); /* 140px + 96px shell padding */
   }
   .chat-back {
     display: inline-flex;
