@@ -1691,7 +1691,7 @@ select {
 }
 
 .chat-page-input-row button {
-  padding: 0 1.25rem;
+  padding: 0 0.9rem;
   background: var(--card-bg);
   color: inherit;
   border-left: 2px solid #000;
@@ -2157,15 +2157,15 @@ select {
   /* mobile chat full screen flip */
   .chat-shell {
     position: fixed;
-    top: 56px; /* height of your sticky .navbar */
-    bottom: 64px; /* approx height of .bottom-nav */
+    top: 56px;
+    bottom: 64px;
     left: 0;
     right: 0;
     flex-direction: column;
-    height: auto; /* let top/bottom control the size instead of vh math */
+    height: auto;
     z-index: 100;
     background: var(--bg);
-    padding: 0 var(--space-3);
+    padding: 0; /* changed from "0 var(--space-3)" — removes left/right margin */
   }
   .chat-back {
     display: inline-flex;
@@ -2196,6 +2196,10 @@ select {
   }
   .sheet-author .handle {
     font-size: 0.7rem;
+  }
+  body.chat-page-active .shell {
+    padding: 0 !important;
+    max-width: none;
   }
 }
 

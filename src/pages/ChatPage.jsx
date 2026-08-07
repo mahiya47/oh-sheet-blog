@@ -121,6 +121,11 @@ export default function ChatPage() {
     return () => clearInterval(sidePollRef.current);
   }, []);
 
+  useEffect(() => {
+    document.body.classList.add("chat-page-active");
+    return () => document.body.classList.remove("chat-page-active");
+  }, []);
+
   const msgCount = messages.length;
   const threadCount = thread.length;
   useEffect(() => {
