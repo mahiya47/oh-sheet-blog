@@ -1722,7 +1722,7 @@ select {
 .chat-shell {
   display: flex;
   height: calc(
-    100vh - 200px
+    100vh - 100px
   ); /* navbar 56px + shell padding-top 24px + shell padding-bottom 120px */
   position: sticky;
   top: 76px; /* navbar (56px) + shell padding-top (24px) - adjust slightly if it drifts */
@@ -2379,7 +2379,7 @@ select {
     left: 0;
     right: 0;
     flex-direction: column;
-    height: 100%;
+    height: auto;
     z-index: 100;
     background: var(--bg);
     padding: 0;
