@@ -11,6 +11,8 @@ import {
   ChevronDown,
   Search,
   UserPlus,
+  MessageCircle,
+  X,
 } from "lucide-react";
 import { useStore } from "../lib/store";
 import { useToast } from "../context/ToastContext.jsx";
@@ -44,11 +46,12 @@ export default function ChatPage() {
   const [mobileOpen, setMobileOpen] = useState(!!dmUserId);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportTarget, setReportTarget] = useState(null);
+  const [allFollowingOpen, setAllFollowingOpen] = useState(false);
+  const [allFollowingSearch, setAllFollowingSearch] = useState("");
 
   const [conversations, setConversations] = useState([]);
   const [following, setFollowing] = useState([]);
   const [suggested, setSuggested] = useState([]);
-  const [showAllFollowing, setShowAllFollowing] = useState(false);
 
   const [thread, setThread] = useState([]);
   const [activeUser, setActiveUser] = useState(null);
@@ -139,6 +142,7 @@ export default function ChatPage() {
   const openThread = (userId) => {
     setSearchParams({ dm: userId });
     setMobileOpen(true);
+    setAllFollowingOpen(false);
   };
 
   const backToList = () => {
@@ -209,220 +213,21 @@ export default function ChatPage() {
       u.username?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const visibleNewPeople = showAllFollowing
-    ? filteredNewPeople
-    : filteredNewPeople.slice(0, FOLLOWING_PREVIEW_COUNT);
+  const previewNewPeople = filteredNewPeople.slice(0, FOLLOWING_PREVIEW_COUNT);
+
+  const allFollowingFiltered = following.filter(
+    (u) =>
+      displayName(u).toLowerCase().includes(allFollowingSearch.toLowerCase()) ||
+      u.username?.toLowerCase().includes(allFollowingSearch.toLowerCase()),
+  );
 
   const hasAnyChatOption =
     filteredConversations.length > 0 || filteredNewPeople.length > 0;
 
   return (
     <div className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}>
-      {/* ============ CHAT AREA (left) ============ */}
-      {dmUserId && (
-        <div className="chat-page chat-main">
-          <div
-            className="chat-page-header"
-            style={{
-              backgroundImage: activeUser?.coverUrl
-                ? `linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9)), url(${activeUser.coverUrl})`
-                : "none",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                width: "100%",
-              }}
-            >
-              <button
-                type="button"
-                className="btn btn-ghost chat-back"
-                onClick={backToList}
-                aria-label="Back to list"
-                style={{ padding: "8px" }}
-              >
-                <ArrowLeft size={18} />
-              </button>
-
-              <div style={{ position: "relative", flex: 1 }}>
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen(!menuOpen)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    background: "transparent",
-                    border: "none",
-                    padding: 0,
-                    cursor: "pointer",
-                    color: "inherit",
-                    textAlign: "left",
-                  }}
-                >
-                  <Avatar user={activeUser} size={36} />
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <strong
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        textShadow: activeUser?.coverUrl
-                          ? "0 2px 4px rgba(0,0,0,0.8)"
-                          : "none",
-                      }}
-                    >
-                      {displayName(activeUser)}
-                      {activeUser?.emailVerified && (
-                        <VerifiedBadge
-                          size={14}
-                          variant={getVerifiedVariant(
-                            activeUser,
-                            activeUser?.id === CREATOR_ID,
-                          )}
-                        />
-                      )}
-                      <ChevronDown
-                        size={14}
-                        style={{ opacity: 0.6, marginLeft: 4 }}
-                      />
-                    </strong>
-                    <span
-                      className="chat-page-subtitle"
-                      style={{
-                        opacity: 0.8,
-                        textShadow: activeUser?.coverUrl
-                          ? "0 1px 3px rgba(0,0,0,0.8)"
-                          : "none",
-                      }}
-                    >
-                      Tap for options
-                    </span>
-                  </div>
-                </button>
-
-                {menuOpen && (
-                  <div
-                    className="more-menu"
-                    style={{
-                      position: "absolute",
-                      top: "100%",
-                      left: 0,
-                      marginTop: 8,
-                      minWidth: 180,
-                      zIndex: 9999,
-                    }}
-                  >
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={onVisitProfile}
-                    >
-                      <UserRound size={15} /> Visit profile
-                    </button>
-                    <button type="button" role="menuitem" onClick={onReport}>
-                      <Flag size={15} /> Report account
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className="danger"
-                      onClick={onBlock}
-                    >
-                      <ShieldOff size={15} /> Block user
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="chat-page-messages"
-            ref={messagesContainerRef}
-            onClick={() => setMenuOpen(false)}
-          >
-            {loading && <div className="chat-page-empty">Loading...</div>}
-
-            {!loading &&
-              (thread.length === 0 ? (
-                <div className="chat-page-empty">
-                  No messages yet. Say hi! 👋
-                </div>
-              ) : (
-                thread.map((msg) => {
-                  const isMe =
-                    currentUser &&
-                    Number(msg.senderId) === Number(currentUser.id);
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
-                    >
-                      <div
-                        onClick={() =>
-                          !isMe && navigate(`/profile/${msg.sender.id}`)
-                        }
-                        style={{ cursor: isMe ? "default" : "pointer" }}
-                      >
-                        <Avatar user={msg.sender} size={36} />
-                      </div>
-                      <div className="chat-page-bubble-wrap">
-                        <div className="chat-page-bubble">{msg.content}</div>
-                        <span
-                          className="chat-page-time"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 4,
-                          }}
-                        >
-                          {timeAgo(msg.createdAt)}
-                          {isMe &&
-                            (msg.read ? (
-                              <CheckCheck size={13} color="#1d9bf0" />
-                            ) : (
-                              <Check size={13} style={{ opacity: 0.6 }} />
-                            ))}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })
-              ))}
-            <div ref={bottomRef} />
-          </div>
-
-          {currentUser ? (
-            <form className="chat-page-input-row" onSubmit={send}>
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={`Message ${displayName(activeUser)}...`}
-                maxLength={1000}
-                autoComplete="off"
-              />
-              <button
-                type="submit"
-                disabled={sending || !input.trim()}
-                aria-label="Send"
-              >
-                <Send size={18} />
-              </button>
-            </form>
-          ) : (
-            <div className="chat-page-login-prompt">
-              Log in to join the chat
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ============ LIST (right sidebar / mobile full screen) ============ */}
-      <aside className={`chat-list ${!dmUserId ? "chat-list--solo" : ""}`}>
+      {/* ============ LIST (always visible on desktop, list-view on mobile) ============ */}
+      <aside className="chat-list">
         {/* Section 1: Search */}
         <div className="chat-list-search-wrap">
           <div
@@ -501,7 +306,7 @@ export default function ChatPage() {
           </>
         )}
 
-        {/* Section 3: People you follow (not yet messaged) */}
+        {/* Section 3: Top 5 people you follow (not yet messaged) + More */}
         {filteredNewPeople.length > 0 && (
           <>
             <div
@@ -517,13 +322,13 @@ export default function ChatPage() {
                 <button
                   type="button"
                   className="chat-list-more-btn"
-                  onClick={() => setShowAllFollowing((s) => !s)}
+                  onClick={() => setAllFollowingOpen(true)}
                 >
-                  {showAllFollowing ? "Show less" : "More"}
+                  More
                 </button>
               )}
             </div>
-            {visibleNewPeople.map((u) => (
+            {previewNewPeople.map((u) => (
               <button
                 key={u.id}
                 type="button"
@@ -608,6 +413,316 @@ export default function ChatPage() {
           </div>
         )}
       </aside>
+
+      {/* ============ MAIN (chat window / placeholder — hidden entirely on mobile until opened) ============ */}
+      <div className="chat-page chat-main">
+        {dmUserId ? (
+          <>
+            <div
+              className="chat-page-header"
+              style={{
+                backgroundImage: activeUser?.coverUrl
+                  ? `linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9)), url(${activeUser.coverUrl})`
+                  : "none",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  width: "100%",
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-ghost chat-back"
+                  onClick={backToList}
+                  aria-label="Back to list"
+                  style={{ padding: "8px" }}
+                >
+                  <ArrowLeft size={18} />
+                </button>
+
+                <div style={{ position: "relative", flex: 1 }}>
+                  <button
+                    type="button"
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      background: "transparent",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                      color: "inherit",
+                      textAlign: "left",
+                    }}
+                  >
+                    <Avatar user={activeUser} size={36} />
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <strong
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                          textShadow: activeUser?.coverUrl
+                            ? "0 2px 4px rgba(0,0,0,0.8)"
+                            : "none",
+                        }}
+                      >
+                        {displayName(activeUser)}
+                        {activeUser?.emailVerified && (
+                          <VerifiedBadge
+                            size={14}
+                            variant={getVerifiedVariant(
+                              activeUser,
+                              activeUser?.id === CREATOR_ID,
+                            )}
+                          />
+                        )}
+                        <ChevronDown
+                          size={14}
+                          style={{ opacity: 0.6, marginLeft: 4 }}
+                        />
+                      </strong>
+                      <span
+                        className="chat-page-subtitle"
+                        style={{
+                          opacity: 0.8,
+                          textShadow: activeUser?.coverUrl
+                            ? "0 1px 3px rgba(0,0,0,0.8)"
+                            : "none",
+                        }}
+                      >
+                        Tap for options
+                      </span>
+                    </div>
+                  </button>
+
+                  {menuOpen && (
+                    <div
+                      className="more-menu"
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        marginTop: 8,
+                        minWidth: 180,
+                        zIndex: 9999,
+                      }}
+                    >
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={onVisitProfile}
+                      >
+                        <UserRound size={15} /> Visit profile
+                      </button>
+                      <button type="button" role="menuitem" onClick={onReport}>
+                        <Flag size={15} /> Report account
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="danger"
+                        onClick={onBlock}
+                      >
+                        <ShieldOff size={15} /> Block user
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="chat-page-messages"
+              ref={messagesContainerRef}
+              onClick={() => setMenuOpen(false)}
+            >
+              {loading && <div className="chat-page-empty">Loading...</div>}
+
+              {!loading &&
+                (thread.length === 0 ? (
+                  <div className="chat-page-empty">
+                    No messages yet. Say hi! 👋
+                  </div>
+                ) : (
+                  thread.map((msg) => {
+                    const isMe =
+                      currentUser &&
+                      Number(msg.senderId) === Number(currentUser.id);
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
+                      >
+                        <div
+                          onClick={() =>
+                            !isMe && navigate(`/profile/${msg.sender.id}`)
+                          }
+                          style={{ cursor: isMe ? "default" : "pointer" }}
+                        >
+                          <Avatar user={msg.sender} size={36} />
+                        </div>
+                        <div className="chat-page-bubble-wrap">
+                          <div className="chat-page-bubble">{msg.content}</div>
+                          <span
+                            className="chat-page-time"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            {timeAgo(msg.createdAt)}
+                            {isMe &&
+                              (msg.read ? (
+                                <CheckCheck size={13} color="#1d9bf0" />
+                              ) : (
+                                <Check size={13} style={{ opacity: 0.6 }} />
+                              ))}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                ))}
+              <div ref={bottomRef} />
+            </div>
+
+            {currentUser ? (
+              <form className="chat-page-input-row" onSubmit={send}>
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={`Message ${displayName(activeUser)}...`}
+                  maxLength={1000}
+                  autoComplete="off"
+                />
+                <button
+                  type="submit"
+                  disabled={sending || !input.trim()}
+                  aria-label="Send"
+                >
+                  <Send size={18} />
+                </button>
+              </form>
+            ) : (
+              <div className="chat-page-login-prompt">
+                Log in to join the chat
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="chat-page-placeholder">
+            <MessageCircle size={44} style={{ opacity: 0.35 }} />
+            <h3>Your Messages</h3>
+            <p>Select a conversation from the list to start chatting.</p>
+            <ul className="chat-page-rules">
+              <li>Be respectful — no harassment, hate speech, or spam.</li>
+              <li>Don't share personal info you're not comfortable sharing.</li>
+              <li>Report or block anyone who makes you uncomfortable.</li>
+              <li>Messages are private between you and the recipient.</li>
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* ============ "All following" modal ============ */}
+      {allFollowingOpen && (
+        <div
+          className="chat-allfollowing-overlay"
+          onClick={() => setAllFollowingOpen(false)}
+        >
+          <div
+            className="chat-allfollowing-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="chat-allfollowing-header">
+              <strong>People you follow</strong>
+              <button
+                type="button"
+                onClick={() => setAllFollowingOpen(false)}
+                aria-label="Close"
+                className="btn btn-ghost"
+                style={{ padding: 6 }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div style={{ position: "relative", margin: "0 16px 12px" }}>
+              <Search
+                size={16}
+                style={{
+                  position: "absolute",
+                  left: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "var(--text-muted)",
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Search people you follow..."
+                value={allFollowingSearch}
+                onChange={(e) => setAllFollowingSearch(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px 8px 36px",
+                  borderRadius: "var(--radius)",
+                  border: "2px solid var(--border)",
+                  background: "var(--bg)",
+                  color: "inherit",
+                  outline: "none",
+                  fontSize: "0.85rem",
+                }}
+              />
+            </div>
+            <div className="chat-allfollowing-list">
+              {allFollowingFiltered.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "20px",
+                    color: "var(--text-muted)",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  No matches.
+                </div>
+              ) : (
+                allFollowingFiltered.map((u) => (
+                  <button
+                    key={u.id}
+                    type="button"
+                    className="chat-list-item"
+                    onClick={() => openThread(u.id)}
+                  >
+                    <Avatar user={u} size={40} />
+                    <div className="chat-list-info">
+                      <span className="chat-page-author">
+                        {displayName(u)}
+                        {u.emailVerified && (
+                          <VerifiedBadge
+                            size={12}
+                            variant={getVerifiedVariant(u, u.id === CREATOR_ID)}
+                          />
+                        )}
+                      </span>
+                      <span className="chat-page-time">
+                        @{u.username || "user"}
+                      </span>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* The Fully Bulletproof Report Modal */}
       {reportTarget && (
