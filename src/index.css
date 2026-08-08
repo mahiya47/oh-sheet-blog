@@ -2000,12 +2000,12 @@ body.chat-page-active {
    ---------------------------------------------------------------------- */
 .chat-shell {
   position: fixed;
-  top: 56px; /* navbar height */
+  top: 72px; /* navbar (56px) + 16px gap, matching .rail-left's spacing */
   left: max(88px, calc((100vw - 1280px) / 2 + 88px));
   right: max(344px, calc((100vw - 1280px) / 2 + 344px));
-  bottom: 24px;
+  bottom: 32px;
   display: flex;
-  gap: var(--space-5);
+  gap: var(--space-4);
   z-index: 50;
   background: var(--bg);
 }
