@@ -2140,115 +2140,6 @@ select {
    Responsive & Mobile Logic — Fully Consolidated
    ========================================================================= */
 
-/* =========================================================================
-   Chat single-view flip — applies at ALL screen sizes
-   ========================================================================= */
-.chat-shell .chat-main {
-  display: none !important;
-}
-.chat-shell .chat-list {
-  display: flex !important;
-  width: 100% !important;
-}
-.chat-shell.chat-shell--open .chat-main {
-  display: flex !important;
-  width: 100% !important;
-}
-.chat-shell.chat-shell--open .chat-list {
-  display: none !important;
-}
-.chat-back {
-  display: inline-flex;
-}
-layout final · CSS
-/* =========================================================================
-   Chat layout — height-based (self-adjusting, no pixel guessing)
-   ========================================================================= */
- 
-body.chat-page-active {
-  overflow: hidden;
-}
-
-body.chat-page-active .shell {
-  height: calc(100dvh - 56px - var(--mobile-nav-h, 0px));
-  min-height: 0;
-  overflow: hidden;
-  align-items: stretch;
-  padding-bottom: 0;
-}
-
-.chat-shell {
-  display: flex;
-  height: 100%;
-  min-height: 0;
-  gap: var(--space-5);
-  overflow: hidden;
-}
-
-.chat-main {
-  height: 100%;
-  min-height: 0;
-}
-
-.chat-list {
-  height: 100%;
-  min-height: 0;
-  width: 280px;
-  flex-shrink: 0;
-}
-
-/* When no conversation is open, list is the only visible panel —
-   let it fill the space nicely instead of staying pinned to a narrow column */
-.chat-list--solo {
-  width: 100%;
-  max-width: 640px;
-  margin: 0 auto;
-}
-
-/* Chat single-view flip — applies at ALL screen sizes */
-.chat-shell .chat-main {
-  display: none !important;
-}
-.chat-shell .chat-list {
-  display: flex !important;
-}
-.chat-shell.chat-shell--open .chat-main {
-  display: flex !important;
-  width: 100% !important;
-}
-.chat-shell.chat-shell--open .chat-list {
-  display: none !important;
-}
-.chat-back {
-  display: inline-flex;
-}
-@media (max-width: 768px) {
-  body.chat-page-active {
-    --mobile-nav-h: 64px;
-    position: fixed;
-    inset: 0;
-  }
-  .chat-list--solo {
-    max-width: none;
-  }
-}
-/* =========================================================================
-   Responsive & Mobile Logic — Fully Consolidated
-   ========================================================================= */
-
-/* Large desktop: chat pinned between navbar and trending sidebar */
-@media (min-width: 1081px) {
-  body.chat-page-active .chat-shell {
-    position: fixed;
-    top: 80px;
-    bottom: 20px;
-    left: 84px;
-    right: 340px;
-    height: auto;
-    z-index: 50;
-  }
-}
-
 /* Tablets / Dropping Right Rail */
 @media (max-width: 1080px) {
   .shell {
@@ -2256,19 +2147,6 @@ body.chat-page-active .shell {
   }
   .rail-right {
     display: none;
-  }
-}
-
-/* Tablet: chat pinned between navbar and screen edge (no trending sidebar) */
-@media (min-width: 769px) and (max-width: 1080px) {
-  body.chat-page-active .chat-shell {
-    position: fixed;
-    top: 80px;
-    bottom: 20px;
-    left: 84px;
-    right: 20px;
-    height: auto;
-    z-index: 50;
   }
 }
 
@@ -2372,11 +2250,26 @@ body.chat-page-active .shell {
   .chat-shell .chat-list-search-wrap {
     padding-top: 16px;
   }
+  .chat-back {
+    display: inline-flex;
+  }
+  .chat-shell .chat-main {
+    display: none !important;
+  }
   .chat-shell .chat-list {
+    display: flex !important;
     flex-direction: column;
+    width: 100% !important;
     max-height: none;
     border: none !important;
     padding: 0;
+  }
+  .chat-shell.chat-shell--open .chat-main {
+    display: flex !important;
+    width: 100% !important;
+  }
+  .chat-shell.chat-shell--open .chat-list {
+    display: none !important;
   }
   .sheet-body p {
     font-size: 0.8rem;
@@ -2391,6 +2284,15 @@ body.chat-page-active .shell {
     position: fixed;
     inset: 0;
     overflow: hidden;
+  }
+  body.chat-page-active .chat-shell {
+    position: fixed;
+    top: 80px;
+    bottom: 20px;
+    left: 84px;
+    right: 340px;
+    height: auto;
+    z-index: 50;
   }
 }
 
