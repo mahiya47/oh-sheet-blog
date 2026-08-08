@@ -10,7 +10,6 @@ import {
   ShieldOff,
   ChevronDown,
   Search,
-  MessageCircle,
   UserPlus,
 } from "lucide-react";
 import { useStore } from "../lib/store";
@@ -220,217 +219,210 @@ export default function ChatPage() {
   return (
     <div className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}>
       {/* ============ CHAT AREA (left) ============ */}
-      <div className="chat-page chat-main">
-        {dmUserId ? (
-          <>
+      {dmUserId && (
+        <div className="chat-page chat-main">
+          <div
+            className="chat-page-header"
+            style={{
+              backgroundImage: activeUser?.coverUrl
+                ? `linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9)), url(${activeUser.coverUrl})`
+                : "none",
+            }}
+          >
             <div
-              className="chat-page-header"
               style={{
-                backgroundImage: activeUser?.coverUrl
-                  ? `linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9)), url(${activeUser.coverUrl})`
-                  : "none",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                width: "100%",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  width: "100%",
-                }}
+              <button
+                type="button"
+                className="btn btn-ghost chat-back"
+                onClick={backToList}
+                aria-label="Back to list"
+                style={{ padding: "8px" }}
               >
+                <ArrowLeft size={18} />
+              </button>
+
+              <div style={{ position: "relative", flex: 1 }}>
                 <button
                   type="button"
-                  className="btn btn-ghost chat-back"
-                  onClick={backToList}
-                  aria-label="Back to list"
-                  style={{ padding: "8px" }}
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    color: "inherit",
+                    textAlign: "left",
+                  }}
                 >
-                  <ArrowLeft size={18} />
-                </button>
-
-                <div style={{ position: "relative", flex: 1 }}>
-                  <button
-                    type="button"
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      background: "transparent",
-                      border: "none",
-                      padding: 0,
-                      cursor: "pointer",
-                      color: "inherit",
-                      textAlign: "left",
-                    }}
-                  >
-                    <Avatar user={activeUser} size={36} />
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                      <strong
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                          textShadow: activeUser?.coverUrl
-                            ? "0 2px 4px rgba(0,0,0,0.8)"
-                            : "none",
-                        }}
-                      >
-                        {displayName(activeUser)}
-                        {activeUser?.emailVerified && (
-                          <VerifiedBadge
-                            size={14}
-                            variant={getVerifiedVariant(
-                              activeUser,
-                              activeUser?.id === CREATOR_ID,
-                            )}
-                          />
-                        )}
-                        <ChevronDown
-                          size={14}
-                          style={{ opacity: 0.6, marginLeft: 4 }}
-                        />
-                      </strong>
-                      <span
-                        className="chat-page-subtitle"
-                        style={{
-                          opacity: 0.8,
-                          textShadow: activeUser?.coverUrl
-                            ? "0 1px 3px rgba(0,0,0,0.8)"
-                            : "none",
-                        }}
-                      >
-                        Tap for options
-                      </span>
-                    </div>
-                  </button>
-
-                  {menuOpen && (
-                    <div
-                      className="more-menu"
+                  <Avatar user={activeUser} size={36} />
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <strong
                       style={{
-                        position: "absolute",
-                        top: "100%",
-                        left: 0,
-                        marginTop: 8,
-                        minWidth: 180,
-                        zIndex: 9999,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        textShadow: activeUser?.coverUrl
+                          ? "0 2px 4px rgba(0,0,0,0.8)"
+                          : "none",
                       }}
                     >
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={onVisitProfile}
-                      >
-                        <UserRound size={15} /> Visit profile
-                      </button>
-                      <button type="button" role="menuitem" onClick={onReport}>
-                        <Flag size={15} /> Report account
-                      </button>
-                      <button
-                        type="button"
-                        role="menuitem"
-                        className="danger"
-                        onClick={onBlock}
-                      >
-                        <ShieldOff size={15} /> Block user
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="chat-page-messages"
-              ref={messagesContainerRef}
-              onClick={() => setMenuOpen(false)}
-            >
-              {loading && <div className="chat-page-empty">Loading...</div>}
-
-              {!loading &&
-                (thread.length === 0 ? (
-                  <div className="chat-page-empty">
-                    No messages yet. Say hi! 👋
+                      {displayName(activeUser)}
+                      {activeUser?.emailVerified && (
+                        <VerifiedBadge
+                          size={14}
+                          variant={getVerifiedVariant(
+                            activeUser,
+                            activeUser?.id === CREATOR_ID,
+                          )}
+                        />
+                      )}
+                      <ChevronDown
+                        size={14}
+                        style={{ opacity: 0.6, marginLeft: 4 }}
+                      />
+                    </strong>
+                    <span
+                      className="chat-page-subtitle"
+                      style={{
+                        opacity: 0.8,
+                        textShadow: activeUser?.coverUrl
+                          ? "0 1px 3px rgba(0,0,0,0.8)"
+                          : "none",
+                      }}
+                    >
+                      Tap for options
+                    </span>
                   </div>
-                ) : (
-                  thread.map((msg) => {
-                    const isMe =
-                      currentUser &&
-                      Number(msg.senderId) === Number(currentUser.id);
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
-                      >
-                        <div
-                          onClick={() =>
-                            !isMe && navigate(`/profile/${msg.sender.id}`)
-                          }
-                          style={{ cursor: isMe ? "default" : "pointer" }}
-                        >
-                          <Avatar user={msg.sender} size={36} />
-                        </div>
-                        <div className="chat-page-bubble-wrap">
-                          <div className="chat-page-bubble">{msg.content}</div>
-                          <span
-                            className="chat-page-time"
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 4,
-                            }}
-                          >
-                            {timeAgo(msg.createdAt)}
-                            {isMe &&
-                              (msg.read ? (
-                                <CheckCheck size={13} color="#1d9bf0" />
-                              ) : (
-                                <Check size={13} style={{ opacity: 0.6 }} />
-                              ))}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                ))}
-              <div ref={bottomRef} />
-            </div>
-
-            {currentUser ? (
-              <form className="chat-page-input-row" onSubmit={send}>
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder={`Message ${displayName(activeUser)}...`}
-                  maxLength={1000}
-                  autoComplete="off"
-                />
-                <button
-                  type="submit"
-                  disabled={sending || !input.trim()}
-                  aria-label="Send"
-                >
-                  <Send size={18} />
                 </button>
-              </form>
-            ) : (
-              <div className="chat-page-login-prompt">
-                Log in to join the chat
+
+                {menuOpen && (
+                  <div
+                    className="more-menu"
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      marginTop: 8,
+                      minWidth: 180,
+                      zIndex: 9999,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={onVisitProfile}
+                    >
+                      <UserRound size={15} /> Visit profile
+                    </button>
+                    <button type="button" role="menuitem" onClick={onReport}>
+                      <Flag size={15} /> Report account
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="danger"
+                      onClick={onBlock}
+                    >
+                      <ShieldOff size={15} /> Block user
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </>
-        ) : (
-          <div className="chat-page-empty-state">
-            <MessageCircle size={40} style={{ opacity: 0.4 }} />
-            <p>Select a conversation to start chatting</p>
+            </div>
           </div>
-        )}
-      </div>
+
+          <div
+            className="chat-page-messages"
+            ref={messagesContainerRef}
+            onClick={() => setMenuOpen(false)}
+          >
+            {loading && <div className="chat-page-empty">Loading...</div>}
+
+            {!loading &&
+              (thread.length === 0 ? (
+                <div className="chat-page-empty">
+                  No messages yet. Say hi! 👋
+                </div>
+              ) : (
+                thread.map((msg) => {
+                  const isMe =
+                    currentUser &&
+                    Number(msg.senderId) === Number(currentUser.id);
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`chat-page-msg ${isMe ? "chat-page-msg--me" : ""}`}
+                    >
+                      <div
+                        onClick={() =>
+                          !isMe && navigate(`/profile/${msg.sender.id}`)
+                        }
+                        style={{ cursor: isMe ? "default" : "pointer" }}
+                      >
+                        <Avatar user={msg.sender} size={36} />
+                      </div>
+                      <div className="chat-page-bubble-wrap">
+                        <div className="chat-page-bubble">{msg.content}</div>
+                        <span
+                          className="chat-page-time"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                        >
+                          {timeAgo(msg.createdAt)}
+                          {isMe &&
+                            (msg.read ? (
+                              <CheckCheck size={13} color="#1d9bf0" />
+                            ) : (
+                              <Check size={13} style={{ opacity: 0.6 }} />
+                            ))}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              ))}
+            <div ref={bottomRef} />
+          </div>
+
+          {currentUser ? (
+            <form className="chat-page-input-row" onSubmit={send}>
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={`Message ${displayName(activeUser)}...`}
+                maxLength={1000}
+                autoComplete="off"
+              />
+              <button
+                type="submit"
+                disabled={sending || !input.trim()}
+                aria-label="Send"
+              >
+                <Send size={18} />
+              </button>
+            </form>
+          ) : (
+            <div className="chat-page-login-prompt">
+              Log in to join the chat
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ============ LIST (right sidebar / mobile full screen) ============ */}
-      <aside className="chat-list">
+      <aside className={`chat-list ${!dmUserId ? "chat-list--solo" : ""}`}>
         {/* Section 1: Search */}
         <div className="chat-list-search-wrap">
           <div
