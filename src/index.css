@@ -213,7 +213,7 @@ select {
   color: var(--danger-ink);
 }
 .btn-ghost {
-  background: var(--border-soft);
+  background: transparent;
   border-color: var(--border-soft);
   color: var(--text-muted);
   transition:
@@ -1721,9 +1721,9 @@ select {
 /* ---- chat messenger layout (Full Height Fixes) ---- */
 .chat-shell {
   display: flex;
-  height: auto;
-  position: sticky;
-  top: 76px; /* navbar (56px) + shell padding-top (24px) - adjust slightly if it drifts */
+  height: calc(
+    100vh - 200px
+  ); /* navbar 56px + shell padding-top 24px + shell padding-bottom 120px */
   gap: var(--space-5);
   flex: 1;
   overflow: hidden;
