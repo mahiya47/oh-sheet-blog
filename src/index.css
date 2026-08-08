@@ -1719,6 +1719,20 @@ select {
 }
 
 /* ---- chat messenger layout (Full Height Fixes) ---- */
+body.chat-page-active {
+  overflow: hidden;
+}
+
+body.chat-page-active .shell {
+  height: calc(100vh - 200px);
+  overflow: hidden;
+}
+
+body.chat-page-active .rail-right {
+  height: 100%;
+  overflow-y: auto;
+}
+
 .chat-shell {
   display: flex;
   height: calc(
