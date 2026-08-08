@@ -213,7 +213,7 @@ select {
   color: var(--danger-ink);
 }
 .btn-ghost {
-  background: transparent;
+  background: var(--border-soft);
   border-color: var(--border-soft);
   color: var(--text-muted);
   transition:
