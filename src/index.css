@@ -2197,9 +2197,10 @@ select {
   .sheet-author .handle {
     font-size: 0.7rem;
   }
-  body.chat-page-active .shell {
-    padding: 0 !important;
-    max-width: none;
+  body.chat-page-active {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
   }
 }
 
