@@ -220,42 +220,16 @@ export default function ChatPage() {
   );
 
   return (
-    <div
-      className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}
-      style={{
-        display: "flex",
-        height: "calc(100vh - 100px)", // Locked height for the wrapper
-        width: "100%",
-        gap: "16px",
-      }}
-    >
+    <div className={`chat-shell ${mobileOpen ? "chat-shell--open" : ""}`}>
       {/* ============ CHAT AREA (left) ============ */}
-      <div
-        className="chat-page chat-main"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          height: "calc(100vh - 100px)", // Hardcoded to match wrapper
-          minHeight: 0,
-          backgroundColor: "rgba(255, 255, 255, 0.04)",
-          borderRadius: "12px",
-          border: "1px solid var(--border)",
-          overflow: "hidden",
-        }}
-      >
+      <div className="chat-page chat-main">
         <div
           className="chat-page-header"
           style={{
-            flexShrink: 0,
-            padding: "16px",
-            borderBottom: "1px solid var(--border)",
-            background:
+            backgroundImage:
               !isGlobal && activeUser?.coverUrl
                 ? `linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9)), url(${activeUser.coverUrl})`
-                : "var(--bg)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
+                : "none",
           }}
         >
           <div
@@ -385,7 +359,6 @@ export default function ChatPage() {
           className="chat-page-messages"
           ref={messagesContainerRef}
           onClick={() => setMenuOpen(false)}
-          style={{ flex: 1, overflowY: "auto", padding: "16px", minHeight: 0 }}
         >
           {loading && <div className="chat-page-empty">Loading...</div>}
 
@@ -488,16 +461,7 @@ export default function ChatPage() {
         </div>
 
         {currentUser ? (
-          <form
-            className="chat-page-input-row"
-            onSubmit={send}
-            style={{
-              flexShrink: 0,
-              padding: "12px 16px",
-              borderTop: "1px solid var(--border)",
-              backgroundColor: "rgba(0, 0, 0, 0.2)",
-            }}
-          >
+          <form className="chat-page-input-row" onSubmit={send}>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -518,24 +482,13 @@ export default function ChatPage() {
             </button>
           </form>
         ) : (
-          <div className="chat-page-login-prompt" style={{ flexShrink: 0 }}>
-            Log in to join the chat
-          </div>
+          <div className="chat-page-login-prompt">Log in to join the chat</div>
         )}
       </div>
 
       {/* ============ LIST (right sidebar / mobile full screen) ============ */}
-      <aside
-        className="chat-list"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          height: "calc(100vh - 100px)", // Hardcoded to perfectly match the chat area
-          minHeight: 0,
-          overflowY: "auto",
-        }}
-      >
-        <div style={{ padding: "0 4px 12px 4px", flexShrink: 0 }}>
+      <aside className="chat-list">
+        <div className="chat-list-search-wrap">
           <div
             style={{
               position: "relative",
@@ -574,7 +527,6 @@ export default function ChatPage() {
           type="button"
           className={`chat-list-item ${isGlobal ? "chat-list-item--active" : ""}`}
           onClick={openGlobal}
-          style={{ flexShrink: 0 }}
         >
           <span className="chat-list-globe">
             <Globe size={20} />
@@ -590,7 +542,7 @@ export default function ChatPage() {
           </div>
         </button>
 
-        <div className="chat-list-divider" style={{ flexShrink: 0 }} />
+        <div className="chat-list-divider" />
 
         {filteredConversations.map((conv) => (
           <button
@@ -600,7 +552,6 @@ export default function ChatPage() {
               Number(dmUserId) === conv.user.id ? "chat-list-item--active" : ""
             }`}
             onClick={() => openThread(conv.user.id)}
-            style={{ flexShrink: 0 }}
           >
             <Avatar user={conv.user} size={40} />
             <div className="chat-list-info">
@@ -629,9 +580,7 @@ export default function ChatPage() {
 
         {filteredNewPeople.length > 0 && (
           <>
-            <div className="chat-list-label" style={{ flexShrink: 0 }}>
-              People you follow
-            </div>
+            <div className="chat-list-label">People you follow</div>
             {filteredNewPeople.map((u) => (
               <button
                 key={u.id}
@@ -640,7 +589,6 @@ export default function ChatPage() {
                   Number(dmUserId) === u.id ? "chat-list-item--active" : ""
                 }`}
                 onClick={() => openThread(u.id)}
-                style={{ flexShrink: 0 }}
               >
                 <Avatar user={u} size={40} />
                 <div className="chat-list-info">
@@ -669,7 +617,6 @@ export default function ChatPage() {
                 padding: "20px 10px",
                 color: "var(--text-muted)",
                 fontSize: "0.85rem",
-                flexShrink: 0,
               }}
             >
               No users found matching "{searchQuery}"
