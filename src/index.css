@@ -1753,7 +1753,7 @@ select {
   display: flex !important;
   flex-direction: column;
   flex: 1;
-  height: 200%;
+  height: 100%;
   min-width: 0;
   min-height: 0;
 }
