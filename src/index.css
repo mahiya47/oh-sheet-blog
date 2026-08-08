@@ -1981,46 +1981,38 @@ select {
   }
 }
 
-/* CHAT------------------------------------------------ */
 /* =========================================================================
-   CHAT PAGE — CLEAN REWRITE
-   Delete every other chat-related CSS block in your file and use only this.
+   CHAT PAGE
+   Pinned to the viewport using fixed, constant numbers only (navbar
+   height, icon-rail width, trending-sidebar width) — never depends on
+   how tall any sibling panel's content happens to be.
    ========================================================================= */
 
-/* ---- Lock the page to the viewport while chat is open ---- */
+/* -------------------------------------------------------------------------
+   1. Page lock — stop the whole page scrolling while chat is open
+   ---------------------------------------------------------------------- */
 body.chat-page-active {
   overflow: hidden;
 }
 
-body.chat-page-active .shell {
-  height: calc(
-    100dvh - 56px
-  ); /* 56px = navbar height, the only real constant */
-  min-height: 0;
-  overflow: hidden;
-  align-items: stretch; /* <-- the key fix: forces rail-left, chat, rail-right to match heights */
-  padding-top: var(--space-4);
-  padding-bottom: var(--space-4);
-}
-
-body.chat-page-active .rail-left,
-body.chat-page-active .rail-right {
-  height: 100%;
-  min-height: 0;
-  overflow-y: auto;
-  position: static; /* cancel any sticky/top offset that could break stretch sizing */
-}
-
-/* ---- Chat shell itself: no explicit height — inherits from the stretched grid row ---- */
+/* -------------------------------------------------------------------------
+   2. Outer chat shell — fixed to the viewport
+   ---------------------------------------------------------------------- */
 .chat-shell {
+  position: fixed;
+  top: 56px; /* navbar height */
+  left: 88px; /* 64px icon rail + 24px gap */
+  right: 344px; /* 320px trending sidebar + 24px gap */
+  bottom: 16px;
   display: flex;
-  height: auto;
-  min-height: 0;
   gap: var(--space-5);
-  flex: 1;
-  overflow: hidden;
+  z-index: 50;
+  background: var(--bg);
 }
 
+/* -------------------------------------------------------------------------
+   3. Left column — conversation list
+   ---------------------------------------------------------------------- */
 .chat-list {
   width: 320px;
   flex-shrink: 0;
@@ -2029,207 +2021,12 @@ body.chat-page-active .rail-right {
   padding: 8px;
   overflow-y: auto;
   height: 100%;
-  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
 .chat-list-search-wrap {
   padding: 0 4px 12px 4px;
-  flex-shrink: 0;
-}
-
-.chat-main {
-  display: flex !important;
-  flex-direction: column;
-  flex: 1;
-  height: 100%;
-  min-width: 0;
-  min-height: 0;
-}
-
-.chat-page {
-  border: 2px solid #000;
-  border-radius: 12px;
-  background: var(--bg);
-  box-shadow: 4px 4px 0 #000;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.chat-page-header {
-  padding: 1rem 1.25rem;
-  border-bottom: 2px solid #000;
-  background-color: var(--card-bg);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
-.chat-page-subtitle {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.chat-page-messages {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.chat-page-empty {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  text-align: center;
-  margin: auto;
-}
-
-.chat-page-placeholder {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-muted);
-  min-height: 0;
-}
-
-.chat-page-placeholder h3 {
-  color: var(--text);
-  font-size: 1.1rem;
-  margin-top: 4px;
-}
-
-.chat-page-placeholder p {
-  font-size: 0.85rem;
-  max-width: 320px;
-}
-
-.chat-page-rules {
-  list-style: none;
-  margin-top: 16px;
-  padding: 0;
-  text-align: left;
-  max-width: 340px;
-  font-size: 0.78rem;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.chat-page-rules li {
-  padding-left: 18px;
-  position: relative;
-}
-
-.chat-page-rules li::before {
-  content: "•";
-  position: absolute;
-  left: 4px;
-  color: var(--accent, #3eff8b);
-}
-
-.chat-page-msg {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.6rem;
-}
-
-.chat-page-msg--me {
-  flex-direction: row-reverse;
-}
-
-.chat-page-bubble-wrap {
-  display: flex;
-  flex-direction: column;
-  max-width: 65%;
-}
-
-.chat-page-msg--me .chat-page-bubble-wrap {
-  align-items: flex-end;
-}
-
-.chat-page-author {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-bottom: 3px;
-  padding-left: 2px;
-}
-
-.chat-page-bubble {
-  background: var(--card-bg);
-  border: 1.5px solid #000;
-  border-radius: 12px;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  word-break: break-word;
-}
-
-.chat-page-msg--me .chat-page-bubble {
-  background: #333;
-  color: #fff;
-}
-
-.chat-page-time {
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  margin-top: 3px;
-  padding-inline: 2px;
-}
-
-.chat-page-input-row {
-  display: flex;
-  border-top: 2px solid #000;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.chat-page-input-row input {
-  flex: 1;
-  border: none;
-  padding: 0.7rem 0.9rem;
-  font-size: 0.95rem;
-  background: var(--bg);
-  color: inherit;
-  outline: none;
-}
-
-.chat-page-input-row button {
-  padding: 0 0.9rem;
-  background: var(--card-bg);
-  color: inherit;
-  border-left: 2px solid #000;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.chat-page-input-row button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.chat-page-login-prompt {
-  border-top: 2px solid #000;
-  padding: 1rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--text-muted);
   flex-shrink: 0;
 }
 
@@ -2287,6 +2084,19 @@ body.chat-page-active .rail-right {
   padding: 2px 6px;
 }
 
+.chat-unread-badge {
+  margin-left: 6px;
+  background: var(--accent, #3eff8b);
+  color: #000;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* -------------------------------------------------------------------------
+   4. Left column — "suggested for you" rows (shown when following no one)
+   ---------------------------------------------------------------------- */
 .chat-list-suggest-item {
   display: flex;
   align-items: center;
@@ -2324,17 +2134,223 @@ body.chat-page-active .rail-right {
   cursor: pointer;
 }
 
-.chat-unread-badge {
-  margin-left: 6px;
-  background: var(--accent, #3eff8b);
-  color: #000;
-  border-radius: 10px;
-  padding: 1px 7px;
-  font-size: 0.7rem;
-  font-weight: 700;
+/* -------------------------------------------------------------------------
+   5. Right column — chat window container
+   ---------------------------------------------------------------------- */
+.chat-main {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 
-/* ---- "All following" modal ---- */
+.chat-page {
+  border: 2px solid #000;
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: 4px 4px 0 #000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* -------------------------------------------------------------------------
+   6. Chat window — header (with optional cover-photo background)
+   ---------------------------------------------------------------------- */
+.chat-page-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 2px solid #000;
+  background-color: var(--card-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.chat-page-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* back button only exists on mobile */
+.chat-back {
+  display: none;
+}
+
+/* -------------------------------------------------------------------------
+   7. Chat window — placeholder shown when no conversation is selected
+   ---------------------------------------------------------------------- */
+.chat-page-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+  min-height: 0;
+}
+
+.chat-page-placeholder h3 {
+  color: var(--text);
+  font-size: 1.1rem;
+  margin-top: 4px;
+}
+
+.chat-page-placeholder p {
+  font-size: 0.85rem;
+  max-width: 320px;
+}
+
+.chat-page-rules {
+  list-style: none;
+  margin-top: 16px;
+  padding: 0;
+  text-align: left;
+  max-width: 340px;
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-page-rules li {
+  padding-left: 18px;
+  position: relative;
+}
+
+.chat-page-rules li::before {
+  content: "•";
+  position: absolute;
+  left: 4px;
+  color: var(--accent, #3eff8b);
+}
+
+/* -------------------------------------------------------------------------
+   8. Chat window — message list
+   ---------------------------------------------------------------------- */
+.chat-page-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chat-page-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  margin: auto;
+}
+
+.chat-page-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.chat-page-msg--me {
+  flex-direction: row-reverse;
+}
+
+.chat-page-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  max-width: 65%;
+}
+
+.chat-page-msg--me .chat-page-bubble-wrap {
+  align-items: flex-end;
+}
+
+.chat-page-author {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+  padding-left: 2px;
+}
+
+.chat-page-bubble {
+  background: var(--card-bg);
+  border: 1.5px solid #000;
+  border-radius: 12px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.chat-page-msg--me .chat-page-bubble {
+  background: #333;
+  color: #fff;
+}
+
+.chat-page-time {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+  padding-inline: 2px;
+}
+
+/* -------------------------------------------------------------------------
+   9. Chat window — message input row
+   ---------------------------------------------------------------------- */
+.chat-page-input-row {
+  display: flex;
+  border-top: 2px solid #000;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.chat-page-input-row input {
+  flex: 1;
+  border: none;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  background: var(--bg);
+  color: inherit;
+  outline: none;
+}
+
+.chat-page-input-row button {
+  padding: 0 0.9rem;
+  background: var(--card-bg);
+  color: inherit;
+  border-left: 2px solid #000;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.chat-page-input-row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chat-page-login-prompt {
+  border-top: 2px solid #000;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* -------------------------------------------------------------------------
+   10. "People you follow" — full list modal
+   ---------------------------------------------------------------------- */
 .chat-allfollowing-overlay {
   position: fixed;
   inset: 0;
@@ -2373,14 +2389,18 @@ body.chat-page-active .rail-right {
   flex: 1;
 }
 
-/* back button only exists on mobile */
-.chat-back {
-  display: none;
+/* -------------------------------------------------------------------------
+   11. Tablet — no trending sidebar visible, reclaim that space
+   ---------------------------------------------------------------------- */
+@media (min-width: 769px) and (max-width: 1080px) {
+  .chat-shell {
+    right: 16px;
+  }
 }
 
-/* =========================================================================
-   MOBILE — single fullscreen view, list ↔ chat flip
-   ========================================================================= */
+/* -------------------------------------------------------------------------
+   12. Mobile — single fullscreen view, list <-> chat flip
+   ---------------------------------------------------------------------- */
 @media (max-width: 768px) {
   body.chat-page-active {
     position: fixed;
@@ -2388,21 +2408,13 @@ body.chat-page-active .rail-right {
     overflow: hidden;
   }
 
-  body.chat-page-active .shell {
-    height: 100dvh;
-    align-items: stretch;
-    padding: 0;
-  }
-
-  body.chat-page-active .rail-left {
-    display: none;
-  }
-
   .chat-shell {
-    height: 100%;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 64px; /* bottom-nav height */
     flex-direction: column;
     padding: 0;
-    background: var(--bg);
   }
 
   .chat-list-search-wrap {
@@ -2431,10 +2443,5 @@ body.chat-page-active .rail-right {
   }
   .chat-shell.chat-shell--open .chat-list {
     display: none !important;
-  }
-
-  /* leave room for bottom-nav */
-  .chat-shell {
-    padding-bottom: 64px;
   }
 }
