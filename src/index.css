@@ -2286,7 +2286,13 @@ select {
     overflow: hidden;
   }
   body.chat-page-active .chat-shell {
-    height: calc(100vh - 200px);
+    position: fixed;
+    top: 80px;
+    bottom: 20px;
+    left: 84px;
+    right: 340px;
+    height: auto;
+    z-index: 50;
   }
 }
 
