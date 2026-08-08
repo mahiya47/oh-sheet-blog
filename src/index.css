@@ -1721,9 +1721,7 @@ select {
 /* ---- chat messenger layout (Full Height Fixes) ---- */
 .chat-shell {
   display: flex;
-  height: calc(
-    100vh - 100px
-  ); /* navbar 56px + shell padding-top 24px + shell padding-bottom 120px */
+  height: 100%;
   position: sticky;
   top: 76px; /* navbar (56px) + shell padding-top (24px) - adjust slightly if it drifts */
   gap: var(--space-5);
