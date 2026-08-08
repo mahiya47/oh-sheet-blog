@@ -1721,7 +1721,9 @@ select {
 /* ---- chat messenger layout (Full Height Fixes) ---- */
 .chat-shell {
   display: flex;
-  height: calc(100vh - 120px);
+  height: calc(
+    100vh - 200px
+  ); /* navbar 56px + shell padding-top 24px + shell padding-bottom 120px */
   gap: var(--space-5);
   flex: 1;
   overflow: hidden;
@@ -2159,18 +2161,6 @@ select {
    chat
    ========================================================================= */
 
-.chat-page-empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: var(--text-muted);
-  text-align: center;
-  padding: 2rem;
-}
-
 .chat-list-more-btn {
   background: none;
   border: none;
@@ -2217,10 +2207,6 @@ select {
   background: var(--accent, #3eff8b);
   color: #000;
   cursor: pointer;
-}
-
-.chat-list {
-  min-width: 280px;
 }
 
 /* =========================================================================
@@ -2329,15 +2315,6 @@ select {
   }
   .sheet-author .handle {
     font-size: 0.7rem;
-  }
-  body.chat-page-active .chat-shell {
-    position: fixed;
-    top: 80px;
-    bottom: 20px;
-    left: 84px;
-    right: 340px;
-    height: auto;
-    z-index: 50;
   }
 }
 
