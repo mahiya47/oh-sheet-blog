@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Sheet } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useBidirectionalSticky } from "../lib/useBidirectionalSticky.js";
@@ -103,6 +103,18 @@ export default function RightSidebar() {
   const trendingTags = getTrendingTags(MAX_ITEMS);
   const railRef = useBidirectionalSticky(72, 16);
 
+  const location = useLocation();
+  const isHome = location.pathname === "/" || location.pathname === "/feed";
+  const isChat = location.pathname.startsWith("/chat");
+  const isOther = !isHome && !isChat;
+
+  // Home: everything. Chat: following + suggestions only. Everywhere else: trending + tags + footer only.
+  const showFollowingActivity = isHome || isChat;
+  const showTrending = isHome || isOther;
+  const showTags = isHome || isOther;
+  const showSuggestions = isHome || isChat;
+  const showFooter = isHome || isOther;
+
   useEffect(() => {
     if (currentUser) {
       getFollowingSidebar(MAX_ITEMS).then(setFollowing);
@@ -121,53 +133,59 @@ export default function RightSidebar() {
   return (
     <aside className="rail-right-wrapper" aria-label="Activity">
       <div className="rail-right" ref={railRef}>
-        <section className="panel">
-          <h2 className="panel-head">Following activity</h2>
-          {following.length > 0 ? (
-            following
-              .slice(0, MAX_ITEMS)
-              .map((p) => <MiniRow key={p.id} post={p} />)
-          ) : (
-            <p className="empty-note">
-              No recent posts from people you follow.
-            </p>
-          )}
-        </section>
+        {showFollowingActivity && (
+          <section className="panel">
+            <h2 className="panel-head">Following activity</h2>
+            {following.length > 0 ? (
+              following
+                .slice(0, MAX_ITEMS)
+                .map((p) => <MiniRow key={p.id} post={p} />)
+            ) : (
+              <p className="empty-note">
+                No recent posts from people you follow.
+              </p>
+            )}
+          </section>
+        )}
 
-        <section className="panel">
-          <h2 className="panel-head">Trending sheets</h2>
-          {trending.length > 0 ? (
-            trending
-              .slice(0, MAX_ITEMS)
-              .map((p) => <MiniRow key={p.id} post={p} />)
-          ) : (
-            <p className="empty-note">Nothing trending yet.</p>
-          )}
-        </section>
+        {showTrending && (
+          <section className="panel">
+            <h2 className="panel-head">Trending sheets</h2>
+            {trending.length > 0 ? (
+              trending
+                .slice(0, MAX_ITEMS)
+                .map((p) => <MiniRow key={p.id} post={p} />)
+            ) : (
+              <p className="empty-note">Nothing trending yet.</p>
+            )}
+          </section>
+        )}
 
-        <section className="panel">
-          <h2 className="panel-head">Trending tags</h2>
-          {trendingTags.length > 0 ? (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 8,
-                padding: "var(--space-4)",
-              }}
-            >
-              {trendingTags.slice(0, MAX_ITEMS).map((t) => (
-                <Link key={t.name} to={`/tag/${t.name}`} className="tag">
-                  #{t.name}
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <p className="empty-note">No tags yet.</p>
-          )}
-        </section>
+        {showTags && (
+          <section className="panel">
+            <h2 className="panel-head">Trending tags</h2>
+            {trendingTags.length > 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  padding: "var(--space-4)",
+                }}
+              >
+                {trendingTags.slice(0, MAX_ITEMS).map((t) => (
+                  <Link key={t.name} to={`/tag/${t.name}`} className="tag">
+                    #{t.name}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="empty-note">No tags yet.</p>
+            )}
+          </section>
+        )}
 
-        {visibleSuggestions.length > 0 && (
+        {showSuggestions && visibleSuggestions.length > 0 && (
           <section className="panel">
             <h2 className="panel-head">People you may know</h2>
             {visibleSuggestions.map((u, i) => (
@@ -181,18 +199,20 @@ export default function RightSidebar() {
           </section>
         )}
 
-        <section className="panel mini-footer">
-          <div className="links">
-            <Link to="/about">About</Link>
-            <Link to="/rules">Rules</Link>
-            <Link to="/privacy">Privacy</Link>
-            <Link to="/agreement">Agreement</Link>
-          </div>
-          <div className="copy">
-            <Sheet size={14} />
-            <span>© 2026 Oh Sheet! Inc.</span>
-          </div>
-        </section>
+        {showFooter && (
+          <section className="panel mini-footer">
+            <div className="links">
+              <Link to="/about">About</Link>
+              <Link to="/rules">Rules</Link>
+              <Link to="/privacy">Privacy</Link>
+              <Link to="/agreement">Agreement</Link>
+            </div>
+            <div className="copy">
+              <Sheet size={14} />
+              <span>© 2026 Oh Sheet! Inc.</span>
+            </div>
+          </section>
+        )}
       </div>
     </aside>
   );
