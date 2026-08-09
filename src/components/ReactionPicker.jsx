@@ -12,12 +12,18 @@ const REACTIONS = [
   { type: "kiss", emoji: "💋", label: "Kiss" },
 ];
 
+// How long after a real touch event we should ignore browser-emulated
+// mouse events (mouseenter/mouseleave/click), which mobile browsers fire
+// automatically ~300ms after touchend for desktop-site compatibility.
+const SYNTHETIC_MOUSE_GUARD_MS = 800;
+
 export default function ReactionPicker({ current, onPick, children }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
   const openTimerRef = useRef(null);
   const closeTimerRef = useRef(null);
   const longPressFiredRef = useRef(false);
+  const lastTouchAtRef = useRef(0);
 
   useEffect(() => {
     if (!open) return;
@@ -41,8 +47,15 @@ export default function ReactionPicker({ current, onPick, children }) {
     };
   }, []);
 
+  const recentlyTouched = () =>
+    Date.now() - lastTouchAtRef.current < SYNTHETIC_MOUSE_GUARD_MS;
+
   // Desktop: hover-and-hold to open
   const openPicker = () => {
+    // A touch interaction just happened — this "mouseenter" is very likely
+    // a browser-emulated synthetic event following the real touch, not an
+    // actual mouse hover. Ignore it so the picker doesn't reopen itself.
+    if (recentlyTouched()) return;
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     openTimerRef.current = setTimeout(() => setOpen(true), 400);
@@ -51,6 +64,7 @@ export default function ReactionPicker({ current, onPick, children }) {
   // Desktop: delayed close, so a quick cursor slip doesn't kill it.
   // Re-entering before the delay fires cancels the close entirely.
   const cancelOpen = () => {
+    if (recentlyTouched()) return;
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     closeTimerRef.current = setTimeout(() => setOpen(false), 500);
@@ -60,6 +74,7 @@ export default function ReactionPicker({ current, onPick, children }) {
   // button's normal onClick (instant react). A hold past 400ms opens
   // the picker and suppresses the click that would otherwise fire.
   const handleTouchStart = () => {
+    lastTouchAtRef.current = Date.now();
     longPressFiredRef.current = false;
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     openTimerRef.current = setTimeout(() => {
@@ -69,6 +84,7 @@ export default function ReactionPicker({ current, onPick, children }) {
   };
 
   const handleTouchEnd = (e) => {
+    lastTouchAtRef.current = Date.now();
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (longPressFiredRef.current) {
       // picker just opened via long-press — don't let the
@@ -114,6 +130,9 @@ export default function ReactionPicker({ current, onPick, children }) {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                lastTouchAtRef.current = Date.now();
+                if (openTimerRef.current) clearTimeout(openTimerRef.current);
+                if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
                 setOpen(false);
                 onPick(r.type);
               }}
