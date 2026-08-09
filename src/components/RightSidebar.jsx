@@ -113,7 +113,7 @@ export default function RightSidebar() {
   const showTrending = isHome || isOther;
   const showTags = isHome || isOther;
   const showSuggestions = isHome || isChat;
-  const showFooter = isHome || isOther;
+  const showFooter = true;
 
   useEffect(() => {
     if (currentUser) {
