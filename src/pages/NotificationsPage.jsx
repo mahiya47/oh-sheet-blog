@@ -12,7 +12,6 @@ import {
   Heart,
   MessageCircle,
   UserPlus,
-  Mail,
   BadgeCheck,
   X,
   RefreshCcw,
@@ -22,7 +21,6 @@ const ICON = {
   like: Heart,
   comment: MessageCircle,
   follow: UserPlus,
-  dm: Mail,
   reply: MessageCircle,
   verified: BadgeCheck,
   reactivated: RefreshCcw,
@@ -31,7 +29,6 @@ const TEXT = {
   like: "liked your sheet",
   comment: "commented on your sheet",
   follow: "started following you",
-  dm: "sent you a message",
   reply: "replied to your comment",
   verified: "🎉 You're verified! Enjoy your blue tick.",
   reactivated: "👋 Welcome back! Your account has been reactivated.",
@@ -88,16 +85,14 @@ export default function NotificationsPage() {
           {items.map((n) => {
             const Icon = ICON[n.type] || Bell;
             const to =
-              n.type === "dm"
-                ? `/chat?dm=${n.actor?.id}`
-                : n.type === "verified" || n.type === "reactivated"
-                  ? "/settings"
-                  : (n.type === "like" ||
-                        n.type === "comment" ||
-                        n.type === "reply") &&
-                      n.postId
-                    ? `/post/${n.postId}`
-                    : `/profile/${n.actor?.id}`;
+              n.type === "verified" || n.type === "reactivated"
+                ? "/settings"
+                : (n.type === "like" ||
+                      n.type === "comment" ||
+                      n.type === "reply") &&
+                    n.postId
+                  ? `/post/${n.postId}`
+                  : `/profile/${n.actor?.id}`;
             return (
               <Link
                 key={n.id}
