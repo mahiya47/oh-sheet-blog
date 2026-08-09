@@ -213,7 +213,7 @@ select {
   color: var(--danger-ink);
 }
 .btn-ghost {
-  background: var(--border-soft);
+  background: transparent;
   border-color: var(--border-soft);
   color: var(--text-muted);
   transition:
@@ -459,6 +459,7 @@ select {
   gap: var(--space-5);
   padding: var(--space-5) var(--space-4) 120px;
   align-items: start;
+  min-height: calc(100vh - 176px); /* navbar 56px + shell top/bottom padding */
 }
 
 .rail-left {
