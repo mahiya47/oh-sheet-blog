@@ -127,6 +127,10 @@ export default function ChatPage() {
     }
   }, [threadCount, dmUserId]);
 
+  useEffect(() => {
+    setMobileOpen(!!dmUserId);
+  }, [dmUserId]);
+
   const send = async (e) => {
     e.preventDefault();
     if (!input.trim() || sending || !dmUserId) return;
