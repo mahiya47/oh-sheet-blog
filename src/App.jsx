@@ -23,8 +23,17 @@ import OAuthCallbackPage from "./pages/OAuthCallbackPage.jsx";
 import OnboardingPage from "./pages/OnboardingPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+
+// --- ARCADE IMPORTS ---
 import ArcadeHub from "./pages/ArcadeHub";
 import ReactionGame from "./pages/ReactionGame";
+import SnakeGame from "./pages/SnakeGame.jsx";
+// import TetrisGame from "./pages/TetrisGame.jsx";
+// import FlappyBirdGame from "./pages/FlappyBirdGame.jsx";
+// import MinesweeperGame from "./pages/MinesweeperGame.jsx";
+// import SudokuGame from "./pages/SudokuGame.jsx";
+// import TicTacToeGame from "./pages/TicTacToeGame.jsx";
+// import RPSGame from "./pages/RPSGame.jsx";
 
 export default function App() {
   return (
@@ -62,14 +71,22 @@ export default function App() {
             <Route path="/about" element={<StaticPage page="about" />} />
             <Route path="/rules" element={<StaticPage page="rules" />} />
             <Route path="/privacy" element={<StaticPage page="privacy" />} />
+            {/* ARCADE ROUTES */}
             <Route path="/arcade" element={<ArcadeHub />} />
             <Route path="/arcade/reaction" element={<ReactionGame />} />
+            <Route path="/arcade/snake" element={<SnakeGame />} />{" "}
+            {/* Fixed Syntax */}
+            {/* <Route path="/arcade/tetris" element={<TetrisGame />} /> */}
+            {/* <Route path="/arcade/flappybird" element={<FlappyBirdGame />} /> */}
+            {/* <Route path="/arcade/minesweeper" element={<MinesweeperGame />} /> */}
+            {/* <Route path="/arcade/sudoku" element={<SudokuGame />} /> */}
+            {/* <Route path="/arcade/tictactoe" element={<TicTacToeGame />} /> */}
+            {/* <Route path="/arcade/rps" element={<RPSGame />} /> */}
             <Route
               path="/agreement"
               element={<StaticPage page="agreement" />}
             />
             <Route path="/admin" element={<AdminPage />} />
-
             <Route path="*" element={<NotFound />} />
           </Route>
         </Route>

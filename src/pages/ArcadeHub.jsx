@@ -10,6 +10,12 @@ export default function ArcadeHub() {
       type: "Single Player",
     },
     {
+      title: "Snake",
+      slug: "snake",
+      icon: <Grid size={32} color="#4caf50" />,
+      type: "Single Player",
+    },
+    {
       title: "Tetris",
       slug: "tetris",
       icon: <Grid size={32} color="#f44336" />,

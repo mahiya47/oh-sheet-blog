@@ -1,29 +1,31 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 
 export default function ReactionGame() {
   const navigate = useNavigate();
-  // States: waiting, ready, clicked, result
-  const [gameState, setGameState] = useState("waiting");
+  const [gameState, setGameState] = useState("waiting"); // waiting, ready, clicked, result
   const [reactionTime, setReactionTime] = useState(null);
   const [bestTime, setBestTime] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([]);
+
   const timeoutRef = useRef(null);
   const startTimeRef = useRef(0);
 
+  // Fetch leaderboard when component mounts OR when bestTime changes
   useEffect(() => {
-    // Fetch personal best on load
-    api.get("/arcade/reaction/leaderboard").then((res) => {
-      // Logic to find user's best if you return it, or just display leaderboard
-    });
+    api
+      .get("/arcade/reaction/leaderboard")
+      .then((res) => setLeaderboard(res.data))
+      .catch((err) => console.error("Failed to load leaderboard:", err));
+
     return () => clearTimeout(timeoutRef.current);
-  }, []);
+  }, [bestTime]);
 
   const startGame = () => {
     setGameState("ready");
     setReactionTime(null);
-    // Random delay between 2 and 5 seconds
     const delay = Math.floor(Math.random() * 3000) + 2000;
 
     timeoutRef.current = setTimeout(() => {
@@ -47,6 +49,7 @@ export default function ReactionGame() {
 
       if (!bestTime || timeTaken < bestTime) {
         setBestTime(timeTaken);
+        // Save new high score, which will trigger the useEffect to refresh the leaderboard
         await api.post("/arcade/reaction/score", { score: timeTaken });
       }
     }
@@ -55,9 +58,9 @@ export default function ReactionGame() {
   const getBackgroundColor = () => {
     switch (gameState) {
       case "ready":
-        return "#f44336"; // Red
+        return "#f44336";
       case "clicked":
-        return "#4caf50"; // Green
+        return "#4caf50";
       default:
         return "var(--surface, #1e1e1e)";
     }
@@ -73,6 +76,7 @@ export default function ReactionGame() {
         minHeight: "100%",
       }}
     >
+      {/* HEADER */}
       <div
         style={{
           display: "flex",
@@ -87,6 +91,7 @@ export default function ReactionGame() {
         <h1 style={{ fontSize: "1.2rem", margin: 0 }}>Reaction Tester</h1>
       </div>
 
+      {/* GAME AREA */}
       <div
         className="reaction-game-area"
         onClick={handleClick}
@@ -103,6 +108,7 @@ export default function ReactionGame() {
         )}
       </div>
 
+      {/* PERSONAL BEST */}
       {bestTime && (
         <div
           style={{
@@ -116,6 +122,91 @@ export default function ReactionGame() {
           <strong style={{ color: "var(--accent)" }}>{bestTime} ms</strong>
         </div>
       )}
+
+      {/* LEADERBOARD SECTION */}
+      <div
+        style={{
+          marginTop: "30px",
+          backgroundColor: "var(--surface)",
+          padding: "20px",
+          borderRadius: "12px",
+          border: "1px solid var(--border)",
+        }}
+      >
+        <h3
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            margin: "0 0 16px 0",
+            color: "var(--accent)",
+          }}
+        >
+          <Trophy size={20} /> Top 10 Fastest
+        </h3>
+
+        {leaderboard.length === 0 ? (
+          <p style={{ color: "var(--text-muted)", margin: 0 }}>
+            No scores yet. Be the first!
+          </p>
+        ) : (
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
+            {leaderboard.map((entry, index) => (
+              <div
+                key={entry.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingBottom: "12px",
+                  borderBottom:
+                    index !== leaderboard.length - 1
+                      ? "1px solid var(--border)"
+                      : "none",
+                }}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                >
+                  <strong style={{ width: "20px", color: "var(--text-muted)" }}>
+                    #{index + 1}
+                  </strong>
+                  {entry.user.avatarUrl ? (
+                    <img
+                      src={entry.user.avatarUrl}
+                      alt="avatar"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        backgroundColor: "#555",
+                      }}
+                    />
+                  )}
+                  <span style={{ fontWeight: "500" }}>
+                    {entry.user.name || entry.user.username}
+                  </span>
+                </div>
+
+                <strong style={{ color: "var(--accent)" }}>
+                  {entry.score} ms
+                </strong>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
