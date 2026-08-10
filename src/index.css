@@ -2445,3 +2445,188 @@ body.chat-page-active {
     display: none !important;
   }
 }
+
+/* ========================================= */
+/*          SNAKE GAME STYLES                */
+/* ========================================= */
+
+.snake-game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.snake-score-board {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.snake-score-box {
+  background-color: #1e1e1e;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #333;
+}
+
+.snake-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  background-color: #1a1a1a;
+  border: 2px solid #333;
+}
+
+#snake-game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.snake-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(18, 18, 18, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+  text-align: center;
+  transition: opacity 0.2s ease;
+}
+
+.snake-overlay h1 {
+  font-size: 3rem;
+  color: #4caf50;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.snake-overlay h2 {
+  font-size: 2.5rem;
+  color: #ff9800;
+  margin: 0;
+}
+
+.snake-controls-hint {
+  font-size: 1.1rem;
+  color: #b3b3b3;
+  line-height: 1.5;
+  max-width: 380px;
+}
+
+.snake-controls-hint strong {
+  color: #4caf50;
+}
+
+.snake-menu-btn {
+  padding: 14px 32px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #121212;
+  background-color: #4caf50;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition:
+    transform 0.1s ease,
+    background-color 0.2s ease;
+}
+
+.snake-menu-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+.snake-pause-btn {
+  background-color: #ff9800;
+  width: 180px;
+}
+
+.snake-pause-btn:hover {
+  background-color: #e68a00;
+}
+
+.snake-action-btn {
+  padding: 10px 24px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #cf6679;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.snake-action-btn:hover:not(:disabled) {
+  background-color: #b14d5e;
+}
+
+.snake-action-btn:disabled {
+  background-color: #333333;
+  color: #777777;
+  cursor: not-allowed;
+}
+
+/* ========================================= */
+/*       SNAKE MOBILE CONTROLS               */
+/* ========================================= */
+
+.snake-mobile-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.snake-controls-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.snake-dpad-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  background-color: #2a2a2a;
+  border: 2px solid #444;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  /* touch-action: manipulation stops the screen from zooming in if you tap too fast */
+  touch-action: manipulation;
+}
+
+.snake-dpad-btn:active {
+  background-color: #4caf50;
+  border-color: #4caf50;
+}
+
+/* Hide the on-screen controls on desktop */
+@media (min-width: 768px) {
+  .snake-mobile-controls {
+    display: none;
+  }
+}
