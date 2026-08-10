@@ -28,7 +28,7 @@ import ScrollToTop from "./components/ScrollToTop.jsx";
 import ArcadeHub from "./pages/ArcadeHub";
 import ReactionGame from "./pages/ReactionGame";
 import SnakeGame from "./pages/SnakeGame.jsx";
-// import TetrisGame from "./pages/TetrisGame.jsx";
+import TetrisGame from "./pages/TetrisGame.jsx";
 // import FlappyBirdGame from "./pages/FlappyBirdGame.jsx";
 // import MinesweeperGame from "./pages/MinesweeperGame.jsx";
 // import SudokuGame from "./pages/SudokuGame.jsx";
@@ -76,7 +76,7 @@ export default function App() {
             <Route path="/arcade/reaction" element={<ReactionGame />} />
             <Route path="/arcade/snake" element={<SnakeGame />} />{" "}
             {/* Fixed Syntax */}
-            {/* <Route path="/arcade/tetris" element={<TetrisGame />} /> */}
+            <Route path="/arcade/tetris" element={<TetrisGame />} />
             {/* <Route path="/arcade/flappybird" element={<FlappyBirdGame />} /> */}
             {/* <Route path="/arcade/minesweeper" element={<MinesweeperGame />} /> */}
             {/* <Route path="/arcade/sudoku" element={<SudokuGame />} /> */}
