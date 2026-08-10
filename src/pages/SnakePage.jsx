@@ -3,11 +3,10 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Gamepad2,
-  ArrowUp, // 👈 Added Directional Icons
+  ArrowUp,
   ArrowDown,
   ArrowRight,
 } from "lucide-react";
-// (We import the lucide ArrowLeft above, so we can reuse it for the Left button)
 
 const GRID_SIZE = 20;
 const CANVAS_SIZE = 600;
@@ -59,6 +58,7 @@ export default function SnakePage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -95,6 +95,8 @@ export default function SnakePage() {
     const dx = dirRef.current.x;
     const dy = dirRef.current.y;
     const snake = snakeRef.current;
+
+    if (!snake.length) return;
 
     let headX = snake[0].x + dx;
     let headY = snake[0].y + dy;
@@ -163,7 +165,11 @@ export default function SnakePage() {
     setSpeedLevel(1);
     generateFood();
     setBothGameStates("playing");
-    gameLoop();
+
+    // Defer the loop start slightly to guarantee canvas ref is mounted
+    setTimeout(() => {
+      gameLoop();
+    }, 50);
   };
 
   const togglePause = () => {
@@ -176,7 +182,6 @@ export default function SnakePage() {
     }
   };
 
-  // 👇 Handles the Mobile D-Pad clicks instantly
   const handleDirectionClick = (direction) => {
     if (gameStateRef.current !== "playing") return;
     const { x: dx, y: dy } = dirRef.current;
@@ -227,7 +232,6 @@ export default function SnakePage() {
 
     window.addEventListener("keydown", handleKeyDown, { passive: false });
 
-    // 👇 If they click away to another page, instantly stop the loop!
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       if (gameTimeoutRef.current) clearTimeout(gameTimeoutRef.current);
@@ -329,7 +333,7 @@ export default function SnakePage() {
           )}
         </div>
 
-        {/* 👇 Mobile On-Screen D-Pad Controls */}
+        {/* Mobile On-Screen D-Pad Controls */}
         <div className="snake-mobile-controls">
           <div className="snake-controls-row">
             <button
