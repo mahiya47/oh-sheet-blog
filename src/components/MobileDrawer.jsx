@@ -4,6 +4,7 @@ import {
   Users,
   Flame,
   Trophy,
+  Gamepad2, // 👈 Added Arcade icon
   Info,
   ShieldCheck,
   Scale,
@@ -72,6 +73,10 @@ export default function MobileDrawer({ open, onClose }) {
           </NavLink>
           <NavLink to="/leaderboard" className={item} onClick={onClose}>
             <Trophy size={18} /> Leaderboard
+          </NavLink>
+          {/* 👇 Added Arcade to Mobile Drawer */}
+          <NavLink to="/games" className={item} onClick={onClose}>
+            <Gamepad2 size={18} /> Arcade
           </NavLink>
 
           <div className="drawer-sep" />

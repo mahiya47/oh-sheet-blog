@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom"; // Added useLocation
 import {
   Home,
   PenLine,
@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Hash,
   Menu,
+  MessageCircle, // 👈 Added Message icon
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -19,14 +20,38 @@ import Avatar from "./Avatar.jsx";
 import VerifiedBadge from "./VerifiedBadge.jsx";
 import MobileDrawer from "./MobileDrawer.jsx";
 
+const badgeStyle = {
+  position: "absolute",
+  top: 2,
+  right: 2,
+  minWidth: 16,
+  height: 16,
+  padding: "0 4px",
+  borderRadius: 8,
+  background: "var(--danger, #ff3e3e)",
+  color: "#fff",
+  fontSize: "0.6rem",
+  fontWeight: 700,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  lineHeight: 1,
+};
+
 export default function Navbar() {
-  const { currentUser, logout, searchLive } = useStore();
+  const { currentUser, logout, searchLive, getChatUnread, getDmUnread } =
+    useStore(); // 👇 Added unread functions
   const [drawerOpen, setDrawerOpen] = useState(false);
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState(null); // { users, tags } or null
+  const [results, setResults] = useState(null);
+  const [chatUnread, setChatUnread] = useState(0); // 👇 Added state for chat badge
+
+  const isChatActive = location.pathname === "/chat";
+
   const menuRef = useRef(null);
   const searchRef = useRef(null);
   useClickAway(menuRef, () => setMenuOpen(false), menuOpen);
@@ -45,6 +70,25 @@ export default function Navbar() {
     }, 300);
     return () => clearTimeout(t);
   }, [query]);
+
+  // 👇 Poll chat unread counts (moved from LeftSidebar)
+  useEffect(() => {
+    if (!currentUser) return;
+    let active = true;
+    const load = async () => {
+      const cc = await getChatUnread();
+      const dm = await getDmUnread();
+      if (active) {
+        setChatUnread(cc + dm);
+      }
+    };
+    load();
+    const t = setInterval(load, 15000);
+    return () => {
+      active = false;
+      clearInterval(t);
+    };
+  }, [currentUser, location.pathname]);
 
   const closeSearch = () => {
     setResults(null);
@@ -67,7 +111,6 @@ export default function Navbar() {
     navigate("/login");
   };
 
-  // FIXED: Now properly checks for name before falling back to User
   const displayName = (u) =>
     u?.displayName ||
     u?.name ||
@@ -111,6 +154,19 @@ export default function Navbar() {
         >
           <PenLine size={18} />
         </NavLink>
+        {/* 👇 Added Chat Icon here! */}
+        <button
+          className={`icon-btn tip tip-down ${isChatActive ? "active" : ""}`}
+          data-tip="Chat"
+          aria-label="Chat"
+          onClick={() => navigate("/chat")}
+          style={{ position: "relative" }}
+        >
+          <MessageCircle size={18} />
+          {chatUnread > 0 && (
+            <span style={badgeStyle}>{chatUnread > 9 ? "9+" : chatUnread}</span>
+          )}
+        </button>
         <NavLink
           to="/support"
           className={({ isActive }) =>
@@ -207,7 +263,6 @@ export default function Navbar() {
             aria-expanded={menuOpen}
           >
             <Avatar user={currentUser} size={28} />
-            {/* FIXED: Now falls back to name properly */}
             <span>
               {currentUser?.displayName ||
                 currentUser?.name ||

@@ -9,7 +9,7 @@ import {
   FileText,
   Settings,
   Trophy,
-  MessageCircle,
+  Gamepad2, // 👈 Added Arcade icon
   Bell,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
@@ -37,24 +37,18 @@ const badgeStyle = {
 export default function LeftSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { getUnreadCount, getChatUnread, getDmUnread, currentUser } =
-    useStore();
+  // 👇 Removed chat unread logic from here
+  const { getUnreadCount, currentUser } = useStore();
   const [unread, setUnread] = useState(0);
-  const [chatUnread, setChatUnread] = useState(0);
 
-  const isChatActive = location.pathname === "/chat";
-
-  // poll unread counts (notifications + chat + DMs)
+  // poll unread counts (just notifications now)
   useEffect(() => {
     if (!currentUser) return;
     let active = true;
     const load = async () => {
       const c = await getUnreadCount();
-      const cc = await getChatUnread();
-      const dm = await getDmUnread();
       if (active) {
         setUnread(c);
-        setChatUnread(cc + dm);
       }
     };
     load();
@@ -104,18 +98,15 @@ export default function LeftSidebar() {
         >
           <Trophy size={18} />
         </NavLink>
-        <button
-          className={`icon-btn tip ${isChatActive ? "active" : ""}`}
-          data-tip="Chat"
-          aria-label="Chat"
-          onClick={() => navigate("/chat")}
-          style={{ position: "relative" }}
+        {/* 👇 Replaced Chat with Arcade */}
+        <NavLink
+          to="/games"
+          className={linkClass}
+          data-tip="Arcade"
+          aria-label="Arcade"
         >
-          <MessageCircle size={18} />
-          {chatUnread > 0 && (
-            <span style={badgeStyle}>{chatUnread > 9 ? "9+" : chatUnread}</span>
-          )}
-        </button>
+          <Gamepad2 size={18} />
+        </NavLink>
         <div className="rail-sep" />
         <NavLink
           to="/about"
