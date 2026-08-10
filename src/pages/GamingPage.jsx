@@ -26,7 +26,7 @@ export default function GamingPage() {
       >
         {/* Card 1: Snake Game */}
         <Link
-          to="/snake" // Ensure this matches the route you create for the actual game!
+          to="/snake"
           className="panel"
           style={{
             display: "block",
@@ -58,8 +58,12 @@ export default function GamingPage() {
               overflow: "hidden",
             }}
           >
-            {/* REPLACE THIS DIV WITH YOUR ACTUAL THUMBNAIL <img src="..." /> */}
-            <span style={{ fontSize: "3.5rem" }}>🐍</span>
+            {/* 👇 UPDATED: Added your thumbnail image tag here */}
+            <img
+              src="/snake-thumbnail.jpg"
+              alt="Snake Game"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           </div>
           <div style={{ padding: 14 }}>
             <h3
