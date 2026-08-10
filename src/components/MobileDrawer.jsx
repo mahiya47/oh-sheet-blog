@@ -73,6 +73,14 @@ export default function MobileDrawer({ open, onClose }) {
           <NavLink to="/leaderboard" className={item} onClick={onClose}>
             <Trophy size={18} /> Leaderboard
           </NavLink>
+          <NavLink
+            to="/arcade"
+            className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+            onClick={closeDrawer} // Add this if your drawer closes on click
+          >
+            <Gamepad2 size={24} />
+            <span>Arcade</span>
+          </NavLink>
 
           <div className="drawer-sep" />
 

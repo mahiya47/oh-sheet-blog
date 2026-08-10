@@ -23,6 +23,8 @@ import OAuthCallbackPage from "./pages/OAuthCallbackPage.jsx";
 import OnboardingPage from "./pages/OnboardingPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import ArcadeHub from "./pages/ArcadeHub";
+import ReactionGame from "./pages/ReactionGame";
 
 export default function App() {
   return (
@@ -60,6 +62,8 @@ export default function App() {
             <Route path="/about" element={<StaticPage page="about" />} />
             <Route path="/rules" element={<StaticPage page="rules" />} />
             <Route path="/privacy" element={<StaticPage page="privacy" />} />
+            <Route path="/arcade" element={<ArcadeHub />} />
+            <Route path="/arcade/reaction" element={<ReactionGame />} />
             <Route
               path="/agreement"
               element={<StaticPage page="agreement" />}

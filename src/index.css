@@ -2445,3 +2445,79 @@ body.chat-page-active {
     display: none !important;
   }
 }
+
+/* --- ARCADE STYLES --- */
+.arcade-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.arcade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.arcade-card {
+  background-color: var(--surface, #1e1e1e);
+  border: 1px solid var(--border, #333);
+  border-radius: 12px;
+  padding: 20px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.arcade-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent, #4caf50);
+}
+
+.arcade-card-title {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.arcade-card-type {
+  font-size: 0.75rem;
+  color: var(--text-dim, #888);
+}
+
+.reaction-game-area {
+  flex: 1;
+  min-height: 60vh; /* Ensures it takes up good space on mobile */
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none; /* Prevents text highlighting when tapping fast */
+  transition: background-color 0.1s;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+
+.reaction-game-area h1 {
+  font-size: 2.5rem;
+  margin: 0;
+}
+
+.reaction-game-area h2 {
+  font-size: 1.5rem;
+  margin: 0;
+}

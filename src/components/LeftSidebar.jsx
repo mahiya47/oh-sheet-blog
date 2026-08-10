@@ -10,6 +10,7 @@ import {
   Settings,
   Trophy,
   Bell,
+  Gamepad2,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 
@@ -36,7 +37,6 @@ const badgeStyle = {
 export default function LeftSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  // 👇 Removed chat unread logic from here
   const { getUnreadCount, currentUser } = useStore();
   const [unread, setUnread] = useState(0);
 
@@ -96,6 +96,14 @@ export default function LeftSidebar() {
           aria-label="Leaderboard"
         >
           <Trophy size={18} />
+        </NavLink>
+        <NavLink
+          to="/arcade"
+          className={linkClass}
+          data-tip="Arcade"
+          aria-label="Arcade"
+        >
+          <Gamepad2 size={18} />
         </NavLink>
         <div className="rail-sep" />
         <NavLink
