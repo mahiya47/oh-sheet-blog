@@ -165,9 +165,15 @@ export default function SnakeGame() {
 
       {/* GAME BOARD */}
       <div
-        style={{ position: "relative", maxWidth: "400px", margin: "0 auto" }}
+        style={{
+          position: "relative",
+          width: "100%",
+          maxWidth: "400px",
+          margin: "0 auto",
+          aspectRatio: "1 / 1",
+        }}
       >
-        <div className="snake-grid">
+        <div className="snake-grid" style={{ height: "100%" }}>
           {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => {
             const x = i % GRID_SIZE;
             const y = Math.floor(i / GRID_SIZE);
@@ -206,7 +212,7 @@ export default function SnakeGame() {
               backgroundColor: "rgba(0,0,0,0.6)",
             }}
           >
-            <h3>Press an arrow key to start</h3>
+            <h3 style={{ textAlign: "center" }}>Press an arrow key to start</h3>
           </div>
         )}
         {isGameOver && (
@@ -221,7 +227,9 @@ export default function SnakeGame() {
               backgroundColor: "rgba(0,0,0,0.8)",
             }}
           >
-            <h2 style={{ color: "#f44336" }}>Game Over!</h2>
+            <h2 style={{ color: "#f44336", textAlign: "center" }}>
+              Game Over!
+            </h2>
             <button
               className="btn"
               onClick={resetGame}
