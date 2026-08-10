@@ -18,9 +18,9 @@ import {
   Menu,
   Bookmark,
   Flame,
-  MessageCircle, // 👈 Added Message icon
-  UserPlus, // 👈 Added Follow icon
-  UserMinus, // 👈 Added Unfollow icon
+  MessageCircle,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -40,9 +40,8 @@ import Lightbox from "../components/Lightbox.jsx";
 import AchievementsModal from "../components/AchievementsModal.jsx";
 import ProfileSkeleton from "../components/ProfileSkeleton.jsx";
 import ReportModal from "../components/ReportModal.jsx";
-import { useClickAway } from "../lib/useClickAway.js"; // 👈 Imported your click-away hook
+import { useClickAway } from "../lib/useClickAway.js";
 
-// Custom Pinterest Icon matching Lucide sizing
 const PinterestIcon = ({ size = 18, style }) => (
   <svg
     width={size}
@@ -96,14 +95,12 @@ export default function ProfilePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
 
-  // Pinterest State
   const [pins, setPins] = useState([]);
   const [pinsLoading, setPinsLoading] = useState(false);
   const [pinsError, setPinsError] = useState(null);
 
   const isMe = currentUser?.id === targetId;
 
-  // 👈 Create refs and bind the click-away hook to our menus
   const moreMenuRef = useRef(null);
   const tabMenuRef = useRef(null);
 
@@ -131,14 +128,12 @@ export default function ProfilePage() {
     });
   }, [targetId, currentUser?.id, getProfile, getFollowInfo, getBlockStatus]);
 
-  // Fetch Saved Posts
   useEffect(() => {
     if (tab === "saved" && isMe && savedPosts.length === 0) {
       getSavedPosts().then(setSavedPosts);
     }
   }, [tab, isMe, getSavedPosts, savedPosts.length]);
 
-  // Fetch Pinterest RSS Feed
   useEffect(() => {
     if (tab === "pins" && profile?.pinterestUrl && pins.length === 0) {
       try {
@@ -341,6 +336,33 @@ export default function ProfilePage() {
 
   return (
     <>
+      {/* 👇 Added this style block to enforce the perfect mobile constraints */}
+      <style>{`
+        .profile-btn-group {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .profile-action-btn {
+          font-size: 0.75rem;
+          padding: 0 14px;
+          height: 38px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+        @media (max-width: 768px) {
+          .profile-btn-group {
+            gap: 4px !important;
+          }
+          .profile-action-btn {
+            width: 38px !important;
+            padding: 0 !important;
+          }
+        }
+      `}</style>
+
       <section className="profile">
         <div
           className="profile-cover"
@@ -369,13 +391,21 @@ export default function ProfilePage() {
             >
               <Avatar user={profile} size={104} />
             </button>
-            <div style={{ display: "flex", gap: 8 }}>
+            {/* 👇 Applied our new profile-btn-group class to the container */}
+            <div className="profile-btn-group">
               {isMe ? (
                 <Link
                   to="/settings"
                   className="btn btn-ghost"
                   aria-label="Edit profile"
-                  style={{ width: 38, height: 38, padding: 0 }}
+                  style={{
+                    width: 38,
+                    height: 38,
+                    padding: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
                   <Pencil size={15} />
                 </Link>
@@ -383,34 +413,20 @@ export default function ProfilePage() {
                 <>
                   {!blockStatus.iBlockedThem && (
                     <>
-                      {/* 👈 New Message Button */}
+                      {/* 👇 Message button is now explicitly btn-accent (green) */}
                       <Link
                         to={`/chat?dm=${profile.id}`}
-                        className="btn btn-ghost"
-                        style={{
-                          fontSize: "0.75rem",
-                          padding: "7px 14px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                        }}
+                        className="btn btn-accent profile-action-btn"
                       >
                         <MessageCircle size={15} />
                         <span className="hide-on-mobile">Message</span>
                       </Link>
 
-                      {/* 👈 Updated Follow/Unfollow Button */}
+                      {/* 👇 Follow button is btn-ghost, giving the message button the spotlight */}
                       <button
                         type="button"
-                        className={`btn ${following ? "btn-danger" : "btn-accent"}`}
+                        className={`btn ${following ? "btn-danger" : "btn-ghost"} profile-action-btn`}
                         onClick={onFollow}
-                        style={{
-                          fontSize: "0.75rem",
-                          padding: "7px 14px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                        }}
                       >
                         {following ? (
                           <UserMinus size={15} />
@@ -423,14 +439,21 @@ export default function ProfilePage() {
                       </button>
                     </>
                   )}
-                  {/* 👈 Attached the moreMenuRef here so it detects outside clicks */}
+
                   <div style={{ position: "relative" }} ref={moreMenuRef}>
                     <button
                       type="button"
                       className="btn btn-ghost"
                       onClick={() => setMenuOpen((o) => !o)}
                       aria-label="More options"
-                      style={{ width: 38, height: 38, padding: 0 }}
+                      style={{
+                        width: 38,
+                        height: 38,
+                        padding: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
                     >
                       <MoreHorizontal size={15} />
                     </button>
@@ -672,7 +695,6 @@ export default function ProfilePage() {
           )}
 
           {(profile?.pinterestUrl || hasAbout || isMe) && (
-            // 👈 Attached the tabMenuRef here as well!
             <div
               className="show-on-mobile"
               style={{ marginLeft: "auto", position: "relative" }}
