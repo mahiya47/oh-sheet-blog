@@ -6,7 +6,10 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowRight,
+  Trophy,
 } from "lucide-react";
+import api from "../api";
+import GameLeaderboardModal from "../components/GameLeaderboardModal.jsx";
 
 const GRID_SIZE = 20;
 const CANVAS_SIZE = 600;
@@ -26,6 +29,10 @@ export default function SnakePage() {
     parseInt(localStorage.getItem("snakeHighScore")) || 0,
   );
 
+  // Modal state
+  const [leaderboardScores, setLeaderboardScores] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+
   const snakeRef = useRef([]);
   const foodRef = useRef({ x: 0, y: 0 });
   const dirRef = useRef({ x: GRID_SIZE, y: 0 });
@@ -33,6 +40,20 @@ export default function SnakePage() {
   const speedRef = useRef(INITIAL_SPEED);
   const gameTimeoutRef = useRef(null);
   const gameStateRef = useRef("start");
+
+  // Fetch Top 3 Leaderboard for Modal
+  const fetchLeaderboard = async () => {
+    try {
+      const res = await api.get("/games/snake/leaderboard");
+      setLeaderboardScores(res.data || []);
+    } catch (err) {
+      console.error("Could not load leaderboard", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, []);
 
   const setBothGameStates = (newState) => {
     setGameState(newState);
@@ -85,10 +106,17 @@ export default function SnakePage() {
     }
   }, []);
 
-  const handleGameOver = useCallback(() => {
+  const handleGameOver = useCallback(async () => {
     if (gameTimeoutRef.current) clearTimeout(gameTimeoutRef.current);
     setBothGameStates("gameover");
-  }, []);
+
+    try {
+      await api.post("/games/snake/score", { score });
+      fetchLeaderboard();
+    } catch (err) {
+      console.error("Failed to sync score", err);
+    }
+  }, [score]);
 
   const update = useCallback(() => {
     dirRef.current = nextDirRef.current;
@@ -165,8 +193,6 @@ export default function SnakePage() {
     setSpeedLevel(1);
     generateFood();
     setBothGameStates("playing");
-
-    // Defer the loop start slightly to guarantee canvas ref is mounted
     setTimeout(() => {
       gameLoop();
     }, 50);
@@ -231,7 +257,6 @@ export default function SnakePage() {
     };
 
     window.addEventListener("keydown", handleKeyDown, { passive: false });
-
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       if (gameTimeoutRef.current) clearTimeout(gameTimeoutRef.current);
@@ -244,30 +269,51 @@ export default function SnakePage() {
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 12,
-          marginBottom: 16,
+          justifyContent: "space-between",
+          marginBottom: 12,
         }}
       >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => navigate(-1)}
+            style={{ padding: "8px" }}
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <h1
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: "1.2rem",
+              margin: 0,
+              textTransform: "uppercase",
+            }}
+          >
+            <Gamepad2 size={20} color="var(--accent)" /> Snake
+          </h1>
+        </div>
+
+        {/* Leaderboard Modal Trigger Button */}
         <button
           type="button"
           className="btn btn-ghost"
-          onClick={() => navigate(-1)}
-          style={{ padding: "8px" }}
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <h1
+          onClick={() => {
+            fetchLeaderboard();
+            setShowModal(true);
+          }}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            fontSize: "1.2rem",
-            margin: 0,
-            textTransform: "uppercase",
+            gap: 6,
+            fontSize: "0.75rem",
+            padding: "7px 12px",
           }}
         >
-          <Gamepad2 size={20} color="var(--accent)" /> Snake
-        </h1>
+          <Trophy size={14} color="var(--accent)" /> Leaderboard
+        </button>
       </div>
 
       <div className="snake-game-container">
@@ -295,9 +341,8 @@ export default function SnakePage() {
             <div className="snake-overlay">
               <h1>SNAKE GAME</h1>
               <p className="snake-controls-hint">
-                Control the snake using the <strong>Arrow Keys</strong> or{" "}
-                <strong>On-Screen D-Pad</strong>. Walls are safe—you will wrap
-                around them!
+                Use <strong>Arrow Keys</strong> or <strong>D-Pad</strong>. Walls
+                are safe—you wrap around!
               </p>
               <button className="snake-menu-btn" onClick={initGame}>
                 Start Game
@@ -323,7 +368,7 @@ export default function SnakePage() {
           {gameState === "gameover" && (
             <div className="snake-overlay">
               <h2>Game Over</h2>
-              <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
+              <p style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
                 Final Score: {score}
               </p>
               <button className="snake-menu-btn" onClick={initGame}>
@@ -333,7 +378,7 @@ export default function SnakePage() {
           )}
         </div>
 
-        {/* Mobile On-Screen D-Pad Controls */}
+        {/* Mobile D-Pad Controls */}
         <div className="snake-mobile-controls">
           <div className="snake-controls-row">
             <button
@@ -343,7 +388,7 @@ export default function SnakePage() {
                 handleDirectionClick("UP");
               }}
             >
-              <ArrowUp size={28} />
+              <ArrowUp size={26} />
             </button>
           </div>
           <div className="snake-controls-row">
@@ -354,7 +399,7 @@ export default function SnakePage() {
                 handleDirectionClick("LEFT");
               }}
             >
-              <ArrowLeft size={28} />
+              <ArrowLeft size={26} />
             </button>
             <button
               className="snake-dpad-btn"
@@ -363,7 +408,7 @@ export default function SnakePage() {
                 handleDirectionClick("DOWN");
               }}
             >
-              <ArrowDown size={28} />
+              <ArrowDown size={26} />
             </button>
             <button
               className="snake-dpad-btn"
@@ -372,7 +417,7 @@ export default function SnakePage() {
                 handleDirectionClick("RIGHT");
               }}
             >
-              <ArrowRight size={28} />
+              <ArrowRight size={26} />
             </button>
           </div>
         </div>
@@ -382,7 +427,7 @@ export default function SnakePage() {
             width: "100%",
             display: "flex",
             justifyContent: "center",
-            marginTop: "10px",
+            marginTop: "6px",
           }}
         >
           <button
@@ -394,6 +439,15 @@ export default function SnakePage() {
           </button>
         </footer>
       </div>
+
+      {/* Render Leaderboard Modal */}
+      {showModal && (
+        <GameLeaderboardModal
+          title="Snake"
+          scores={leaderboardScores}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 }

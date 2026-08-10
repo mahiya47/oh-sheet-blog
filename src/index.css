@@ -2481,7 +2481,7 @@ body.chat-page-active {
 .snake-canvas-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 5; /* Increased height ratio from square (1/1) to taller (4/5) */
+  aspect-ratio: 16 / 11; /* Reduced height box */
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -2584,6 +2584,46 @@ body.chat-page-active {
   background-color: #333333;
   color: #777777;
   cursor: not-allowed;
+}
+
+.snake-leaderboard-panel {
+  width: 100%;
+  background: var(--surface, #15151a);
+  border: 2px solid var(--border, #333);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+}
+
+.snake-lb-header {
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--accent, #3eff8b);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.snake-lb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.snake-lb-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.snake-lb-item:nth-child(1) {
+  color: #ffd700; /* Gold for 1st */
+  font-weight: bold;
 }
 
 /* ========================================= */
