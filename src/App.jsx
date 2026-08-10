@@ -24,10 +24,6 @@ import OnboardingPage from "./pages/OnboardingPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 
-// 👇 ADDED IMPORTS FOR YOUR NEW PAGES
-import GamingPage from "./pages/GamingPage.jsx";
-import SnakePage from "./pages/SnakePage.jsx";
-
 export default function App() {
   return (
     <>
@@ -69,10 +65,6 @@ export default function App() {
               element={<StaticPage page="agreement" />}
             />
             <Route path="/admin" element={<AdminPage />} />
-
-            {/* 👇 ADDED YOUR ARCADE ROUTES HERE */}
-            <Route path="/games" element={<GamingPage />} />
-            <Route path="/snake" element={<SnakePage />} />
 
             <Route path="*" element={<NotFound />} />
           </Route>

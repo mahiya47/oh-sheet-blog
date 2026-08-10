@@ -9,7 +9,6 @@ import {
   FileText,
   Settings,
   Trophy,
-  Gamepad2, // 👈 Added Arcade icon
   Bell,
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
@@ -97,15 +96,6 @@ export default function LeftSidebar() {
           aria-label="Leaderboard"
         >
           <Trophy size={18} />
-        </NavLink>
-        {/* 👇 Replaced Chat with Arcade */}
-        <NavLink
-          to="/games"
-          className={linkClass}
-          data-tip="Arcade"
-          aria-label="Arcade"
-        >
-          <Gamepad2 size={18} />
         </NavLink>
         <div className="rail-sep" />
         <NavLink
