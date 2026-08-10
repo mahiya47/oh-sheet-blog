@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { X, Crown } from "lucide-react";
+import { X } from "lucide-react";
 import { CREATOR_ID } from "../lib/creator.js";
 import Avatar from "./Avatar.jsx";
+import VerifiedBadge from "./VerifiedBadge.jsx";
+import { getVerifiedVariant } from "../lib/verifiedVariant.js";
 
 const REACTION_ORDER = [
   "heart",
@@ -49,7 +51,8 @@ export default function ReactionsModal({ counts = {}, users = [], onClose }) {
         role="dialog"
         aria-modal="true"
         aria-label="Reactions"
-        style={{ maxWidth: 440 }}
+        // 👇 Added position: "relative" to anchor the close button
+        style={{ maxWidth: 440, position: "relative" }}
       >
         <button
           type="button"
@@ -59,6 +62,8 @@ export default function ReactionsModal({ counts = {}, users = [], onClose }) {
             onClose();
           }}
           aria-label="Close"
+          // 👇 Forced absolute positioning so it stays perfectly in the top right corner
+          style={{ position: "absolute", top: 16, right: 16, zIndex: 10 }}
         >
           <X size={18} />
         </button>
@@ -146,10 +151,12 @@ export default function ReactionsModal({ counts = {}, users = [], onClose }) {
                     }}
                   >
                     {u.displayName || u.name}
-                    {u.id === CREATOR_ID && (
-                      <span className="creator-badge">
-                        <Crown size={10} /> Creator
-                      </span>
+                    {/* 👇 Replaced hardcoded Creator badge with VerifiedBadge */}
+                    {u.emailVerified && (
+                      <VerifiedBadge
+                        size={14}
+                        variant={getVerifiedVariant(u, u.id === CREATOR_ID)}
+                      />
                     )}
                   </span>
                   <span

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   Cake,
@@ -18,6 +18,9 @@ import {
   Menu,
   Bookmark,
   Flame,
+  MessageCircle, // 👈 Added Message icon
+  UserPlus, // 👈 Added Follow icon
+  UserMinus, // 👈 Added Unfollow icon
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -37,6 +40,7 @@ import Lightbox from "../components/Lightbox.jsx";
 import AchievementsModal from "../components/AchievementsModal.jsx";
 import ProfileSkeleton from "../components/ProfileSkeleton.jsx";
 import ReportModal from "../components/ReportModal.jsx";
+import { useClickAway } from "../lib/useClickAway.js"; // 👈 Imported your click-away hook
 
 // Custom Pinterest Icon matching Lucide sizing
 const PinterestIcon = ({ size = 18, style }) => (
@@ -98,6 +102,13 @@ export default function ProfilePage() {
   const [pinsError, setPinsError] = useState(null);
 
   const isMe = currentUser?.id === targetId;
+
+  // 👈 Create refs and bind the click-away hook to our menus
+  const moreMenuRef = useRef(null);
+  const tabMenuRef = useRef(null);
+
+  useClickAway(moreMenuRef, () => setMenuOpen(false), menuOpen);
+  useClickAway(tabMenuRef, () => setTabMenuOpen(false), tabMenuOpen);
 
   useEffect(() => {
     getFeed();
@@ -371,16 +382,49 @@ export default function ProfilePage() {
               ) : (
                 <>
                   {!blockStatus.iBlockedThem && (
-                    <button
-                      type="button"
-                      className={`btn ${following ? "btn-danger" : "btn-accent"}`}
-                      onClick={onFollow}
-                      style={{ fontSize: "0.75rem", padding: "7px 14px" }}
-                    >
-                      {following ? "Unfollow" : "Follow"}
-                    </button>
+                    <>
+                      {/* 👈 New Message Button */}
+                      <Link
+                        to={`/chat?dm=${profile.id}`}
+                        className="btn btn-ghost"
+                        style={{
+                          fontSize: "0.75rem",
+                          padding: "7px 14px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <MessageCircle size={15} />
+                        <span className="hide-on-mobile">Message</span>
+                      </Link>
+
+                      {/* 👈 Updated Follow/Unfollow Button */}
+                      <button
+                        type="button"
+                        className={`btn ${following ? "btn-danger" : "btn-accent"}`}
+                        onClick={onFollow}
+                        style={{
+                          fontSize: "0.75rem",
+                          padding: "7px 14px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        {following ? (
+                          <UserMinus size={15} />
+                        ) : (
+                          <UserPlus size={15} />
+                        )}
+                        <span className="hide-on-mobile">
+                          {following ? "Unfollow" : "Follow"}
+                        </span>
+                      </button>
+                    </>
                   )}
-                  <div style={{ position: "relative" }}>
+                  {/* 👈 Attached the moreMenuRef here so it detects outside clicks */}
+                  <div style={{ position: "relative" }} ref={moreMenuRef}>
                     <button
                       type="button"
                       className="btn btn-ghost"
@@ -427,7 +471,6 @@ export default function ProfilePage() {
           </div>
 
           <h1 className="profile-name">
-            {/* FIXED: Now falls back to name properly */}
             {profile.displayName || profile.name || profile.username || "User"}
             {profile?.emailVerified && (
               <VerifiedBadge
@@ -565,7 +608,6 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* Clean, singular Tabs Section */}
         <div className="profile-tabs">
           <button
             type="button"
@@ -589,7 +631,6 @@ export default function ProfilePage() {
             Photos ({photoPosts.length})
           </button>
 
-          {/* Desktop Tabs (Hidden on mobile) */}
           {isMe && (
             <button
               type="button"
@@ -630,11 +671,12 @@ export default function ProfilePage() {
             </button>
           )}
 
-          {/* Mobile Burger Menu (Hidden on desktop) */}
           {(profile?.pinterestUrl || hasAbout || isMe) && (
+            // 👈 Attached the tabMenuRef here as well!
             <div
               className="show-on-mobile"
               style={{ marginLeft: "auto", position: "relative" }}
+              ref={tabMenuRef}
             >
               <button
                 type="button"
@@ -653,7 +695,6 @@ export default function ProfilePage() {
                 <Menu size={18} />
               </button>
 
-              {/* The Dropdown Menu */}
               {tabMenuOpen && (
                 <div
                   className="more-menu"
