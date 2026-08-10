@@ -14,6 +14,7 @@ import {
   CornerDownRight,
   Cake,
   Heart,
+  Flame, // 👈 Imported Flame icon
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -395,6 +396,23 @@ export default function PostPage() {
                     size={14}
                     variant={getVerifiedVariant(author, isCreatorProfile)}
                   />
+                )}
+                {/* 👈 Added Streak logic here! */}
+                {author.currentStreak > 2 && (
+                  <span
+                    style={{
+                      color: "#ff8c3e",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 2,
+                      fontSize: "0.9rem",
+                      marginLeft: 8,
+                      verticalAlign: "middle",
+                    }}
+                  >
+                    <Flame size={16} fill="currentColor" />{" "}
+                    {author.currentStreak}
+                  </span>
                 )}
                 {isBirthday(author) && (
                   <Cake
