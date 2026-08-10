@@ -2445,32 +2445,31 @@ body.chat-page-active {
     display: none !important;
   }
 }
-
 /* ========================================= */
-/*          SNAKE GAME STYLES                */
+/*          SNAKE ARCADE & GAME STYLES       */
 /* ========================================= */
 
 .snake-game-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px; /* Reduced gap to move things up */
+  gap: 12px;
   width: 100%;
   max-width: 600px;
-  margin: -6px auto 0 auto; /* Pulls the board slightly upward */
+  margin: -6px auto 0 auto;
 }
 
 .snake-score-board {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  font-size: 0.85rem; /* Reduced text size */
+  font-size: 0.85rem;
   font-weight: bold;
 }
 
 .snake-score-box {
   background-color: #1e1e1e;
-  padding: 6px 10px; /* Reduced padding to make boxes smaller */
+  padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid #333;
   text-align: center;
@@ -2481,7 +2480,7 @@ body.chat-page-active {
 .snake-canvas-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 11; /* Reduced height box */
+  aspect-ratio: 16 / 11;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -2513,20 +2512,20 @@ body.chat-page-active {
 }
 
 .snake-overlay h1 {
-  font-size: 2rem; /* Decreased title size */
+  font-size: 2rem;
   color: #4caf50;
   letter-spacing: 1px;
   margin: 0;
 }
 
 .snake-overlay h2 {
-  font-size: 1.8rem; /* Decreased heading size */
+  font-size: 1.8rem;
   color: #ff9800;
   margin: 0;
 }
 
 .snake-controls-hint {
-  font-size: 0.9rem; /* Decreased hint text size */
+  font-size: 0.9rem;
   color: #b3b3b3;
   line-height: 1.4;
   max-width: 320px;
@@ -2537,7 +2536,7 @@ body.chat-page-active {
 }
 
 .snake-menu-btn {
-  padding: 10px 24px; /* Slightly more compact button */
+  padding: 10px 24px;
   font-size: 0.95rem;
   font-weight: bold;
   color: #121212;
@@ -2586,48 +2585,8 @@ body.chat-page-active {
   cursor: not-allowed;
 }
 
-.snake-leaderboard-panel {
-  width: 100%;
-  background: var(--surface, #15151a);
-  border: 2px solid var(--border, #333);
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-bottom: 6px;
-}
-
-.snake-lb-header {
-  font-size: 0.8rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  color: var(--accent, #3eff8b);
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.snake-lb-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.snake-lb-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-
-.snake-lb-item:nth-child(1) {
-  color: #ffd700; /* Gold for 1st */
-  font-weight: bold;
-}
-
 /* ========================================= */
-/*       SNAKE MOBILE CONTROLS               */
+/*       SNAKE MOBILE CONTROLS (D-PAD)       */
 /* ========================================= */
 
 .snake-mobile-controls {
@@ -2645,7 +2604,7 @@ body.chat-page-active {
 }
 
 .snake-dpad-btn {
-  width: 52px; /* Slightly tighter mobile control buttons */
+  width: 52px;
   height: 52px;
   border-radius: 10px;
   background-color: #2a2a2a;
@@ -2665,6 +2624,7 @@ body.chat-page-active {
   border-color: #4caf50;
 }
 
+/* Hide on-screen controls on desktop screens */
 @media (min-width: 768px) {
   .snake-mobile-controls {
     display: none;
