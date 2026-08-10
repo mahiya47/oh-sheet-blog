@@ -11,6 +11,7 @@ import {
   HelpCircle,
   Settings,
   LogOut,
+  Gamepad2, // 👇 Added Gamepad2 icon here
 } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
@@ -73,12 +74,9 @@ export default function MobileDrawer({ open, onClose }) {
           <NavLink to="/leaderboard" className={item} onClick={onClose}>
             <Trophy size={18} /> Leaderboard
           </NavLink>
-          <NavLink
-            to="/arcade"
-            className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
-          >
-            <Gamepad2 size={24} />
-            <span>Arcade</span>
+          {/* 👇 Fixed Arcade Link to match your drawer style exactly */}
+          <NavLink to="/arcade" className={item} onClick={onClose}>
+            <Gamepad2 size={18} /> Arcade
           </NavLink>
 
           <div className="drawer-sep" />
