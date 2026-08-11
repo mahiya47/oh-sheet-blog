@@ -2877,8 +2877,9 @@ body.chat-page-active {
   gap: 12px;
   width: 100%;
   padding: 5px;
-  /* Forces the game to fill available height between navbars */
-  height: calc(100vh - 160px);
+  height: 60vh;
+  max-height: 500px;
+  min-height: 400px;
 }
 
 /* Left Column */
