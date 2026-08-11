@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft,
   Trophy,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
+import ScoreModal from "../components/ScoreModal";
 
 const GRID_SIZE = 20;
 const INITIAL_SNAKE = [{ x: 10, y: 10 }];
@@ -26,36 +27,32 @@ export default function SnakeGame() {
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Calculate speed level (increases every 30 points)
   const speedLevel = Math.floor(score / 30) + 1;
   const currentSpeed = Math.max(50, INITIAL_SPEED - (speedLevel - 1) * 15);
 
-  // Fetch Leaderboard
   const fetchLeaderboard = useCallback(() => {
     api
       .get("/arcade/snake/leaderboard")
       .then((res) => {
         setLeaderboard(res.data);
-        // Set local high score based on leaderboard if it's higher
         if (res.data.length > 0) {
           const topScore = Math.max(...res.data.map((entry) => entry.score));
-          if (topScore > highScore) setHighScore(topScore);
+          setHighScore((prev) => Math.max(prev, topScore));
         }
       })
       .catch(console.error);
-  }, [highScore]);
+  }, []);
 
   useEffect(() => {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
 
-  // Update high score in real-time if current score beats it
   useEffect(() => {
     if (score > highScore) setHighScore(score);
   }, [score, highScore]);
 
-  // Handle Keyboard Input
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
@@ -89,7 +86,6 @@ export default function SnakeGame() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isStarted, isGameOver, isPaused]);
 
-  // Mobile Controls
   const handleMobileDir = (newDir) => {
     if (!isStarted && !isGameOver) setIsStarted(true);
     if (isPaused) setIsPaused(false);
@@ -98,7 +94,6 @@ export default function SnakeGame() {
     setDirection(newDir);
   };
 
-  // Game Loop
   useEffect(() => {
     if (!isStarted || isGameOver || isPaused) return;
 
@@ -107,7 +102,6 @@ export default function SnakeGame() {
         const head = prevSnake[0];
         const newHead = { x: head.x + direction.x, y: head.y + direction.y };
 
-        // Collision with walls
         if (
           newHead.x < 0 ||
           newHead.x >= GRID_SIZE ||
@@ -118,7 +112,6 @@ export default function SnakeGame() {
           return prevSnake;
         }
 
-        // Collision with self
         if (
           prevSnake.some(
             (segment) => segment.x === newHead.x && segment.y === newHead.y,
@@ -130,7 +123,6 @@ export default function SnakeGame() {
 
         const newSnake = [newHead, ...prevSnake];
 
-        // Eat food
         if (newHead.x === food.x && newHead.y === food.y) {
           setScore((s) => s + 10);
           setFood({
@@ -167,261 +159,155 @@ export default function SnakeGame() {
     setIsPaused(false);
   };
 
-  // UI Styles matching the screenshot
-  const statBoxStyle = {
-    backgroundColor: "#161616",
-    border: "1px solid #333",
-    padding: "8px 16px",
-    borderRadius: "8px",
-    fontWeight: "bold",
-    color: "#fff",
-    fontSize: "0.95rem",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.5)",
-  };
-
   return (
-    <div className="feed-col" style={{ padding: "20px" }}>
-      {/* HEADER WITH BACK BUTTON */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 20,
-        }}
-      >
-        <button className="btn btn-ghost" onClick={() => navigate("/arcade")}>
-          <ArrowLeft size={18} />
-        </button>
-        <h1 style={{ fontSize: "1.2rem", margin: 0 }}>Snake</h1>
-      </div>
+    <div className="snake-page-container">
+      {/* HEADER / NAVIGATION BAR */}
+      <div className="snake-header-bar">
+        <div className="snake-header-left">
+          {/* Small back icon button visible on Mobile */}
+          <button
+            className="mobile-back-btn mobile-only"
+            onClick={() => navigate("/arcade")}
+            aria-label="Back"
+          >
+            <ArrowLeft size={16} />
+          </button>
 
-      {/* TOP STATS BAR */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "15px",
-          flexWrap: "wrap",
-          marginBottom: "20px",
-        }}
-      >
-        <div style={statBoxStyle}>Score: {score}</div>
-        <div style={statBoxStyle}>Speed Level: {speedLevel}</div>
-        <div style={statBoxStyle}>High Score: {highScore}</div>
-      </div>
-
-      {/* GAME BOARD */}
-      <div
-        style={{
-          position: "relative",
-          width: "100%",
-          maxWidth: "400px",
-          margin: "0 auto",
-          aspectRatio: "1 / 1",
-          backgroundColor: "#1a1a1a", // Dark grey background
-          borderRadius: "12px",
-          padding: "8px",
-          boxShadow: "inset 0 0 10px rgba(0,0,0,0.8)",
-        }}
-      >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
-            gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
-            height: "100%",
-            gap: "2px", // Creates the distinct separated squares effect
-          }}
-        >
-          {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => {
-            const x = i % GRID_SIZE;
-            const y = Math.floor(i / GRID_SIZE);
-            const isSnake = snake.some((s) => s.x === x && s.y === y);
-            const isFood = food.x === x && food.y === y;
-
-            let bgColor = "transparent";
-            let shadow = "none";
-
-            if (isSnake) {
-              bgColor = "#81c784"; // Lighter green for the snake
-            } else if (isFood) {
-              bgColor = "#e57373"; // Redish food
-              shadow = "0 0 8px #e57373"; // Subtle glow
-            }
-
-            return (
-              <div
-                key={i}
-                style={{
-                  backgroundColor: bgColor,
-                  borderRadius: "2px",
-                  boxShadow: shadow,
-                }}
-              />
-            );
-          })}
+          {/* Combined Top Stats Bar */}
+          <div className="snake-stats-bar">
+            <div className="snake-stat-box">Score: {score}</div>
+            <div className="snake-stat-box">Speed: Lvl {speedLevel}</div>
+            <div className="snake-stat-box">High: {highScore}</div>
+          </div>
         </div>
 
-        {/* OVERLAYS */}
-        {!isStarted && !isGameOver && (
+        {/* Top Scores Button */}
+        <button
+          className="snake-btn-trophy"
+          onClick={() => setIsModalOpen(true)}
+        >
+          <Trophy size={16} />
+          <span className="desktop-only">Top 10 Scores</span>
+        </button>
+      </div>
+
+      {/* MAIN GAME LAYOUT */}
+      <div className="snake-main-layout">
+        {/* GAME BOARD */}
+        <div className="snake-board-wrapper">
           <div
+            className="snake-grid-container"
             style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(0,0,0,0.6)",
-              borderRadius: "12px",
+              gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
+              gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
             }}
           >
-            <h3 style={{ textAlign: "center" }}>Press an arrow key to start</h3>
+            {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => {
+              const x = i % GRID_SIZE;
+              const y = Math.floor(i / GRID_SIZE);
+              const isSnake = snake.some((s) => s.x === x && s.y === y);
+              const isFood = food.x === x && food.y === y;
+
+              let bgColor = "transparent";
+              let shadow = "none";
+
+              if (isSnake) {
+                bgColor = "#81c784";
+              } else if (isFood) {
+                bgColor = "#e57373";
+                shadow = "0 0 8px #e57373";
+              }
+
+              return (
+                <div
+                  key={i}
+                  style={{
+                    backgroundColor: bgColor,
+                    borderRadius: "2px",
+                    boxShadow: shadow,
+                  }}
+                />
+              );
+            })}
           </div>
-        )}
-        {isPaused && !isGameOver && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(0,0,0,0.6)",
-              borderRadius: "12px",
-            }}
+
+          {/* OVERLAYS */}
+          {!isStarted && !isGameOver && (
+            <div className="snake-overlay">
+              <h3 style={{ textAlign: "center" }}>
+                Press an arrow key / D-Pad to start
+              </h3>
+            </div>
+          )}
+          {isPaused && !isGameOver && (
+            <div className="snake-overlay">
+              <h2 style={{ textAlign: "center", letterSpacing: "2px" }}>
+                PAUSED
+              </h2>
+            </div>
+          )}
+          {isGameOver && (
+            <div className="snake-overlay">
+              <h2 style={{ color: "#e57373", textAlign: "center" }}>
+                Game Over!
+              </h2>
+              <button
+                className="btn"
+                onClick={resetGame}
+                style={{ marginTop: 10 }}
+              >
+                Play Again
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* CONTROLS (Positioned on the side for desktop) */}
+        <div className="snake-side-controls">
+          <button
+            className="snake-btn-pause"
+            onClick={() => setIsPaused(!isPaused)}
+            disabled={!isStarted || isGameOver}
           >
-            <h2 style={{ textAlign: "center", letterSpacing: "2px" }}>
-              PAUSED
-            </h2>
-          </div>
-        )}
-        {isGameOver && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(0,0,0,0.8)",
-              borderRadius: "12px",
-            }}
-          >
-            <h2 style={{ color: "#e57373", textAlign: "center" }}>
-              Game Over!
-            </h2>
+            {isPaused ? "Resume" : "Pause"}
+          </button>
+
+          {/* D-PAD CONTROLS */}
+          <div className="d-pad">
             <button
-              className="btn"
-              onClick={resetGame}
-              style={{ marginTop: 10 }}
+              className="d-pad-btn d-up"
+              onClick={() => handleMobileDir({ x: 0, y: -1 })}
             >
-              Play Again
+              <ArrowUp />
+            </button>
+            <button
+              className="d-pad-btn d-left"
+              onClick={() => handleMobileDir({ x: -1, y: 0 })}
+            >
+              <ArrowLeftIcon />
+            </button>
+            <button
+              className="d-pad-btn d-right"
+              onClick={() => handleMobileDir({ x: 1, y: 0 })}
+            >
+              <ArrowRight />
+            </button>
+            <button
+              className="d-pad-btn d-down"
+              onClick={() => handleMobileDir({ x: 0, y: 1 })}
+            >
+              <ArrowDown />
             </button>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* PAUSE BUTTON */}
-      <div
-        style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
-      >
-        <button
-          style={{
-            backgroundColor: "#d87093", // Pinkish button color
-            color: "white",
-            border: "none",
-            padding: "10px 24px",
-            borderRadius: "24px",
-            fontWeight: "bold",
-            fontSize: "1rem",
-            cursor: "pointer",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-            opacity: !isStarted || isGameOver ? 0.5 : 1,
-          }}
-          onClick={() => setIsPaused(!isPaused)}
-          disabled={!isStarted || isGameOver}
-        >
-          {isPaused ? "Resume Game" : "Pause Game"}
-        </button>
-      </div>
-
-      {/* MOBILE D-PAD */}
-      <div className="d-pad" style={{ marginTop: "30px" }}>
-        <button
-          className="d-pad-btn d-up"
-          onClick={() => handleMobileDir({ x: 0, y: -1 })}
-        >
-          <ArrowUp />
-        </button>
-        <button
-          className="d-pad-btn d-left"
-          onClick={() => handleMobileDir({ x: -1, y: 0 })}
-        >
-          <ArrowLeftIcon />
-        </button>
-        <button
-          className="d-pad-btn d-right"
-          onClick={() => handleMobileDir({ x: 1, y: 0 })}
-        >
-          <ArrowRight />
-        </button>
-        <button
-          className="d-pad-btn d-down"
-          onClick={() => handleMobileDir({ x: 0, y: 1 })}
-        >
-          <ArrowDown />
-        </button>
-      </div>
-
-      {/* LEADERBOARD */}
-      <div
-        style={{
-          marginTop: "40px",
-          backgroundColor: "var(--surface)",
-          padding: "20px",
-          borderRadius: "12px",
-        }}
-      >
-        <h3
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            margin: "0 0 16px 0",
-            color: "var(--accent)",
-          }}
-        >
-          <Trophy size={20} /> Top 10 Snakes
-        </h3>
-        {leaderboard.length === 0 ? (
-          <p>No scores yet.</p>
-        ) : (
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-          >
-            {leaderboard.map((entry, index) => (
-              <div
-                key={entry.id}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  borderBottom: "1px solid var(--border)",
-                  paddingBottom: "8px",
-                }}
-              >
-                <span>
-                  #{index + 1} {entry.user.username}
-                </span>
-                <strong style={{ color: "var(--accent)" }}>
-                  {entry.score} pts
-                </strong>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* MODAL COMPONENT FOR SCORES */}
+      <ScoreModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        leaderboard={leaderboard}
+      />
     </div>
   );
 }
