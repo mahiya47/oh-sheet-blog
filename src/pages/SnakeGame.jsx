@@ -19,30 +19,49 @@ export default function SnakeGame() {
   const navigate = useNavigate();
   const [snake, setSnake] = useState(INITIAL_SNAKE);
   const [food, setFood] = useState(INITIAL_FOOD);
-  const [direction, setDirection] = useState({ x: 0, y: -1 }); // Moving up initially
+  const [direction, setDirection] = useState({ x: 0, y: -1 });
   const [isGameOver, setIsGameOver] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
+
+  // Calculate speed level (increases every 30 points)
+  const speedLevel = Math.floor(score / 30) + 1;
+  const currentSpeed = Math.max(50, INITIAL_SPEED - (speedLevel - 1) * 15);
 
   // Fetch Leaderboard
   const fetchLeaderboard = useCallback(() => {
     api
       .get("/arcade/snake/leaderboard")
-      .then((res) => setLeaderboard(res.data))
+      .then((res) => {
+        setLeaderboard(res.data);
+        // Set local high score based on leaderboard if it's higher
+        if (res.data.length > 0) {
+          const topScore = Math.max(...res.data.map((entry) => entry.score));
+          if (topScore > highScore) setHighScore(topScore);
+        }
+      })
       .catch(console.error);
-  }, []);
+  }, [highScore]);
 
   useEffect(() => {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
 
+  // Update high score in real-time if current score beats it
+  useEffect(() => {
+    if (score > highScore) setHighScore(score);
+  }, [score, highScore]);
+
   // Handle Keyboard Input
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
-        e.preventDefault(); // Stop screen from scrolling
+        e.preventDefault();
         if (!isStarted && !isGameOver) setIsStarted(true);
+        if (isPaused) setIsPaused(false);
       }
 
       switch (e.key) {
@@ -58,25 +77,30 @@ export default function SnakeGame() {
         case "ArrowRight":
           setDirection((prev) => (prev.x === -1 ? prev : { x: 1, y: 0 }));
           break;
+        case "p":
+        case "Escape":
+          setIsPaused((prev) => !prev);
+          break;
         default:
           break;
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isStarted, isGameOver]);
+  }, [isStarted, isGameOver, isPaused]);
 
   // Mobile Controls
   const handleMobileDir = (newDir) => {
     if (!isStarted && !isGameOver) setIsStarted(true);
-    if (newDir.x !== 0 && direction.x !== 0) return; // Prevent reversing
-    if (newDir.y !== 0 && direction.y !== 0) return; // Prevent reversing
+    if (isPaused) setIsPaused(false);
+    if (newDir.x !== 0 && direction.x !== 0) return;
+    if (newDir.y !== 0 && direction.y !== 0) return;
     setDirection(newDir);
   };
 
   // Game Loop
   useEffect(() => {
-    if (!isStarted || isGameOver) return;
+    if (!isStarted || isGameOver || isPaused) return;
 
     const moveSnake = () => {
       setSnake((prevSnake) => {
@@ -114,16 +138,16 @@ export default function SnakeGame() {
             y: Math.floor(Math.random() * GRID_SIZE),
           });
         } else {
-          newSnake.pop(); // Remove tail if no food eaten
+          newSnake.pop();
         }
 
         return newSnake;
       });
     };
 
-    const interval = setInterval(moveSnake, INITIAL_SPEED);
+    const interval = setInterval(moveSnake, currentSpeed);
     return () => clearInterval(interval);
-  }, [isStarted, isGameOver, direction, food]);
+  }, [isStarted, isGameOver, isPaused, direction, food, currentSpeed]);
 
   const handleGameOver = async () => {
     setIsGameOver(true);
@@ -140,27 +164,51 @@ export default function SnakeGame() {
     setScore(0);
     setIsGameOver(false);
     setIsStarted(false);
+    setIsPaused(false);
+  };
+
+  // UI Styles matching the screenshot
+  const statBoxStyle = {
+    backgroundColor: "#161616",
+    border: "1px solid #333",
+    padding: "8px 16px",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    color: "#fff",
+    fontSize: "0.95rem",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.5)",
   };
 
   return (
     <div className="feed-col" style={{ padding: "20px" }}>
+      {/* HEADER WITH BACK BUTTON */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          gap: 12,
           marginBottom: 20,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button className="btn btn-ghost" onClick={() => navigate("/arcade")}>
-            <ArrowLeft size={18} />
-          </button>
-          <h1 style={{ fontSize: "1.2rem", margin: 0 }}>Snake</h1>
-        </div>
-        <strong style={{ color: "var(--accent)", fontSize: "1.2rem" }}>
-          Score: {score}
-        </strong>
+        <button className="btn btn-ghost" onClick={() => navigate("/arcade")}>
+          <ArrowLeft size={18} />
+        </button>
+        <h1 style={{ fontSize: "1.2rem", margin: 0 }}>Snake</h1>
+      </div>
+
+      {/* TOP STATS BAR */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "15px",
+          flexWrap: "wrap",
+          marginBottom: "20px",
+        }}
+      >
+        <div style={statBoxStyle}>Score: {score}</div>
+        <div style={statBoxStyle}>Speed Level: {speedLevel}</div>
+        <div style={statBoxStyle}>High Score: {highScore}</div>
       </div>
 
       {/* GAME BOARD */}
@@ -171,29 +219,44 @@ export default function SnakeGame() {
           maxWidth: "400px",
           margin: "0 auto",
           aspectRatio: "1 / 1",
+          backgroundColor: "#1a1a1a", // Dark grey background
+          borderRadius: "12px",
+          padding: "8px",
+          boxShadow: "inset 0 0 10px rgba(0,0,0,0.8)",
         }}
       >
-        <div className="snake-grid" style={{ height: "100%" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
+            gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
+            height: "100%",
+            gap: "2px", // Creates the distinct separated squares effect
+          }}
+        >
           {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => {
             const x = i % GRID_SIZE;
             const y = Math.floor(i / GRID_SIZE);
             const isSnake = snake.some((s) => s.x === x && s.y === y);
-            const isHead = snake[0].x === x && snake[0].y === y;
             const isFood = food.x === x && food.y === y;
+
+            let bgColor = "transparent";
+            let shadow = "none";
+
+            if (isSnake) {
+              bgColor = "#81c784"; // Lighter green for the snake
+            } else if (isFood) {
+              bgColor = "#e57373"; // Redish food
+              shadow = "0 0 8px #e57373"; // Subtle glow
+            }
 
             return (
               <div
                 key={i}
-                className="snake-cell"
                 style={{
-                  backgroundColor: isHead
-                    ? "#4caf50"
-                    : isSnake
-                      ? "#388e3c"
-                      : isFood
-                        ? "#f44336"
-                        : "transparent",
-                  borderRadius: isFood ? "50%" : "2px",
+                  backgroundColor: bgColor,
+                  borderRadius: "2px",
+                  boxShadow: shadow,
                 }}
               />
             );
@@ -210,9 +273,27 @@ export default function SnakeGame() {
               alignItems: "center",
               justifyContent: "center",
               backgroundColor: "rgba(0,0,0,0.6)",
+              borderRadius: "12px",
             }}
           >
             <h3 style={{ textAlign: "center" }}>Press an arrow key to start</h3>
+          </div>
+        )}
+        {isPaused && !isGameOver && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,0.6)",
+              borderRadius: "12px",
+            }}
+          >
+            <h2 style={{ textAlign: "center", letterSpacing: "2px" }}>
+              PAUSED
+            </h2>
           </div>
         )}
         {isGameOver && (
@@ -225,9 +306,10 @@ export default function SnakeGame() {
               alignItems: "center",
               justifyContent: "center",
               backgroundColor: "rgba(0,0,0,0.8)",
+              borderRadius: "12px",
             }}
           >
-            <h2 style={{ color: "#f44336", textAlign: "center" }}>
+            <h2 style={{ color: "#e57373", textAlign: "center" }}>
               Game Over!
             </h2>
             <button
@@ -241,8 +323,32 @@ export default function SnakeGame() {
         )}
       </div>
 
+      {/* PAUSE BUTTON */}
+      <div
+        style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
+      >
+        <button
+          style={{
+            backgroundColor: "#d87093", // Pinkish button color
+            color: "white",
+            border: "none",
+            padding: "10px 24px",
+            borderRadius: "24px",
+            fontWeight: "bold",
+            fontSize: "1rem",
+            cursor: "pointer",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+            opacity: !isStarted || isGameOver ? 0.5 : 1,
+          }}
+          onClick={() => setIsPaused(!isPaused)}
+          disabled={!isStarted || isGameOver}
+        >
+          {isPaused ? "Resume Game" : "Pause Game"}
+        </button>
+      </div>
+
       {/* MOBILE D-PAD */}
-      <div className="d-pad">
+      <div className="d-pad" style={{ marginTop: "30px" }}>
         <button
           className="d-pad-btn d-up"
           onClick={() => handleMobileDir({ x: 0, y: -1 })}
@@ -272,7 +378,7 @@ export default function SnakeGame() {
       {/* LEADERBOARD */}
       <div
         style={{
-          marginTop: "30px",
+          marginTop: "40px",
           backgroundColor: "var(--surface)",
           padding: "20px",
           borderRadius: "12px",
