@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useStore } from "../lib/store.jsx";
 import ScoreModal from "../components/ScoreModal";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 // Classic 10x20 Grid works perfectly with the new mobile layout!
 const COLS = 10;
@@ -97,6 +98,7 @@ export default function TetrisGame() {
   const [highScore, setHighScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const scoreRef = useRef(0);
   // --- FETCH HIGH SCORE ON LOAD ---
   const fetchHighScore = useCallback(() => {
     api
@@ -200,6 +202,7 @@ export default function TetrisGame() {
 
       if (linesCleared > 0) {
         setScore((prev) => prev + linesCleared * 100);
+        scoreRef.current += linesCleared * 100;
         setLines((prev) => prev + linesCleared);
       }
       return finalBoard;
@@ -270,6 +273,7 @@ export default function TetrisGame() {
     setCurrentPiece(getRandomPiece());
     setScore(0);
     setLines(0);
+    scoreRef.current = 0;
     setIsGameOver(false);
     setIsStarted(true);
     setIsPaused(false);
@@ -278,9 +282,9 @@ export default function TetrisGame() {
   const handleGameOver = async () => {
     setIsGameOver(true);
     setIsStarted(false);
-    if (score > 0) {
+    if (scoreRef.current > 0) {
       try {
-        await api.post("/arcade/tetris/score", { score });
+        await api.post("/arcade/tetris/score", { score: scoreRef.current });
         fetchHighScore();
       } catch (err) {
         console.error(err);
