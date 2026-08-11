@@ -87,16 +87,25 @@ export default function ReactionGame() {
     }
   };
 
-  const getBackgroundColor = () => {
-    switch (gameState) {
-      case "ready":
-        return "#f44336";
-      case "clicked":
-        return "#4caf50";
-      default:
-        return "var(--arcade-surface-2, #1a1a1a)";
+  // --- F1 LIGHT RIG STYLES ---
+  const getLightStyles = () => {
+    let color = "#222222"; // Off (Dim Grey)
+    let glow = "inset 0 5px 10px rgba(0,0,0,0.8)";
+
+    if (gameState === "ready") {
+      color = "#f44336"; // Red
+      glow =
+        "0 0 25px rgba(244, 67, 54, 0.8), inset 0 0 10px rgba(255,255,255,0.4)";
+    } else if (gameState === "clicked") {
+      color = "#4caf50"; // Green
+      glow =
+        "0 0 25px rgba(76, 175, 80, 0.8), inset 0 0 10px rgba(255,255,255,0.4)";
     }
+
+    return { color, glow };
   };
+
+  const { color, glow } = getLightStyles();
 
   return (
     <div style={{ padding: "0" }}>
@@ -123,12 +132,12 @@ export default function ReactionGame() {
       </div>
 
       <div className="snake-wireframe-container">
-        {/* LEFT/MAIN: Reaction Click Area (Replaces the canvas board) */}
+        {/* LEFT/MAIN: Reaction Click Area */}
         <div
           className="snake-wireframe-board"
           onClick={handleClick}
           style={{
-            backgroundColor: getBackgroundColor(),
+            backgroundColor: "var(--arcade-surface-2, #1a1a1a)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -137,27 +146,88 @@ export default function ReactionGame() {
             userSelect: "none",
             textAlign: "center",
             padding: "20px",
+            gap: "30px",
           }}
         >
-          {gameState === "waiting" && (
-            <h2 style={{ color: "#fff" }}>Tap / Click to Start</h2>
-          )}
-          {gameState === "ready" && (
-            <h2 style={{ color: "#fff" }}>Wait for Green...</h2>
-          )}
-          {gameState === "clicked" && (
-            <h1 style={{ color: "#000", fontSize: "2.5rem" }}>TAP NOW!</h1>
-          )}
-          {gameState === "result" && (
-            <>
-              <h2 style={{ color: "var(--arcade-green)", fontSize: "2rem" }}>
-                {reactionTime} ms
+          {/* --- THE F1 LIGHT RIG --- */}
+          <div
+            style={{
+              display: "flex",
+              gap: "clamp(10px, 3vw, 20px)",
+              backgroundColor: "#0a0a0a",
+              padding: "clamp(15px, 3vw, 25px)",
+              borderRadius: "50px",
+              border: "3px solid #333",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.6)",
+            }}
+          >
+            {[1, 2, 3].map((lightIndex) => (
+              <div
+                key={lightIndex}
+                style={{
+                  width: "clamp(50px, 15vw, 80px)",
+                  height: "clamp(50px, 15vw, 80px)",
+                  borderRadius: "50%",
+                  backgroundColor: color,
+                  boxShadow: glow,
+                  border: "2px solid #000",
+                  transition: "background-color 0.1s, box-shadow 0.1s",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* --- INSTRUCTIONS / RESULTS --- */}
+          <div
+            style={{
+              height: "80px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            {gameState === "waiting" && (
+              <h2 style={{ color: "var(--arcade-text-dim)", margin: 0 }}>
+                Tap screen to Start
               </h2>
-              <p style={{ color: "var(--arcade-text-dim)", marginTop: "10px" }}>
-                Click to try again
-              </p>
-            </>
-          )}
+            )}
+            {gameState === "ready" && (
+              <h2 style={{ color: "#fff", margin: 0 }}>Wait for Green...</h2>
+            )}
+            {gameState === "clicked" && (
+              <h1
+                style={{
+                  color: "var(--arcade-green)",
+                  fontSize: "2.5rem",
+                  margin: 0,
+                  textShadow: "0 0 10px rgba(76, 175, 80, 0.5)",
+                }}
+              >
+                TAP NOW!
+              </h1>
+            )}
+            {gameState === "result" && (
+              <>
+                <h2
+                  style={{
+                    color: "var(--arcade-green)",
+                    fontSize: "2.5rem",
+                    margin: 0,
+                  }}
+                >
+                  {reactionTime} ms
+                </h2>
+                <p
+                  style={{
+                    color: "var(--arcade-text-dim)",
+                    margin: "5px 0 0 0",
+                  }}
+                >
+                  Tap screen to try again
+                </p>
+              </>
+            )}
+          </div>
         </div>
 
         {/* RIGHT/MIDDLE: Stats & Controls (Desktop) */}
@@ -185,7 +255,10 @@ export default function ReactionGame() {
           >
             <button
               className="snake-action-btn"
-              onClick={startGame}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevents double-firing if clicked inside wrapper
+                startGame();
+              }}
               style={{ backgroundColor: "var(--arcade-green)", color: "#000" }}
             >
               Start Test
@@ -198,7 +271,10 @@ export default function ReactionGame() {
           <div className="arcade-mobile-actions" style={{ width: "100%" }}>
             <button
               className="snake-action-btn"
-              onClick={startGame}
+              onClick={(e) => {
+                e.stopPropagation();
+                startGame();
+              }}
               style={{
                 backgroundColor: "var(--arcade-green)",
                 color: "#000",
