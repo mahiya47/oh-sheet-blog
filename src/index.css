@@ -2447,10 +2447,7 @@ body.chat-page-active {
 }
 
 /* =========================================================================
-   ARCADE — full stylesheet (Snake, Tetris, Reaction, Hub, Modal)
-   Reskinned to match the standalone vanilla-JS Snake game reference:
-   dark rounded cards, pill buttons, soft shadows, green/orange accents.
-   Replace your ENTIRE existing arcade CSS block with this file.
+   ARCADE & SNAKE GAME - UNIFIED CSS (Desktop & Mobile)
    ========================================================================= */
 
 :root {
@@ -2459,224 +2456,161 @@ body.chat-page-active {
   --arcade-orange: #ff9800;
   --arcade-orange-hover: #e68a00;
   --arcade-red: #cf6679;
-  --arcade-red-hover: #b14d5e;
   --arcade-bg: #121212;
   --arcade-surface: #1e1e1e;
   --arcade-surface-2: #1a1a1a;
   --arcade-border: #333333;
   --arcade-text-dim: #b3b3b3;
-  --arcade-text-faint: #777777;
 }
 
-/* ---- Page shell ---- */
+/* ---- Page Container ---- */
 .snake-page-container {
-  padding: 20px;
+  padding: 10px 20px 20px 20px; /* Reduced top padding to sit closer to navbar */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
   width: 100%;
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
-/* ---- Header bar: stat pills + trophy button ---- */
-.snake-header-bar {
+/* ---- Desktop Layout ---- */
+.snake-desktop-layout {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  max-width: 600px;
-  flex-wrap: wrap;
-}
-
-.snake-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.snake-stats-bar {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.snake-stat-box {
-  background-color: var(--arcade-surface);
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--arcade-border);
-  font-size: 1rem;
-  font-weight: bold;
-  color: #fff;
-}
-
-.snake-stat-box span {
-  color: var(--arcade-green);
-}
-
-.snake-btn-trophy {
-  background-color: var(--arcade-surface);
-  border: 1px solid var(--arcade-border);
-  color: var(--arcade-orange);
-  padding: 10px 18px;
-  border-radius: 25px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: bold;
-  font-size: 0.9rem;
-  transition:
-    transform 0.1s ease,
-    background-color 0.2s ease;
-}
-
-.snake-btn-trophy:hover {
-  background-color: #262626;
-  transform: scale(1.03);
-}
-
-/* ---- Main layout: board + side controls ---- */
-.snake-main-layout {
-  display: flex;
-  gap: 24px;
+  gap: 30px;
   align-items: flex-start;
   justify-content: center;
   width: 100%;
 }
 
+.snake-game-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex: 1;
+  max-width: 700px; /* Increased game box size */
+  width: 100%;
+}
+
+.snake-controls-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 260px;
+  flex-shrink: 0;
+  padding-top: 55px; /* Aligns controls with the game box below stats */
+}
+
+/* ---- Desktop Stats ---- */
+.snake-stats-desktop {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.snake-stat-box {
+  background-color: var(--arcade-surface);
+  padding: 8px 24px;
+  border-radius: 6px;
+  border: 1px solid var(--arcade-border);
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.snake-stat-box span {
+  color: var(--arcade-green);
+}
+
+/* ---- Game Board ---- */
 .snake-board-wrapper {
   position: relative;
   width: 100%;
-  max-width: 600px;
   aspect-ratio: 1 / 1;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   background-color: var(--arcade-surface-2);
   border: 2px solid var(--arcade-border);
-  flex-shrink: 0;
 }
-
 .snake-board-wrapper canvas {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-/* ---- Overlays (start / pause / game over) ---- */
-.snake-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(18, 18, 18, 0.88);
+/* ---- Right Side Controls ---- */
+.snake-btn-trophy-large {
+  background-color: var(--arcade-surface);
+  border: 1px solid var(--arcade-border);
+  color: var(--arcade-orange);
+  height: 120px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 20px;
-  padding: 30px;
-  text-align: center;
-}
-
-.snake-overlay h1 {
-  font-size: 2.4rem;
-  color: var(--arcade-green);
-  letter-spacing: 2px;
-  margin: 0;
-}
-
-.snake-overlay h2 {
-  font-size: 2rem;
-  color: var(--arcade-orange);
-  margin: 0;
-}
-
-.snake-overlay h3 {
-  font-size: 1.3rem;
-  color: #fff;
-  margin: 0;
-  font-weight: 700;
-}
-
-.snake-overlay p {
-  font-size: 1.05rem;
-  color: var(--arcade-text-dim);
-  line-height: 1.5;
-  max-width: 380px;
-  margin: 0;
-}
-
-.snake-overlay .btn {
-  padding: 14px 32px;
-  font-size: 1.05rem;
+  justify-content: center;
+  gap: 12px;
+  font-size: 1.2rem;
   font-weight: bold;
-  color: #121212;
-  background-color: var(--arcade-green);
-  border: none;
-  border-radius: 25px;
   cursor: pointer;
   transition:
     transform 0.1s ease,
     background-color 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+.snake-btn-trophy-large:hover {
+  background-color: #262626;
+  transform: scale(1.02);
 }
 
-.snake-overlay .btn:hover {
-  background-color: var(--arcade-green-hover);
-  transform: scale(1.05);
-}
-
-/* ---- Side controls: pause + d-pad ---- */
-.snake-side-controls {
+.snake-action-row {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-items: center;
-  padding-top: 4px;
-  width: 200px;
-  flex-shrink: 0;
+  gap: 10px;
+  width: 100%;
 }
-
-.snake-btn-pause {
-  padding: 12px 24px;
+.snake-btn-action {
+  flex: 1;
+  padding: 12px 0;
   font-size: 0.95rem;
   font-weight: bold;
   color: #fff;
   background-color: var(--arcade-orange);
   border: none;
-  border-radius: 25px;
+  border-radius: 8px;
   cursor: pointer;
-  width: 100%;
   transition:
     transform 0.1s ease,
     background-color 0.2s ease;
 }
-
-.snake-btn-pause:hover:not(:disabled) {
+.snake-btn-action:hover:not(:disabled) {
   background-color: var(--arcade-orange-hover);
   transform: scale(1.03);
 }
-
-.snake-btn-pause:disabled {
+.snake-btn-action:disabled {
   background-color: var(--arcade-border);
-  color: var(--arcade-text-faint);
+  color: #777;
   cursor: not-allowed;
+}
+.snake-btn-action.restart {
+  background-color: var(--arcade-surface);
+  border: 1px solid var(--arcade-border);
+}
+.snake-btn-action.restart:hover {
+  background-color: #333;
 }
 
 /* ---- D-Pad ---- */
+.d-pad-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
 .d-pad {
   display: grid;
-  grid-template-columns: repeat(3, 56px);
-  grid-template-rows: repeat(2, 56px);
-  gap: 6px;
-  justify-content: center;
+  grid-template-columns: repeat(3, 60px);
+  grid-template-rows: repeat(2, 60px);
+  gap: 8px;
 }
-
 .d-pad-btn {
   background-color: var(--arcade-surface);
   border: 1px solid var(--arcade-border);
@@ -2686,21 +2620,12 @@ body.chat-page-active {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    transform 0.1s ease;
 }
-
-.d-pad-btn:hover {
-  background-color: #262626;
-}
-
 .d-pad-btn:active {
   transform: scale(0.94);
   background-color: var(--arcade-green);
   color: #121212;
 }
-
 .d-up {
   grid-column: 2;
   grid-row: 1;
@@ -2718,136 +2643,44 @@ body.chat-page-active {
   grid-row: 2;
 }
 
-/* =========================================================================
-   ARCADE HUB (game selection grid)
-   ========================================================================= */
-.arcade-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--arcade-green);
-  margin-bottom: 4px;
-  font-weight: bold;
-}
-
-.arcade-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.arcade-card {
-  background-color: var(--arcade-surface);
-  border: 1px solid var(--arcade-border);
-  border-radius: 12px;
-  padding: 24px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: inherit;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-  cursor: pointer;
-}
-
-.arcade-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--arcade-green);
-  box-shadow: 0 10px 24px rgba(76, 175, 80, 0.25);
-}
-
-.arcade-card-title {
-  display: block;
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.arcade-card-type {
-  font-size: 0.75rem;
-  color: var(--arcade-text-faint);
-}
-
-/* =========================================================================
-   REACTION TESTER
-   ========================================================================= */
-.reaction-game-area {
-  flex: 1;
-  min-height: 60vh;
-  border-radius: 12px;
-  border: 2px solid var(--arcade-border);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+/* ---- Overlays ---- */
+.snake-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(18, 18, 18, 0.88);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.15s;
-  color: #fff;
+  gap: 15px;
   text-align: center;
   padding: 20px;
 }
-
-.reaction-game-area h1 {
-  font-size: 2.5rem;
+.snake-overlay h1 {
+  font-size: 2.4rem;
+  color: var(--arcade-green);
   margin: 0;
 }
-
-.reaction-game-area h2 {
-  font-size: 1.5rem;
+.snake-overlay h2 {
+  font-size: 2rem;
+  color: var(--arcade-orange);
   margin: 0;
 }
-
-/* =========================================================================
-   TETRIS
-   ========================================================================= */
-.tetris-grid {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  grid-template-rows: repeat(20, 1fr);
-  width: 100%;
-  max-width: 300px;
-  aspect-ratio: 1 / 2;
-  background-color: var(--arcade-surface-2);
-  border: 2px solid var(--arcade-border);
-  border-radius: 8px;
-  margin: 0 auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+.snake-overlay p {
+  font-size: 1.05rem;
+  color: var(--arcade-text-dim);
+}
+.snake-overlay .btn {
+  padding: 12px 28px;
+  font-weight: bold;
+  background-color: var(--arcade-green);
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  color: #121212;
 }
 
-.tetris-cell {
-  width: 100%;
-  height: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.rotate-btn {
-  grid-column: 1 / span 3;
-  margin-top: 10px;
-  background-color: var(--arcade-green) !important;
-  color: #121212 !important;
-  font-weight: bold !important;
-  border-radius: 25px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.rotate-btn:active {
-  background-color: var(--arcade-green-hover) !important;
-}
-
-/* =========================================================================
-   SCORE MODAL
-   ========================================================================= */
+/* ---- Score Modal ---- */
 .arcade-modal-overlay {
   position: fixed;
   inset: 0;
@@ -2858,77 +2691,41 @@ body.chat-page-active {
   z-index: 1000;
   padding: 16px;
 }
-
 .arcade-modal-content {
   background-color: var(--arcade-surface);
   border: 1px solid var(--arcade-border);
   border-radius: 12px;
   width: 100%;
-  max-width: 400px;
+  max-width: 350px;
   padding: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
-
 .arcade-modal-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
-}
-
-.arcade-modal-title {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   color: var(--arcade-green);
   font-size: 1.1rem;
   font-weight: bold;
 }
-
 .arcade-modal-close {
   background: transparent;
   border: none;
-  color: var(--arcade-text-faint);
+  color: #888;
   cursor: pointer;
-  padding: 4px;
 }
-
-.arcade-modal-close:hover {
-  color: #fff;
-}
-
-.arcade-modal-empty {
-  color: var(--arcade-text-dim);
-  text-align: center;
-  padding: 16px 0;
-}
-
-.arcade-modal-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .arcade-modal-item {
   display: flex;
   justify-content: space-between;
   border-bottom: 1px solid var(--arcade-border);
   padding-bottom: 8px;
+  margin-bottom: 8px;
 }
-
-.arcade-modal-rank {
-  font-weight: 500;
-}
-
 .arcade-modal-score {
   color: var(--arcade-green);
   font-weight: bold;
 }
 
-/* =========================================================================
-   MOBILE
-   ========================================================================= */
+/* ---- MOBILE SPECIFIC ADJUSTMENTS ---- */
 .mobile-only {
   display: none;
 }
@@ -2945,62 +2742,50 @@ body.chat-page-active {
   }
 
   .snake-page-container {
-    padding: 12px;
-    gap: 14px;
+    padding: 10px;
   }
-
-  .snake-header-bar {
-    max-width: 100%;
-  }
-
-  .snake-main-layout {
+  .snake-desktop-layout {
     flex-direction: column;
+    gap: 15px;
+  }
+  .snake-controls-column {
+    width: 100%;
+    padding-top: 0;
+  }
+
+  /* Mobile Tiny Header */
+  .snake-mobile-header {
+    display: flex;
     align-items: center;
-    gap: 14px;
-  }
-
-  .snake-board-wrapper {
-    max-width: 100%;
-  }
-
-  .snake-stats-bar {
-    gap: 6px;
-    width: 100%;
     justify-content: space-between;
-  }
-
-  .snake-stat-box {
-    padding: 6px 10px;
-    font-size: 0.78rem;
-  }
-
-  .snake-side-controls {
-    width: 100%;
-    max-width: 320px;
-  }
-
-  .mobile-back-btn {
-    padding: 8px;
-    border-radius: 8px;
     background-color: var(--arcade-surface);
     border: 1px solid var(--arcade-border);
+    padding: 6px 10px;
+    border-radius: 8px;
+    width: 100%;
+  }
+  .mobile-back-btn,
+  .mobile-top-btn {
+    background: transparent;
+    border: none;
     color: #fff;
     cursor: pointer;
+    padding: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-
-  .d-pad {
-    grid-template-columns: repeat(3, 64px);
-    grid-template-rows: repeat(2, 64px);
+  .mobile-top-btn {
+    color: var(--arcade-orange);
   }
-
-  .snake-overlay h1 {
-    font-size: 1.8rem;
+  .snake-stats-mobile {
+    display: flex;
+    gap: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--arcade-text-dim);
   }
-
-  .snake-overlay h2 {
-    font-size: 1.6rem;
+  .snake-stats-mobile span {
+    color: var(--arcade-green);
   }
 }

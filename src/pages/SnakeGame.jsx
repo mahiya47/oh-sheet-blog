@@ -6,11 +6,48 @@ import {
   ArrowDown,
   ArrowLeft as ArrowLeftIcon,
   ArrowRight,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
-import ScoreModal from "../components/ScoreModal";
 
+// --- Score Modal Component (Inline for simplicity) ---
+function ScoreModal({ isOpen, onClose, leaderboard }) {
+  if (!isOpen) return null;
+  return (
+    <div className="arcade-modal-overlay" onClick={onClose}>
+      <div
+        className="arcade-modal-content"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="arcade-modal-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Trophy size={18} /> Top 10 Scores
+          </div>
+          <button className="arcade-modal-close" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+        {leaderboard.length === 0 ? (
+          <p style={{ color: "#777", textAlign: "center" }}>No scores yet.</p>
+        ) : (
+          <div>
+            {leaderboard.map((entry, index) => (
+              <div key={entry.id || index} className="arcade-modal-item">
+                <span>
+                  #{index + 1} {entry.user?.username || "Player"}
+                </span>
+                <span className="arcade-modal-score">{entry.score}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- Main Game Component ---
 const GRID_SIZE = 20;
 const INITIAL_SPEED = 120;
 const MINIMUM_SPEED = 40;
@@ -20,13 +57,13 @@ export default function SnakeGame() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
-  const [canvasPx, setCanvasPx] = useState(500);
+  const [canvasPx, setCanvasPx] = useState(700); // Increased default max-size
 
   const snakeRef = useRef([{ x: 10, y: 10 }]);
   const foodRef = useRef({ x: 15, y: 15 });
   const dirRef = useRef({ x: 0, y: -1 });
   const nextDirRef = useRef({ x: 0, y: -1 });
-  const speedRef = useRef(INITIAL_SPEED); // <-- live speed, read fresh every tick
+  const speedRef = useRef(INITIAL_SPEED);
 
   const [isGameOver, setIsGameOver] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
@@ -43,10 +80,11 @@ export default function SnakeGame() {
   const scoreRef = useRef(0);
   const tickTimeoutRef = useRef(null);
 
+  // Resize canvas based on wrapper
   useEffect(() => {
     const resize = () => {
       if (!wrapperRef.current) return;
-      const size = Math.min(wrapperRef.current.offsetWidth, 520);
+      const size = Math.min(wrapperRef.current.offsetWidth, 750); // Matches new CSS width
       setCanvasPx(size);
     };
     resize();
@@ -80,6 +118,7 @@ export default function SnakeGame() {
 
     ctx.clearRect(0, 0, canvasPx, canvasPx);
 
+    // Draw Food
     ctx.fillStyle = "#ff5252";
     ctx.shadowBlur = 10;
     ctx.shadowColor = "#ff5252";
@@ -91,6 +130,7 @@ export default function SnakeGame() {
     );
     ctx.shadowBlur = 0;
 
+    // Draw Snake
     const snake = snakeRef.current;
     for (let i = 0; i < snake.length; i++) {
       ctx.fillStyle = i === 0 ? "#4caf50" : "#81c784";
@@ -130,9 +170,6 @@ export default function SnakeGame() {
     }
   }, [fetchLeaderboard]);
 
-  // The loop schedules itself using speedRef.current, read fresh every
-  // single call — so speed changes take effect immediately, mid-loop,
-  // exactly like the vanilla setTimeout(gameLoop, currentSpeed) version.
   const tick = useCallback(() => {
     if (!isStartedRef.current || isGameOverRef.current || isPausedRef.current)
       return;
@@ -161,14 +198,12 @@ export default function SnakeGame() {
       scoreRef.current += 10;
       setScore(scoreRef.current);
 
-      // Speed up on every apple, matching the vanilla script exactly
       if (speedRef.current > MINIMUM_SPEED) {
         speedRef.current -= SPEED_STEP;
         const level =
           Math.floor((INITIAL_SPEED - speedRef.current) / SPEED_STEP) + 1;
         setSpeedLevel(level);
       }
-
       spawnFood();
     } else {
       snake.pop();
@@ -206,9 +241,8 @@ export default function SnakeGame() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key))
         e.preventDefault();
-      }
       switch (e.key) {
         case "ArrowUp":
           setDir(0, -1);
@@ -232,7 +266,6 @@ export default function SnakeGame() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const togglePause = () => {
@@ -281,102 +314,123 @@ export default function SnakeGame() {
 
   return (
     <div className="snake-page-container">
-      <div className="snake-header-bar">
-        <div className="snake-header-left">
-          <button
-            className="mobile-back-btn mobile-only"
-            onClick={() => navigate("/arcade")}
-            aria-label="Back"
-          >
-            <ArrowLeft size={16} />
-          </button>
+      {/* MOBILE HEADER (Tiny, Inline, Back Button, Stats, Trophy) */}
+      <div className="snake-mobile-header mobile-only">
+        <button className="mobile-back-btn" onClick={() => navigate("/arcade")}>
+          <ArrowLeft size={16} />
+        </button>
+        <div className="snake-stats-mobile">
+          <div>
+            Scr: <span>{score}</span>
+          </div>
+          <div>
+            Spd: <span>{speedLevel}</span>
+          </div>
+          <div>
+            Hi: <span>{highScore}</span>
+          </div>
+        </div>
+        <button className="mobile-top-btn" onClick={() => setIsModalOpen(true)}>
+          <Trophy size={16} />
+        </button>
+      </div>
 
-          <div className="snake-stats-bar">
+      <div className="snake-desktop-layout">
+        {/* LEFT COLUMN: Stats + Game Box */}
+        <div className="snake-game-column">
+          {/* DESKTOP STATS */}
+          <div className="snake-stats-desktop desktop-only">
             <div className="snake-stat-box">
               Score: <span>{score}</span>
             </div>
             <div className="snake-stat-box">
-              Speed Level: <span>{speedLevel}</span>
+              Speed: <span>{speedLevel}</span>
             </div>
             <div className="snake-stat-box">
               High Score: <span>{highScore}</span>
             </div>
           </div>
+
+          {/* GAME CANVAS */}
+          <div className="snake-board-wrapper" ref={wrapperRef}>
+            <canvas ref={canvasRef} width={canvasPx} height={canvasPx} />
+
+            {!isStarted && !isGameOver && (
+              <div className="snake-overlay">
+                <h1>SNAKE GAME</h1>
+                <p>Use Arrow Keys or D-Pad. Wrap around walls!</p>
+                <button className="btn" onClick={beginMoving}>
+                  Start Game
+                </button>
+              </div>
+            )}
+            {isPaused && !isGameOver && (
+              <div className="snake-overlay">
+                <h2>Game Paused</h2>
+                <button className="btn" onClick={togglePause}>
+                  Continue
+                </button>
+              </div>
+            )}
+            {isGameOver && (
+              <div className="snake-overlay">
+                <h2>Game Over</h2>
+                <p>Final Score: {score}</p>
+                <button className="btn" onClick={resetGame}>
+                  Play Again
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        <button
-          className="snake-btn-trophy"
-          onClick={() => setIsModalOpen(true)}
-        >
-          <Trophy size={16} />
-          <span className="desktop-only">Top 10 Scores</span>
-        </button>
-      </div>
-
-      <div className="snake-main-layout">
-        <div className="snake-board-wrapper" ref={wrapperRef}>
-          <canvas
-            ref={canvasRef}
-            width={canvasPx}
-            height={canvasPx}
-            style={{ width: "100%", height: "100%", display: "block" }}
-          />
-
-          {!isStarted && !isGameOver && (
-            <div className="snake-overlay">
-              <h1>SNAKE GAME</h1>
-              <p>
-                Control the snake using <strong>Arrow Keys</strong> or the{" "}
-                <strong>D-Pad</strong>. Walls are safe — you wrap around them!
-              </p>
-              <button className="btn" onClick={beginMoving}>
-                Start Game
-              </button>
-            </div>
-          )}
-          {isPaused && !isGameOver && (
-            <div className="snake-overlay">
-              <h2>Game Paused</h2>
-              <button className="btn" onClick={togglePause}>
-                Continue
-              </button>
-            </div>
-          )}
-          {isGameOver && (
-            <div className="snake-overlay">
-              <h2>Game Over</h2>
-              <p style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
-                Final Score: {score}
-              </p>
-              <button className="btn" onClick={resetGame}>
-                Play Again
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="snake-side-controls">
+        {/* RIGHT COLUMN: Modal Trigger, Controls, D-Pad */}
+        <div className="snake-controls-column">
+          {/* Top Scores Huge Box Button (Desktop Only) */}
           <button
-            className="snake-btn-pause"
-            onClick={togglePause}
-            disabled={!isStarted || isGameOver}
+            className="snake-btn-trophy-large desktop-only"
+            onClick={() => setIsModalOpen(true)}
           >
-            {isPaused ? "Resume" : "Pause"}
+            <Trophy size={32} />
+            Show Top Scores
           </button>
 
-          <div className="d-pad">
-            <button className="d-pad-btn d-up" onClick={() => setDir(0, -1)}>
-              <ArrowUp />
+          {/* Action Buttons */}
+          <div className="snake-action-row">
+            <button
+              className="snake-btn-action"
+              onClick={togglePause}
+              disabled={!isStarted || isGameOver}
+            >
+              {isPaused ? "Resume" : "Play / Pause"}
             </button>
-            <button className="d-pad-btn d-left" onClick={() => setDir(-1, 0)}>
-              <ArrowLeftIcon />
+            <button className="snake-btn-action restart" onClick={resetGame}>
+              Restart
             </button>
-            <button className="d-pad-btn d-right" onClick={() => setDir(1, 0)}>
-              <ArrowRight />
-            </button>
-            <button className="d-pad-btn d-down" onClick={() => setDir(0, 1)}>
-              <ArrowDown />
-            </button>
+          </div>
+
+          {/* D-Pad */}
+          <div className="d-pad-container">
+            <div className="d-pad">
+              <button className="d-pad-btn d-up" onClick={() => setDir(0, -1)}>
+                <ArrowUp />
+              </button>
+              <button
+                className="d-pad-btn d-left"
+                onClick={() => setDir(-1, 0)}
+              >
+                <ArrowLeftIcon />
+              </button>
+              <button
+                className="d-pad-btn d-right"
+                onClick={() => setDir(1, 0)}
+              >
+                <ArrowRight />
+              </button>
+              <button className="d-pad-btn d-down" onClick={() => setDir(0, 1)}>
+                <ArrowDown />
+              </button>
+            </div>
           </div>
         </div>
       </div>
