@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   ArrowUp,
   ArrowDown,
@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useStore } from "../lib/store.jsx";
 import ScoreModal from "../components/ScoreModal";
-import { useState, useEffect, useCallback, useRef } from "react";
 
 // Classic 10x20 Grid works perfectly with the new mobile layout!
 const COLS = 10;
@@ -65,20 +64,6 @@ const TETROMINOES = {
   },
 };
 
-const getRandomPiece = () => {
-  const keys = Object.keys(TETROMINOES);
-  const randKey = keys[Math.floor(Math.random() * keys.length)];
-  return {
-    ...TETROMINOES[randKey],
-    pos: {
-      x:
-        Math.floor(COLS / 2) -
-        Math.floor(TETROMINOES[randKey].shape[0].length / 2),
-      y: 0,
-    },
-  };
-};
-
 const createEmptyBoard = () =>
   Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 
@@ -98,7 +83,34 @@ export default function TetrisGame() {
   const [highScore, setHighScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const scoreRef = useRef(0);
+  const pieceBagRef = useRef([]); // Tracks our 7-bag randomizer
+
+  // --- 7-BAG RANDOMIZER: Prevents getting too many Z/S shapes ---
+  const getNextPiece = useCallback(() => {
+    if (pieceBagRef.current.length === 0) {
+      const keys = Object.keys(TETROMINOES);
+      // Shuffle the 7 pieces (Fisher-Yates shuffle)
+      for (let i = keys.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [keys[i], keys[j]] = [keys[j], keys[i]];
+      }
+      pieceBagRef.current = keys;
+    }
+
+    const nextKey = pieceBagRef.current.pop();
+    return {
+      ...TETROMINOES[nextKey],
+      pos: {
+        x:
+          Math.floor(COLS / 2) -
+          Math.floor(TETROMINOES[nextKey].shape[0].length / 2),
+        y: 0,
+      },
+    };
+  }, []);
+
   // --- FETCH HIGH SCORE ON LOAD ---
   const fetchHighScore = useCallback(() => {
     api
@@ -127,6 +139,7 @@ export default function TetrisGame() {
   useEffect(() => {
     fetchHighScore();
   }, [fetchHighScore]);
+
   useEffect(() => {
     if (score > highScore) setHighScore(score);
   }, [score, highScore]);
@@ -208,13 +221,13 @@ export default function TetrisGame() {
       return finalBoard;
     });
 
-    const nextPiece = getRandomPiece();
+    const nextPiece = getNextPiece();
     if (checkCollision(nextPiece, nextPiece.pos)) {
       handleGameOver();
     } else {
       setCurrentPiece(nextPiece);
     }
-  }, [currentPiece, board]);
+  }, [currentPiece, board, getNextPiece]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -270,7 +283,8 @@ export default function TetrisGame() {
 
   const startGame = () => {
     setBoard(createEmptyBoard());
-    setCurrentPiece(getRandomPiece());
+    pieceBagRef.current = []; // Clear the bag for a fresh randomized start
+    setCurrentPiece(getNextPiece());
     setScore(0);
     setLines(0);
     scoreRef.current = 0;
@@ -290,6 +304,19 @@ export default function TetrisGame() {
         console.error(err);
       }
     }
+  };
+
+  // Saves the score if you rage-quit mid-game before restarting
+  const resetGame = async () => {
+    if (!isGameOver && scoreRef.current > 0) {
+      try {
+        await api.post("/arcade/tetris/score", { score: scoreRef.current });
+        fetchHighScore();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    startGame();
   };
 
   const renderCell = (x, y) => {
@@ -321,7 +348,7 @@ export default function TetrisGame() {
   return (
     <div style={{ padding: "0" }}>
       {/* =========================================================
-          NEW MOBILE LAYOUT (Matches Image Wireframe Exactly) 
+          MOBILE LAYOUT
           ========================================================= */}
       <div className="tetris-mobile-wrapper mobile-only">
         {/* LEFT COLUMN: Stats & Action Buttons */}
@@ -355,7 +382,7 @@ export default function TetrisGame() {
             {isPaused ? "Resume" : isStarted ? "Pause" : "Play"}
           </button>
 
-          <button onClick={startGame}>Reset</button>
+          <button onClick={resetGame}>Reset</button>
         </div>
 
         {/* RIGHT COLUMN: Game Board & D-Pad */}
@@ -365,8 +392,8 @@ export default function TetrisGame() {
               className="snake-wireframe-board"
               style={{
                 aspectRatio: `${COLS} / ${ROWS}`,
-                height: "100%", // Scales cleanly to fill available height
-                width: "auto", // Width calculates automatically
+                height: "100%",
+                width: "auto",
                 display: "grid",
                 gridTemplateColumns: `repeat(${COLS}, 1fr)`,
                 gridTemplateRows: `repeat(${ROWS}, 1fr)`,
@@ -407,7 +434,7 @@ export default function TetrisGame() {
                   <h2>Game Over</h2>
                   <button
                     className="snake-action-btn"
-                    onClick={startGame}
+                    onClick={resetGame}
                     style={{ marginTop: "10px" }}
                   >
                     Restart
@@ -436,7 +463,7 @@ export default function TetrisGame() {
       </div>
 
       {/* =========================================================
-          DESKTOP LAYOUT (Unchanged, remains perfect) 
+          DESKTOP LAYOUT 
           ========================================================= */}
       <div className="snake-wireframe-container desktop-only">
         {/* GAME BOARD */}
@@ -485,7 +512,7 @@ export default function TetrisGame() {
               <h2>Game Over</h2>
               <button
                 className="snake-action-btn"
-                onClick={startGame}
+                onClick={resetGame}
                 style={{ marginTop: "10px" }}
               >
                 Play Again
@@ -526,7 +553,7 @@ export default function TetrisGame() {
             >
               {isPaused ? "Resume" : isStarted ? "Pause" : "Play"}
             </button>
-            <button className="snake-action-btn" onClick={startGame}>
+            <button className="snake-action-btn" onClick={resetGame}>
               Restart
             </button>
           </div>
