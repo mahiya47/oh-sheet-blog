@@ -11,7 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 
-// --- Score Modal Component (Inline for simplicity) ---
+// --- Score Modal Component ---
 function ScoreModal({ isOpen, onClose, leaderboard }) {
   if (!isOpen) return null;
   return (
@@ -28,8 +28,10 @@ function ScoreModal({ isOpen, onClose, leaderboard }) {
             <X size={18} />
           </button>
         </div>
-        {leaderboard.length === 0 ? (
-          <p style={{ color: "#777", textAlign: "center" }}>No scores yet.</p>
+        {!leaderboard || leaderboard.length === 0 ? (
+          <p style={{ color: "#777", textAlign: "center" }}>
+            No scores yet. Be the first!
+          </p>
         ) : (
           <div>
             {leaderboard.map((entry, index) => (
@@ -37,7 +39,7 @@ function ScoreModal({ isOpen, onClose, leaderboard }) {
                 <span>
                   #{index + 1} {entry.user?.username || "Player"}
                 </span>
-                <span className="arcade-modal-score">{entry.score}</span>
+                <span className="arcade-modal-score">{entry.score} pts</span>
               </div>
             ))}
           </div>
@@ -57,7 +59,7 @@ export default function SnakeGame() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
-  const [canvasPx, setCanvasPx] = useState(700); // Increased default max-size
+  const [canvasPx, setCanvasPx] = useState(700);
 
   const snakeRef = useRef([{ x: 10, y: 10 }]);
   const foodRef = useRef({ x: 15, y: 15 });
@@ -84,7 +86,7 @@ export default function SnakeGame() {
   useEffect(() => {
     const resize = () => {
       if (!wrapperRef.current) return;
-      const size = Math.min(wrapperRef.current.offsetWidth, 750); // Matches new CSS width
+      const size = Math.min(wrapperRef.current.offsetWidth, 750);
       setCanvasPx(size);
     };
     resize();
@@ -96,13 +98,13 @@ export default function SnakeGame() {
     api
       .get("/arcade/snake/leaderboard")
       .then((res) => {
-        setLeaderboard(res.data);
-        if (res.data.length > 0) {
-          const topScore = Math.max(...res.data.map((entry) => entry.score));
-          setHighScore((prev) => Math.max(prev, topScore));
+        const sortedData = res.data.sort((a, b) => b.score - a.score);
+        setLeaderboard(sortedData);
+        if (sortedData.length > 0) {
+          setHighScore((prev) => Math.max(prev, sortedData[0].score));
         }
       })
-      .catch(console.error);
+      .catch((err) => console.error("Failed to fetch leaderboard:", err));
   }, []);
 
   useEffect(() => {
@@ -158,15 +160,21 @@ export default function SnakeGame() {
     foodRef.current = pos;
   }, []);
 
+  // --- GAME OVER LOGIC (Saves Score) ---
   const handleGameOver = useCallback(async () => {
     if (tickTimeoutRef.current) clearTimeout(tickTimeoutRef.current);
     isGameOverRef.current = true;
     isStartedRef.current = false;
     setIsGameOver(true);
     setIsStarted(false);
+
     if (scoreRef.current > 0) {
-      await api.post("/arcade/snake/score", { score: scoreRef.current });
-      fetchLeaderboard();
+      try {
+        await api.post("/arcade/snake/score", { score: scoreRef.current });
+        fetchLeaderboard(); // Force refresh leaderboard immediately
+      } catch (err) {
+        console.error("Error saving score:", err);
+      }
     }
   }, [fetchLeaderboard]);
 
@@ -178,6 +186,7 @@ export default function SnakeGame() {
     const snake = snakeRef.current;
     const head = snake[0];
 
+    // Wrap around logic
     let newX = head.x + dirRef.current.x;
     let newY = head.y + dirRef.current.y;
     if (newX < 0) newX = GRID_SIZE - 1;
@@ -187,6 +196,7 @@ export default function SnakeGame() {
 
     const newHead = { x: newX, y: newY };
 
+    // Death by biting tail
     if (snake.some((s) => s.x === newHead.x && s.y === newHead.y)) {
       handleGameOver();
       return;
@@ -284,7 +294,23 @@ export default function SnakeGame() {
     }
   };
 
-  const resetGame = () => {
+  // --- RESTART LOGIC (Now auto-saves if you manually quit mid-game) ---
+  const resetGame = async () => {
+    if (tickTimeoutRef.current) {
+      clearTimeout(tickTimeoutRef.current);
+      tickTimeoutRef.current = null;
+    }
+
+    // Auto-save if restarting mid-game with a valid score
+    if (!isGameOverRef.current && scoreRef.current > 0) {
+      try {
+        await api.post("/arcade/snake/score", { score: scoreRef.current });
+        fetchLeaderboard();
+      } catch (err) {
+        console.error("Failed to save score on restart:", err);
+      }
+    }
+
     snakeRef.current = [{ x: 10, y: 10 }];
     dirRef.current = { x: 0, y: -1 };
     nextDirRef.current = { x: 0, y: -1 };
@@ -298,10 +324,6 @@ export default function SnakeGame() {
     setIsGameOver(false);
     setIsStarted(false);
     setIsPaused(false);
-    if (tickTimeoutRef.current) {
-      clearTimeout(tickTimeoutRef.current);
-      tickTimeoutRef.current = null;
-    }
     spawnFood();
     draw();
   };
@@ -314,7 +336,7 @@ export default function SnakeGame() {
 
   return (
     <div className="snake-page-container">
-      {/* MOBILE HEADER (Tiny, Inline, Back Button, Stats, Trophy) */}
+      {/* MOBILE HEADER */}
       <div className="snake-mobile-header mobile-only">
         <button className="mobile-back-btn" onClick={() => navigate("/arcade")}>
           <ArrowLeft size={16} />
@@ -336,9 +358,8 @@ export default function SnakeGame() {
       </div>
 
       <div className="snake-desktop-layout">
-        {/* LEFT COLUMN: Stats + Game Box */}
+        {/* LEFT COLUMN */}
         <div className="snake-game-column">
-          {/* DESKTOP STATS */}
           <div className="snake-stats-desktop desktop-only">
             <div className="snake-stat-box">
               Score: <span>{score}</span>
@@ -351,7 +372,6 @@ export default function SnakeGame() {
             </div>
           </div>
 
-          {/* GAME CANVAS */}
           <div className="snake-board-wrapper" ref={wrapperRef}>
             <canvas ref={canvasRef} width={canvasPx} height={canvasPx} />
 
@@ -384,9 +404,8 @@ export default function SnakeGame() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Modal Trigger, Controls, D-Pad */}
+        {/* RIGHT COLUMN */}
         <div className="snake-controls-column">
-          {/* Top Scores Huge Box Button (Desktop Only) */}
           <button
             className="snake-btn-trophy-large desktop-only"
             onClick={() => setIsModalOpen(true)}
@@ -395,7 +414,6 @@ export default function SnakeGame() {
             Show Top Scores
           </button>
 
-          {/* Action Buttons */}
           <div className="snake-action-row">
             <button
               className="snake-btn-action"
@@ -405,11 +423,10 @@ export default function SnakeGame() {
               {isPaused ? "Resume" : "Play / Pause"}
             </button>
             <button className="snake-btn-action restart" onClick={resetGame}>
-              Restart
+              Restart / End
             </button>
           </div>
 
-          {/* D-Pad */}
           <div className="d-pad-container">
             <div className="d-pad">
               <button className="d-pad-btn d-up" onClick={() => setDir(0, -1)}>
