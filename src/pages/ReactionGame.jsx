@@ -135,18 +135,19 @@ export default function ReactionGame() {
         {/* LEFT/MAIN: Reaction Click Area */}
         <div
           className="snake-wireframe-board"
-          onClick={handleClick}
           style={{
             backgroundColor: "var(--arcade-surface-2, #1a1a1a)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            cursor: "pointer",
             userSelect: "none",
             textAlign: "center",
-            padding: "20px",
+            padding: "40px 20px",
             gap: "30px",
+            aspectRatio: "auto", // Overrides the square box to make it wider
+            minHeight: "450px", // Gives it a nice vertical stretch
+            width: "100%", // Stretches it fully
           }}
         >
           {/* --- THE F1 LIGHT RIG --- */}
@@ -165,8 +166,8 @@ export default function ReactionGame() {
               <div
                 key={lightIndex}
                 style={{
-                  width: "clamp(50px, 15vw, 80px)",
-                  height: "clamp(50px, 15vw, 80px)",
+                  width: "clamp(50px, 12vw, 80px)",
+                  height: "clamp(50px, 12vw, 80px)",
                   borderRadius: "50%",
                   backgroundColor: color,
                   boxShadow: glow,
@@ -180,7 +181,7 @@ export default function ReactionGame() {
           {/* --- INSTRUCTIONS / RESULTS --- */}
           <div
             style={{
-              height: "80px",
+              height: "60px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
@@ -188,23 +189,11 @@ export default function ReactionGame() {
           >
             {gameState === "waiting" && (
               <h2 style={{ color: "var(--arcade-text-dim)", margin: 0 }}>
-                Tap screen to Start
+                Press the button to Start
               </h2>
             )}
             {gameState === "ready" && (
               <h2 style={{ color: "#fff", margin: 0 }}>Wait for Green...</h2>
-            )}
-            {gameState === "clicked" && (
-              <h1
-                style={{
-                  color: "var(--arcade-green)",
-                  fontSize: "2.5rem",
-                  margin: 0,
-                  textShadow: "0 0 10px rgba(76, 175, 80, 0.5)",
-                }}
-              >
-                TAP NOW!
-              </h1>
             )}
             {gameState === "result" && (
               <>
@@ -217,17 +206,45 @@ export default function ReactionGame() {
                 >
                   {reactionTime} ms
                 </h2>
-                <p
-                  style={{
-                    color: "var(--arcade-text-dim)",
-                    margin: "5px 0 0 0",
-                  }}
-                >
-                  Tap screen to try again
-                </p>
               </>
             )}
           </div>
+
+          {/* --- NEW HUGE ACTION BUTTON --- */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClick();
+            }}
+            style={{
+              marginTop: "10px",
+              padding: "20px 40px",
+              width: "80%",
+              maxWidth: "400px",
+              fontSize: "1.5rem",
+              fontWeight: "900",
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              backgroundColor:
+                gameState === "clicked"
+                  ? "var(--arcade-green)"
+                  : "var(--arcade-surface)",
+              color: gameState === "clicked" ? "#000" : "#fff",
+              border: `4px solid ${gameState === "clicked" ? "var(--arcade-green)" : "var(--arcade-border)"}`,
+              borderRadius: "16px",
+              cursor: "pointer",
+              boxShadow:
+                gameState === "clicked"
+                  ? "0 0 40px rgba(76, 175, 80, 0.6)"
+                  : "0 8px 15px rgba(0,0,0,0.3)",
+              transition: "all 0.1s ease",
+            }}
+          >
+            {gameState === "waiting" && "Start Engine"}
+            {gameState === "ready" && "Wait..."}
+            {gameState === "clicked" && "TAP NOW!"}
+            {gameState === "result" && "Try Again"}
+          </button>
         </div>
 
         {/* RIGHT/MIDDLE: Stats & Controls (Desktop) */}
@@ -242,47 +259,6 @@ export default function ReactionGame() {
             <div className="snake-stat-row">
               Best <span>{bestTime ? `${bestTime}ms` : "-"}</span>
             </div>
-          </div>
-
-          <div
-            className="snake-action-buttons"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-              marginTop: "10px",
-            }}
-          >
-            <button
-              className="snake-action-btn"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevents double-firing if clicked inside wrapper
-                startGame();
-              }}
-              style={{ backgroundColor: "var(--arcade-green)", color: "#000" }}
-            >
-              Start Test
-            </button>
-          </div>
-        </div>
-
-        {/* MOBILE CONTROLS (Hidden on Desktop) */}
-        <div className="arcade-mobile-controls mobile-only">
-          <div className="arcade-mobile-actions" style={{ width: "100%" }}>
-            <button
-              className="snake-action-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                startGame();
-              }}
-              style={{
-                backgroundColor: "var(--arcade-green)",
-                color: "#000",
-                width: "100%",
-              }}
-            >
-              Start Test / Reset
-            </button>
           </div>
         </div>
       </div>
