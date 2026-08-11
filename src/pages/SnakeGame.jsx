@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   ArrowLeft,
   Trophy,
@@ -12,15 +12,19 @@ import api from "../api";
 import ScoreModal from "../components/ScoreModal";
 
 const GRID_SIZE = 20;
-const INITIAL_SNAKE = [{ x: 10, y: 10 }];
-const INITIAL_FOOD = { x: 15, y: 15 };
 const INITIAL_SPEED = 150;
 
 export default function SnakeGame() {
   const navigate = useNavigate();
-  const [snake, setSnake] = useState(INITIAL_SNAKE);
-  const [food, setFood] = useState(INITIAL_FOOD);
-  const [direction, setDirection] = useState({ x: 0, y: -1 });
+  const canvasRef = useRef(null);
+  const wrapperRef = useRef(null);
+  const [canvasPx, setCanvasPx] = useState(500);
+
+  const snakeRef = useRef([{ x: 10, y: 10 }]);
+  const foodRef = useRef({ x: 15, y: 15 });
+  const dirRef = useRef({ x: 0, y: -1 });
+  const nextDirRef = useRef({ x: 0, y: -1 });
+
   const [isGameOver, setIsGameOver] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -29,8 +33,26 @@ export default function SnakeGame() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const isStartedRef = useRef(false);
+  const isPausedRef = useRef(false);
+  const isGameOverRef = useRef(false);
+  const scoreRef = useRef(0);
+  const tickTimeoutRef = useRef(null);
+
   const speedLevel = Math.floor(score / 30) + 1;
-  const currentSpeed = Math.max(50, INITIAL_SPEED - (speedLevel - 1) * 15);
+  const currentSpeed = Math.max(60, INITIAL_SPEED - (speedLevel - 1) * 10);
+
+  // Resize canvas to fit its container, responsive for mobile/desktop
+  useEffect(() => {
+    const resize = () => {
+      if (!wrapperRef.current) return;
+      const size = Math.min(wrapperRef.current.offsetWidth, 520);
+      setCanvasPx(size);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
 
   const fetchLeaderboard = useCallback(() => {
     api
@@ -49,34 +71,152 @@ export default function SnakeGame() {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
 
+  const draw = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const cell = canvasPx / GRID_SIZE;
+
+    ctx.clearRect(0, 0, canvasPx, canvasPx);
+
+    // food
+    ctx.fillStyle = "#e57373";
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "#e57373";
+    ctx.fillRect(
+      foodRef.current.x * cell + 2,
+      foodRef.current.y * cell + 2,
+      cell - 4,
+      cell - 4,
+    );
+    ctx.shadowBlur = 0;
+
+    // snake
+    const snake = snakeRef.current;
+    for (let i = 0; i < snake.length; i++) {
+      ctx.fillStyle = i === 0 ? "#4caf50" : "#81c784";
+      ctx.fillRect(
+        snake[i].x * cell + 1,
+        snake[i].y * cell + 1,
+        cell - 2,
+        cell - 2,
+      );
+    }
+  }, [canvasPx]);
+
+  useEffect(() => {
+    draw();
+  }, [draw, canvasPx]);
+
+  const spawnFood = useCallback(() => {
+    let pos;
+    do {
+      pos = {
+        x: Math.floor(Math.random() * GRID_SIZE),
+        y: Math.floor(Math.random() * GRID_SIZE),
+      };
+    } while (snakeRef.current.some((s) => s.x === pos.x && s.y === pos.y));
+    foodRef.current = pos;
+  }, []);
+
+  const handleGameOver = useCallback(async () => {
+    if (tickTimeoutRef.current) clearTimeout(tickTimeoutRef.current);
+    isGameOverRef.current = true;
+    isStartedRef.current = false;
+    setIsGameOver(true);
+    setIsStarted(false);
+    if (scoreRef.current > 0) {
+      await api.post("/arcade/snake/score", { score: scoreRef.current });
+      fetchLeaderboard();
+    }
+  }, [fetchLeaderboard]);
+
+  const tick = useCallback(() => {
+    if (!isStartedRef.current || isGameOverRef.current || isPausedRef.current)
+      return;
+
+    dirRef.current = nextDirRef.current;
+    const snake = snakeRef.current;
+    const head = snake[0];
+
+    // Wrap around edges instead of ending the game
+    let newX = head.x + dirRef.current.x;
+    let newY = head.y + dirRef.current.y;
+    if (newX < 0) newX = GRID_SIZE - 1;
+    else if (newX >= GRID_SIZE) newX = 0;
+    if (newY < 0) newY = GRID_SIZE - 1;
+    else if (newY >= GRID_SIZE) newY = 0;
+
+    const newHead = { x: newX, y: newY };
+
+    // Only self-collision ends the game now
+    if (snake.some((s) => s.x === newHead.x && s.y === newHead.y)) {
+      handleGameOver();
+      return;
+    }
+
+    snake.unshift(newHead);
+
+    if (newHead.x === foodRef.current.x && newHead.y === foodRef.current.y) {
+      scoreRef.current += 10;
+      setScore(scoreRef.current);
+      spawnFood();
+    } else {
+      snake.pop();
+    }
+
+    draw();
+    tickTimeoutRef.current = setTimeout(tick, currentSpeed);
+  }, [draw, spawnFood, handleGameOver, currentSpeed]);
+
   useEffect(() => {
     if (score > highScore) setHighScore(score);
   }, [score, highScore]);
+
+  const beginMoving = () => {
+    if (!isStartedRef.current && !isGameOverRef.current) {
+      isStartedRef.current = true;
+      setIsStarted(true);
+    }
+    if (isPausedRef.current) {
+      isPausedRef.current = false;
+      setIsPaused(false);
+    }
+    if (tickTimeoutRef.current) clearTimeout(tickTimeoutRef.current);
+    tickTimeoutRef.current = setTimeout(tick, currentSpeed);
+  };
+
+  const setDir = (nx, ny) => {
+    const { x: dx, y: dy } = dirRef.current;
+    // prevent reversing directly into yourself
+    if (nx !== 0 && dx !== 0) return;
+    if (ny !== 0 && dy !== 0) return;
+    nextDirRef.current = { x: nx, y: ny };
+    beginMoving();
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
         e.preventDefault();
-        if (!isStarted && !isGameOver) setIsStarted(true);
-        if (isPaused) setIsPaused(false);
       }
-
       switch (e.key) {
         case "ArrowUp":
-          setDirection((prev) => (prev.y === 1 ? prev : { x: 0, y: -1 }));
+          setDir(0, -1);
           break;
         case "ArrowDown":
-          setDirection((prev) => (prev.y === -1 ? prev : { x: 0, y: 1 }));
+          setDir(0, 1);
           break;
         case "ArrowLeft":
-          setDirection((prev) => (prev.x === 1 ? prev : { x: -1, y: 0 }));
+          setDir(-1, 0);
           break;
         case "ArrowRight":
-          setDirection((prev) => (prev.x === -1 ? prev : { x: 1, y: 0 }));
+          setDir(1, 0);
           break;
         case "p":
         case "Escape":
-          setIsPaused((prev) => !prev);
+          togglePause();
           break;
         default:
           break;
@@ -84,87 +224,49 @@ export default function SnakeGame() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isStarted, isGameOver, isPaused]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSpeed]);
 
-  const handleMobileDir = (newDir) => {
-    if (!isStarted && !isGameOver) setIsStarted(true);
-    if (isPaused) setIsPaused(false);
-    if (newDir.x !== 0 && direction.x !== 0) return;
-    if (newDir.y !== 0 && direction.y !== 0) return;
-    setDirection(newDir);
-  };
-
-  useEffect(() => {
-    if (!isStarted || isGameOver || isPaused) return;
-
-    const moveSnake = () => {
-      setSnake((prevSnake) => {
-        const head = prevSnake[0];
-        const newHead = { x: head.x + direction.x, y: head.y + direction.y };
-
-        if (
-          newHead.x < 0 ||
-          newHead.x >= GRID_SIZE ||
-          newHead.y < 0 ||
-          newHead.y >= GRID_SIZE
-        ) {
-          handleGameOver();
-          return prevSnake;
-        }
-
-        if (
-          prevSnake.some(
-            (segment) => segment.x === newHead.x && segment.y === newHead.y,
-          )
-        ) {
-          handleGameOver();
-          return prevSnake;
-        }
-
-        const newSnake = [newHead, ...prevSnake];
-
-        if (newHead.x === food.x && newHead.y === food.y) {
-          setScore((s) => s + 10);
-          setFood({
-            x: Math.floor(Math.random() * GRID_SIZE),
-            y: Math.floor(Math.random() * GRID_SIZE),
-          });
-        } else {
-          newSnake.pop();
-        }
-
-        return newSnake;
-      });
-    };
-
-    const interval = setInterval(moveSnake, currentSpeed);
-    return () => clearInterval(interval);
-  }, [isStarted, isGameOver, isPaused, direction, food, currentSpeed]);
-
-  const handleGameOver = async () => {
-    setIsGameOver(true);
-    setIsStarted(false);
-    if (score > 0) {
-      await api.post("/arcade/snake/score", { score });
-      fetchLeaderboard();
+  const togglePause = () => {
+    if (!isStartedRef.current || isGameOverRef.current) return;
+    if (isPausedRef.current) {
+      isPausedRef.current = false;
+      setIsPaused(false);
+      tickTimeoutRef.current = setTimeout(tick, currentSpeed);
+    } else {
+      isPausedRef.current = true;
+      setIsPaused(true);
+      if (tickTimeoutRef.current) clearTimeout(tickTimeoutRef.current);
     }
   };
 
   const resetGame = () => {
-    setSnake(INITIAL_SNAKE);
-    setDirection({ x: 0, y: -1 });
+    snakeRef.current = [{ x: 10, y: 10 }];
+    dirRef.current = { x: 0, y: -1 };
+    nextDirRef.current = { x: 0, y: -1 };
+    scoreRef.current = 0;
     setScore(0);
+    isGameOverRef.current = false;
+    isStartedRef.current = false;
+    isPausedRef.current = false;
     setIsGameOver(false);
     setIsStarted(false);
     setIsPaused(false);
+    spawnFood();
+    draw();
   };
+
+  useEffect(() => {
+    return () => {
+      if (tickTimeoutRef.current) clearTimeout(tickTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <div className="snake-page-container">
       {/* HEADER / NAVIGATION BAR */}
       <div className="snake-header-bar">
         <div className="snake-header-left">
-          {/* Small back icon button visible on Mobile */}
           <button
             className="mobile-back-btn mobile-only"
             onClick={() => navigate("/arcade")}
@@ -173,7 +275,6 @@ export default function SnakeGame() {
             <ArrowLeft size={16} />
           </button>
 
-          {/* Combined Top Stats Bar */}
           <div className="snake-stats-bar">
             <div className="snake-stat-box">Score: {score}</div>
             <div className="snake-stat-box">Speed: Lvl {speedLevel}</div>
@@ -181,7 +282,6 @@ export default function SnakeGame() {
           </div>
         </div>
 
-        {/* Top Scores Button */}
         <button
           className="snake-btn-trophy"
           onClick={() => setIsModalOpen(true)}
@@ -191,47 +291,20 @@ export default function SnakeGame() {
         </button>
       </div>
 
-      {/* MAIN GAME LAYOUT */}
       <div className="snake-main-layout">
-        {/* GAME BOARD */}
-        <div className="snake-board-wrapper">
-          <div
-            className="snake-grid-container"
+        <div className="snake-board-wrapper" ref={wrapperRef}>
+          <canvas
+            ref={canvasRef}
+            width={canvasPx}
+            height={canvasPx}
             style={{
-              gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
-              gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
+              width: "100%",
+              height: "100%",
+              borderRadius: 8,
+              display: "block",
             }}
-          >
-            {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => {
-              const x = i % GRID_SIZE;
-              const y = Math.floor(i / GRID_SIZE);
-              const isSnake = snake.some((s) => s.x === x && s.y === y);
-              const isFood = food.x === x && food.y === y;
+          />
 
-              let bgColor = "transparent";
-              let shadow = "none";
-
-              if (isSnake) {
-                bgColor = "#81c784";
-              } else if (isFood) {
-                bgColor = "#e57373";
-                shadow = "0 0 8px #e57373";
-              }
-
-              return (
-                <div
-                  key={i}
-                  style={{
-                    backgroundColor: bgColor,
-                    borderRadius: "2px",
-                    boxShadow: shadow,
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          {/* OVERLAYS */}
           {!isStarted && !isGameOver && (
             <div className="snake-overlay">
               <h3 style={{ textAlign: "center" }}>
@@ -262,47 +335,32 @@ export default function SnakeGame() {
           )}
         </div>
 
-        {/* CONTROLS (Positioned on the side for desktop) */}
         <div className="snake-side-controls">
           <button
             className="snake-btn-pause"
-            onClick={() => setIsPaused(!isPaused)}
+            onClick={togglePause}
             disabled={!isStarted || isGameOver}
           >
             {isPaused ? "Resume" : "Pause"}
           </button>
 
-          {/* D-PAD CONTROLS */}
           <div className="d-pad">
-            <button
-              className="d-pad-btn d-up"
-              onClick={() => handleMobileDir({ x: 0, y: -1 })}
-            >
+            <button className="d-pad-btn d-up" onClick={() => setDir(0, -1)}>
               <ArrowUp />
             </button>
-            <button
-              className="d-pad-btn d-left"
-              onClick={() => handleMobileDir({ x: -1, y: 0 })}
-            >
+            <button className="d-pad-btn d-left" onClick={() => setDir(-1, 0)}>
               <ArrowLeftIcon />
             </button>
-            <button
-              className="d-pad-btn d-right"
-              onClick={() => handleMobileDir({ x: 1, y: 0 })}
-            >
+            <button className="d-pad-btn d-right" onClick={() => setDir(1, 0)}>
               <ArrowRight />
             </button>
-            <button
-              className="d-pad-btn d-down"
-              onClick={() => handleMobileDir({ x: 0, y: 1 })}
-            >
+            <button className="d-pad-btn d-down" onClick={() => setDir(0, 1)}>
               <ArrowDown />
             </button>
           </div>
         </div>
       </div>
 
-      {/* MODAL COMPONENT FOR SCORES */}
       <ScoreModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
