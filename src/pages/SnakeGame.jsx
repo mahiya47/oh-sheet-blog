@@ -12,7 +12,9 @@ import api from "../api";
 import ScoreModal from "../components/ScoreModal";
 
 const GRID_SIZE = 20;
-const INITIAL_SPEED = 150;
+const INITIAL_SPEED = 120;
+const MINIMUM_SPEED = 40;
+const SPEED_STEP = 5;
 
 export default function SnakeGame() {
   const navigate = useNavigate();
@@ -24,11 +26,13 @@ export default function SnakeGame() {
   const foodRef = useRef({ x: 15, y: 15 });
   const dirRef = useRef({ x: 0, y: -1 });
   const nextDirRef = useRef({ x: 0, y: -1 });
+  const speedRef = useRef(INITIAL_SPEED); // <-- live speed, read fresh every tick
 
   const [isGameOver, setIsGameOver] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [score, setScore] = useState(0);
+  const [speedLevel, setSpeedLevel] = useState(1);
   const [highScore, setHighScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,10 +43,6 @@ export default function SnakeGame() {
   const scoreRef = useRef(0);
   const tickTimeoutRef = useRef(null);
 
-  const speedLevel = Math.floor(score / 30) + 1;
-  const currentSpeed = Math.max(60, INITIAL_SPEED - (speedLevel - 1) * 10);
-
-  // Resize canvas to fit its container, responsive for mobile/desktop
   useEffect(() => {
     const resize = () => {
       if (!wrapperRef.current) return;
@@ -80,10 +80,9 @@ export default function SnakeGame() {
 
     ctx.clearRect(0, 0, canvasPx, canvasPx);
 
-    // food
-    ctx.fillStyle = "#e57373";
+    ctx.fillStyle = "#ff5252";
     ctx.shadowBlur = 10;
-    ctx.shadowColor = "#e57373";
+    ctx.shadowColor = "#ff5252";
     ctx.fillRect(
       foodRef.current.x * cell + 2,
       foodRef.current.y * cell + 2,
@@ -92,7 +91,6 @@ export default function SnakeGame() {
     );
     ctx.shadowBlur = 0;
 
-    // snake
     const snake = snakeRef.current;
     for (let i = 0; i < snake.length; i++) {
       ctx.fillStyle = i === 0 ? "#4caf50" : "#81c784";
@@ -132,6 +130,9 @@ export default function SnakeGame() {
     }
   }, [fetchLeaderboard]);
 
+  // The loop schedules itself using speedRef.current, read fresh every
+  // single call — so speed changes take effect immediately, mid-loop,
+  // exactly like the vanilla setTimeout(gameLoop, currentSpeed) version.
   const tick = useCallback(() => {
     if (!isStartedRef.current || isGameOverRef.current || isPausedRef.current)
       return;
@@ -140,7 +141,6 @@ export default function SnakeGame() {
     const snake = snakeRef.current;
     const head = snake[0];
 
-    // Wrap around edges instead of ending the game
     let newX = head.x + dirRef.current.x;
     let newY = head.y + dirRef.current.y;
     if (newX < 0) newX = GRID_SIZE - 1;
@@ -150,7 +150,6 @@ export default function SnakeGame() {
 
     const newHead = { x: newX, y: newY };
 
-    // Only self-collision ends the game now
     if (snake.some((s) => s.x === newHead.x && s.y === newHead.y)) {
       handleGameOver();
       return;
@@ -161,14 +160,23 @@ export default function SnakeGame() {
     if (newHead.x === foodRef.current.x && newHead.y === foodRef.current.y) {
       scoreRef.current += 10;
       setScore(scoreRef.current);
+
+      // Speed up on every apple, matching the vanilla script exactly
+      if (speedRef.current > MINIMUM_SPEED) {
+        speedRef.current -= SPEED_STEP;
+        const level =
+          Math.floor((INITIAL_SPEED - speedRef.current) / SPEED_STEP) + 1;
+        setSpeedLevel(level);
+      }
+
       spawnFood();
     } else {
       snake.pop();
     }
 
     draw();
-    tickTimeoutRef.current = setTimeout(tick, currentSpeed);
-  }, [draw, spawnFood, handleGameOver, currentSpeed]);
+    tickTimeoutRef.current = setTimeout(tick, speedRef.current);
+  }, [draw, spawnFood, handleGameOver]);
 
   useEffect(() => {
     if (score > highScore) setHighScore(score);
@@ -183,13 +191,13 @@ export default function SnakeGame() {
       isPausedRef.current = false;
       setIsPaused(false);
     }
-    if (tickTimeoutRef.current) clearTimeout(tickTimeoutRef.current);
-    tickTimeoutRef.current = setTimeout(tick, currentSpeed);
+    if (!tickTimeoutRef.current) {
+      tickTimeoutRef.current = setTimeout(tick, speedRef.current);
+    }
   };
 
   const setDir = (nx, ny) => {
     const { x: dx, y: dy } = dirRef.current;
-    // prevent reversing directly into yourself
     if (nx !== 0 && dx !== 0) return;
     if (ny !== 0 && dy !== 0) return;
     nextDirRef.current = { x: nx, y: ny };
@@ -225,18 +233,21 @@ export default function SnakeGame() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSpeed]);
+  }, []);
 
   const togglePause = () => {
     if (!isStartedRef.current || isGameOverRef.current) return;
     if (isPausedRef.current) {
       isPausedRef.current = false;
       setIsPaused(false);
-      tickTimeoutRef.current = setTimeout(tick, currentSpeed);
+      tickTimeoutRef.current = setTimeout(tick, speedRef.current);
     } else {
       isPausedRef.current = true;
       setIsPaused(true);
-      if (tickTimeoutRef.current) clearTimeout(tickTimeoutRef.current);
+      if (tickTimeoutRef.current) {
+        clearTimeout(tickTimeoutRef.current);
+        tickTimeoutRef.current = null;
+      }
     }
   };
 
@@ -244,14 +255,20 @@ export default function SnakeGame() {
     snakeRef.current = [{ x: 10, y: 10 }];
     dirRef.current = { x: 0, y: -1 };
     nextDirRef.current = { x: 0, y: -1 };
+    speedRef.current = INITIAL_SPEED;
     scoreRef.current = 0;
     setScore(0);
+    setSpeedLevel(1);
     isGameOverRef.current = false;
     isStartedRef.current = false;
     isPausedRef.current = false;
     setIsGameOver(false);
     setIsStarted(false);
     setIsPaused(false);
+    if (tickTimeoutRef.current) {
+      clearTimeout(tickTimeoutRef.current);
+      tickTimeoutRef.current = null;
+    }
     spawnFood();
     draw();
   };
@@ -264,7 +281,6 @@ export default function SnakeGame() {
 
   return (
     <div className="snake-page-container">
-      {/* HEADER / NAVIGATION BAR */}
       <div className="snake-header-bar">
         <div className="snake-header-left">
           <button
@@ -276,9 +292,15 @@ export default function SnakeGame() {
           </button>
 
           <div className="snake-stats-bar">
-            <div className="snake-stat-box">Score: {score}</div>
-            <div className="snake-stat-box">Speed: Lvl {speedLevel}</div>
-            <div className="snake-stat-box">High: {highScore}</div>
+            <div className="snake-stat-box">
+              Score: <span>{score}</span>
+            </div>
+            <div className="snake-stat-box">
+              Speed Level: <span>{speedLevel}</span>
+            </div>
+            <div className="snake-stat-box">
+              High Score: <span>{highScore}</span>
+            </div>
           </div>
         </div>
 
@@ -297,38 +319,36 @@ export default function SnakeGame() {
             ref={canvasRef}
             width={canvasPx}
             height={canvasPx}
-            style={{
-              width: "100%",
-              height: "100%",
-              borderRadius: 8,
-              display: "block",
-            }}
+            style={{ width: "100%", height: "100%", display: "block" }}
           />
 
           {!isStarted && !isGameOver && (
             <div className="snake-overlay">
-              <h3 style={{ textAlign: "center" }}>
-                Press an arrow key / D-Pad to start
-              </h3>
+              <h1>SNAKE GAME</h1>
+              <p>
+                Control the snake using <strong>Arrow Keys</strong> or the{" "}
+                <strong>D-Pad</strong>. Walls are safe — you wrap around them!
+              </p>
+              <button className="btn" onClick={beginMoving}>
+                Start Game
+              </button>
             </div>
           )}
           {isPaused && !isGameOver && (
             <div className="snake-overlay">
-              <h2 style={{ textAlign: "center", letterSpacing: "2px" }}>
-                PAUSED
-              </h2>
+              <h2>Game Paused</h2>
+              <button className="btn" onClick={togglePause}>
+                Continue
+              </button>
             </div>
           )}
           {isGameOver && (
             <div className="snake-overlay">
-              <h2 style={{ color: "#e57373", textAlign: "center" }}>
-                Game Over!
-              </h2>
-              <button
-                className="btn"
-                onClick={resetGame}
-                style={{ marginTop: 10 }}
-              >
+              <h2>Game Over</h2>
+              <p style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
+                Final Score: {score}
+              </p>
+              <button className="btn" onClick={resetGame}>
                 Play Again
               </button>
             </div>
