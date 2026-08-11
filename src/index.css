@@ -2819,3 +2819,102 @@ body.chat-page-active {
     font-size: 0.85rem;
   }
 }
+
+/* =========================================================================
+   ARCADE MOBILE SPECIFIC LAYOUT (Wireframe Match)
+   ========================================================================= */
+
+.mobile-only {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
+  .snake-wireframe-container {
+    flex-direction: column;
+    gap: 0; /* Tighten up for mobile */
+    padding: 5px;
+  }
+
+  /* --- Mobile Top Header --- */
+  .arcade-mobile-header {
+    align-items: center;
+    width: 100%;
+    border: 2px solid var(--arcade-border);
+    border-radius: 8px;
+    background: var(--arcade-surface);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .arcade-mobile-header > * {
+    flex: 1;
+    text-align: center;
+    border-right: 2px solid var(--arcade-border);
+    padding: 8px 4px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .arcade-mobile-header > *:last-child {
+    border-right: none;
+  }
+
+  .arcade-mobile-header span {
+    color: var(--arcade-green);
+    font-size: 0.85rem;
+    margin-top: 2px;
+  }
+
+  .arcade-mobile-back {
+    flex: 0 0 40px !important;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .arcade-mobile-trophy {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* --- Mobile Bottom Controls --- */
+  .arcade-mobile-controls {
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 15px;
+  }
+
+  .arcade-mobile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 110px;
+  }
+
+  .arcade-mobile-actions .snake-action-btn {
+    padding: 12px 10px;
+    font-size: 0.9rem;
+    width: 100%;
+    margin: 0;
+  }
+
+  .arcade-mobile-controls .d-pad {
+    margin-top: 0;
+  }
+}

@@ -4,16 +4,20 @@ import {
   ArrowDown,
   ArrowLeft as ArrowLeftIcon,
   ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useStore } from "../lib/store.jsx";
+import ScoreModal from "../components/ScoreModal";
 
 const GRID_SIZE = 20;
 const INITIAL_SPEED = 120;
 const SPEED_STEP = 5;
 
 export default function SnakeGame() {
-  const { currentUser } = useStore(); // Grab current user to find personal best
+  const navigate = useNavigate();
+  const { currentUser } = useStore();
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
   const [canvasPx, setCanvasPx] = useState(500);
@@ -27,9 +31,13 @@ export default function SnakeGame() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+
   const [score, setScore] = useState(0);
   const [speedLevel, setSpeedLevel] = useState(1);
   const [highScore, setHighScore] = useState(0);
+
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isStartedRef = useRef(false);
   const isPausedRef = useRef(false);
@@ -37,28 +45,35 @@ export default function SnakeGame() {
   const scoreRef = useRef(0);
   const tickTimeoutRef = useRef(null);
 
-  // --- FETCH HIGH SCORE ON LOAD ---
-  useEffect(() => {
+  // --- FETCH LEADERBOARD & HIGH SCORE ---
+  const fetchLeaderboardAndBest = useCallback(() => {
     api
       .get("/arcade/snake/leaderboard")
       .then((res) => {
-        if (currentUser && res.data) {
-          // Look for your specific score in the database
-          const myBest = res.data.find(
-            (entry) => entry.user?.username === currentUser.username,
-          );
-          if (myBest) {
-            setHighScore(myBest.score);
-            return;
+        if (res.data) {
+          const sortedData = res.data.sort((a, b) => b.score - a.score);
+          setLeaderboard(sortedData);
+
+          if (currentUser) {
+            const myBest = sortedData.find(
+              (entry) => entry.user?.username === currentUser.username,
+            );
+            if (myBest) {
+              setHighScore(myBest.score);
+              return;
+            }
           }
-        }
-        // Fallback: If you haven't played, show the #1 global high score
-        if (res.data && res.data.length > 0) {
-          setHighScore(Math.max(...res.data.map((entry) => entry.score)));
+          if (sortedData.length > 0) {
+            setHighScore(sortedData[0].score);
+          }
         }
       })
       .catch(console.error);
   }, [currentUser]);
+
+  useEffect(() => {
+    fetchLeaderboardAndBest();
+  }, [fetchLeaderboardAndBest]);
 
   // Auto-resize canvas
   useEffect(() => {
@@ -127,11 +142,12 @@ export default function SnakeGame() {
     if (scoreRef.current > 0) {
       try {
         await api.post("/arcade/snake/score", { score: scoreRef.current });
+        fetchLeaderboardAndBest();
       } catch (err) {
         console.error(err);
       }
     }
-  }, []);
+  }, [fetchLeaderboardAndBest]);
 
   const tick = useCallback(() => {
     if (!isStartedRef.current || isGameOverRef.current || isPausedRef.current)
@@ -176,7 +192,6 @@ export default function SnakeGame() {
     tickTimeoutRef.current = setTimeout(tick, speedRef.current);
   }, [draw, spawnFood, handleGameOver]);
 
-  // Update local high score in real-time if we beat it during the current session
   useEffect(() => {
     if (score > highScore) setHighScore(score);
   }, [score, highScore]);
@@ -224,6 +239,7 @@ export default function SnakeGame() {
     if (!isGameOverRef.current && scoreRef.current > 0) {
       try {
         await api.post("/arcade/snake/score", { score: scoreRef.current });
+        fetchLeaderboardAndBest();
       } catch (err) {}
     }
     snakeRef.current = [{ x: 10, y: 10 }];
@@ -274,8 +290,33 @@ export default function SnakeGame() {
 
   return (
     <div style={{ padding: "0" }}>
+      {/* MOBILE HEADER (Hidden on Desktop) */}
+      <div className="arcade-mobile-header mobile-only">
+        <button
+          className="arcade-mobile-back"
+          onClick={() => navigate("/arcade")}
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <div>
+          Score <span>{score}</span>
+        </div>
+        <div>
+          Speed <span>{speedLevel}</span>
+        </div>
+        <div>
+          High <span>{highScore}</span>
+        </div>
+        <button
+          className="arcade-mobile-trophy"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Top Scorers
+        </button>
+      </div>
+
       <div className="snake-wireframe-container">
-        {/* LEFT/MAIN: Game Box */}
+        {/* GAME BOARD */}
         <div className="snake-wireframe-board" ref={wrapperRef}>
           <canvas
             ref={canvasRef}
@@ -313,8 +354,8 @@ export default function SnakeGame() {
           )}
         </div>
 
-        {/* RIGHT/MIDDLE: Stats & Controls */}
-        <div className="snake-wireframe-controls">
+        {/* DESKTOP CONTROLS (Hidden on Mobile) */}
+        <div className="snake-wireframe-controls desktop-only">
           <div className="snake-wireframe-stats">
             <div className="snake-stat-row">
               Score <span>{score}</span>
@@ -326,7 +367,6 @@ export default function SnakeGame() {
               High Score <span>{highScore}</span>
             </div>
           </div>
-
           <div
             className="snake-action-buttons"
             style={{
@@ -354,7 +394,6 @@ export default function SnakeGame() {
               Restart
             </button>
           </div>
-
           <div className="d-pad" style={{ marginTop: "10px" }}>
             <button className="d-pad-btn d-up" onClick={() => setDir(0, -1)}>
               <ArrowUp size={20} />
@@ -370,7 +409,51 @@ export default function SnakeGame() {
             </button>
           </div>
         </div>
+
+        {/* MOBILE CONTROLS (Hidden on Desktop) */}
+        <div className="arcade-mobile-controls mobile-only">
+          <div className="arcade-mobile-actions">
+            <button
+              className="snake-action-btn"
+              onClick={beginMoving}
+              disabled={isStarted && !isPaused}
+            >
+              Play
+            </button>
+            <button
+              className="snake-action-btn"
+              onClick={togglePause}
+              disabled={!isStarted || isGameOver}
+            >
+              Pause
+            </button>
+            <button className="snake-action-btn" onClick={resetGame}>
+              Restart
+            </button>
+          </div>
+          <div className="d-pad">
+            <button className="d-pad-btn d-up" onClick={() => setDir(0, -1)}>
+              <ArrowUp size={20} />
+            </button>
+            <button className="d-pad-btn d-left" onClick={() => setDir(-1, 0)}>
+              <ArrowLeftIcon size={20} />
+            </button>
+            <button className="d-pad-btn d-right" onClick={() => setDir(1, 0)}>
+              <ArrowRight size={20} />
+            </button>
+            <button className="d-pad-btn d-down" onClick={() => setDir(0, 1)}>
+              <ArrowDown size={20} />
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Mobile Top Scorers Modal */}
+      <ScoreModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        leaderboard={leaderboard}
+      />
     </div>
   );
 }

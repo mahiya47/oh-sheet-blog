@@ -1,27 +1,55 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
+import { useStore } from "../lib/store.jsx";
+import ScoreModal from "../components/ScoreModal";
 
 export default function ReactionGame() {
   const navigate = useNavigate();
+  const { currentUser } = useStore();
+
   const [gameState, setGameState] = useState("waiting"); // waiting, ready, clicked, result
   const [reactionTime, setReactionTime] = useState(null);
   const [bestTime, setBestTime] = useState(null);
+
   const [leaderboard, setLeaderboard] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const timeoutRef = useRef(null);
   const startTimeRef = useRef(0);
 
-  // Fetch leaderboard when component mounts OR when bestTime changes
-  useEffect(() => {
+  // --- FETCH LEADERBOARD & PERSONAL BEST ---
+  const fetchLeaderboardAndBest = useCallback(() => {
     api
       .get("/arcade/reaction/leaderboard")
-      .then((res) => setLeaderboard(res.data))
-      .catch((err) => console.error("Failed to load leaderboard:", err));
+      .then((res) => {
+        if (res.data) {
+          // Reaction time scores are lowest = best (ascending sort)
+          const sortedData = res.data.sort((a, b) => a.score - b.score);
+          setLeaderboard(sortedData);
 
+          if (currentUser) {
+            const myBest = sortedData.find(
+              (entry) => entry.user?.username === currentUser.username,
+            );
+            if (myBest) {
+              setBestTime(myBest.score);
+              return;
+            }
+          }
+          if (sortedData.length > 0) {
+            setBestTime(sortedData[0].score);
+          }
+        }
+      })
+      .catch((err) => console.error("Failed to load leaderboard:", err));
+  }, [currentUser]);
+
+  useEffect(() => {
+    fetchLeaderboardAndBest();
     return () => clearTimeout(timeoutRef.current);
-  }, [bestTime]);
+  }, [fetchLeaderboardAndBest]);
 
   const startGame = () => {
     setGameState("ready");
@@ -49,8 +77,12 @@ export default function ReactionGame() {
 
       if (!bestTime || timeTaken < bestTime) {
         setBestTime(timeTaken);
-        // Save new high score, which will trigger the useEffect to refresh the leaderboard
-        await api.post("/arcade/reaction/score", { score: timeTaken });
+        try {
+          await api.post("/arcade/reaction/score", { score: timeTaken });
+          fetchLeaderboardAndBest();
+        } catch (err) {
+          console.error("Failed to save reaction score:", err);
+        }
       }
     }
   };
@@ -62,151 +94,129 @@ export default function ReactionGame() {
       case "clicked":
         return "#4caf50";
       default:
-        return "var(--surface, #1e1e1e)";
+        return "var(--arcade-surface-2, #1a1a1a)";
     }
   };
 
   return (
-    <div
-      className="feed-col"
-      style={{
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100%",
-      }}
-    >
-      {/* HEADER */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 20,
-        }}
-      >
-        <button className="btn btn-ghost" onClick={() => navigate("/arcade")}>
-          <ArrowLeft size={18} />
+    <div style={{ padding: "0" }}>
+      {/* MOBILE HEADER (Hidden on Desktop) */}
+      <div className="arcade-mobile-header mobile-only">
+        <button
+          className="arcade-mobile-back"
+          onClick={() => navigate("/arcade")}
+        >
+          <ArrowLeft size={20} />
         </button>
-        <h1 style={{ fontSize: "1.2rem", margin: 0 }}>Reaction Tester</h1>
-      </div>
-
-      {/* GAME AREA */}
-      <div
-        className="reaction-game-area"
-        onClick={handleClick}
-        style={{ backgroundColor: getBackgroundColor() }}
-      >
-        {gameState === "waiting" && <h2>Tap to Start</h2>}
-        {gameState === "ready" && <h2>Wait for Green...</h2>}
-        {gameState === "clicked" && <h1>TAP NOW!</h1>}
-        {gameState === "result" && (
-          <>
-            <h2>{reactionTime} ms</h2>
-            <p style={{ marginTop: "10px" }}>Tap to try again</p>
-          </>
-        )}
-      </div>
-
-      {/* PERSONAL BEST */}
-      {bestTime && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "15px",
-            marginTop: "10px",
-            fontSize: "1.1rem",
-          }}
-        >
-          Personal Best:{" "}
-          <strong style={{ color: "var(--accent)" }}>{bestTime} ms</strong>
+        <div>
+          State <span>{gameState.toUpperCase()}</span>
         </div>
-      )}
+        <div>
+          Best <span>{bestTime ? `${bestTime}ms` : "-"}</span>
+        </div>
+        <button
+          className="arcade-mobile-trophy"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Top Scorers
+        </button>
+      </div>
 
-      {/* LEADERBOARD SECTION */}
-      <div
-        style={{
-          marginTop: "30px",
-          backgroundColor: "var(--surface)",
-          padding: "20px",
-          borderRadius: "12px",
-          border: "1px solid var(--border)",
-        }}
-      >
-        <h3
+      <div className="snake-wireframe-container">
+        {/* LEFT/MAIN: Reaction Click Area (Replaces the canvas board) */}
+        <div
+          className="snake-wireframe-board"
+          onClick={handleClick}
           style={{
+            backgroundColor: getBackgroundColor(),
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            gap: "8px",
-            margin: "0 0 16px 0",
-            color: "var(--accent)",
+            justifyContent: "center",
+            cursor: "pointer",
+            userSelect: "none",
+            textAlign: "center",
+            padding: "20px",
           }}
         >
-          <Trophy size={20} /> Top 10 Fastest
-        </h3>
+          {gameState === "waiting" && (
+            <h2 style={{ color: "#fff" }}>Tap / Click to Start</h2>
+          )}
+          {gameState === "ready" && (
+            <h2 style={{ color: "#fff" }}>Wait for Green...</h2>
+          )}
+          {gameState === "clicked" && (
+            <h1 style={{ color: "#000", fontSize: "2.5rem" }}>TAP NOW!</h1>
+          )}
+          {gameState === "result" && (
+            <>
+              <h2 style={{ color: "var(--arcade-green)", fontSize: "2rem" }}>
+                {reactionTime} ms
+              </h2>
+              <p style={{ color: "var(--arcade-text-dim)", marginTop: "10px" }}>
+                Click to try again
+              </p>
+            </>
+          )}
+        </div>
 
-        {leaderboard.length === 0 ? (
-          <p style={{ color: "var(--text-muted)", margin: 0 }}>
-            No scores yet. Be the first!
-          </p>
-        ) : (
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-          >
-            {leaderboard.map((entry, index) => (
-              <div
-                key={entry.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  paddingBottom: "12px",
-                  borderBottom:
-                    index !== leaderboard.length - 1
-                      ? "1px solid var(--border)"
-                      : "none",
-                }}
-              >
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "12px" }}
-                >
-                  <strong style={{ width: "20px", color: "var(--text-muted)" }}>
-                    #{index + 1}
-                  </strong>
-                  {entry.user.avatarUrl ? (
-                    <img
-                      src={entry.user.avatarUrl}
-                      alt="avatar"
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
-                        backgroundColor: "#555",
-                      }}
-                    />
-                  )}
-                  <span style={{ fontWeight: "500" }}>
-                    {entry.user.name || entry.user.username}
-                  </span>
-                </div>
-
-                <strong style={{ color: "var(--accent)" }}>
-                  {entry.score} ms
-                </strong>
-              </div>
-            ))}
+        {/* RIGHT/MIDDLE: Stats & Controls (Desktop) */}
+        <div className="snake-wireframe-controls desktop-only">
+          <div className="snake-wireframe-stats">
+            <div className="snake-stat-row">
+              Status <span>{gameState.toUpperCase()}</span>
+            </div>
+            <div className="snake-stat-row">
+              Result <span>{reactionTime ? `${reactionTime}ms` : "-"}</span>
+            </div>
+            <div className="snake-stat-row">
+              Best <span>{bestTime ? `${bestTime}ms` : "-"}</span>
+            </div>
           </div>
-        )}
+
+          <div
+            className="snake-action-buttons"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              marginTop: "10px",
+            }}
+          >
+            <button
+              className="snake-action-btn"
+              onClick={startGame}
+              style={{ backgroundColor: "var(--arcade-green)", color: "#000" }}
+            >
+              Start Test
+            </button>
+          </div>
+        </div>
+
+        {/* MOBILE CONTROLS (Hidden on Desktop) */}
+        <div className="arcade-mobile-controls mobile-only">
+          <div className="arcade-mobile-actions" style={{ width: "100%" }}>
+            <button
+              className="snake-action-btn"
+              onClick={startGame}
+              style={{
+                backgroundColor: "var(--arcade-green)",
+                color: "#000",
+                width: "100%",
+              }}
+            >
+              Start Test / Reset
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Mobile Top Scorers Modal */}
+      <ScoreModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        leaderboard={leaderboard}
+      />
     </div>
   );
 }
