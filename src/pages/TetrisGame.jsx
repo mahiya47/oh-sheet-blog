@@ -10,9 +10,9 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useStore } from "../lib/store.jsx";
 
-// --- TETRIS CONSTANTS ---
-const COLS = 10;
-const ROWS = 20;
+// --- WIDER, SHORTER TETRIS BOARD ---
+const COLS = 14;
+const ROWS = 18;
 const INITIAL_SPEED = 500;
 
 const TETROMINOES = {
@@ -66,6 +66,7 @@ const getRandomPiece = () => {
   const randKey = keys[Math.floor(Math.random() * keys.length)];
   return {
     ...TETROMINOES[randKey],
+    // Centers the piece dynamically based on the new COLS width
     pos: {
       x:
         Math.floor(COLS / 2) -
@@ -248,7 +249,7 @@ export default function TetrisGame() {
 
   useEffect(() => {
     if (!isStarted || isGameOver || isPaused) return;
-    const speed = Math.max(100, INITIAL_SPEED - lines * 10); // Gets faster with lines
+    const speed = Math.max(100, INITIAL_SPEED - lines * 10);
     const interval = setInterval(() => {
       movePlayer(0, 1);
     }, speed);
@@ -306,12 +307,12 @@ export default function TetrisGame() {
   return (
     <div style={{ padding: "0" }}>
       <div className="snake-wireframe-container">
-        {/* LEFT/MAIN: Game Box (Overridden for Tetris Dimensions) */}
+        {/* LEFT/MAIN: Game Box - Width is now 400px and aspect ratio matches our 14x18 grid */}
         <div
           className="snake-wireframe-board"
           style={{
-            aspectRatio: "1 / 2",
-            flex: "0 1 350px", // Keeps it from getting too wide
+            aspectRatio: `${COLS} / ${ROWS}`,
+            flex: "0 1 400px", // Increased width, height will adjust dynamically
             display: "grid",
             gridTemplateColumns: `repeat(${COLS}, 1fr)`,
             gridTemplateRows: `repeat(${ROWS}, 1fr)`,
