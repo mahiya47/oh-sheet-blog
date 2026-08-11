@@ -10,7 +10,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useStore } from "../lib/store.jsx";
-import ScoreModal from "../components/ScoreModal";
 
 const COLS = 16;
 const ROWS = 20;
@@ -94,18 +93,13 @@ export default function TetrisGame() {
   const [lines, setLines] = useState(0);
   const [highScore, setHighScore] = useState(0);
 
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // --- FETCH LEADERBOARD & HIGH SCORE ---
-  const fetchLeaderboardAndBest = useCallback(() => {
+  // --- FETCH HIGH SCORE ON LOAD ---
+  const fetchHighScore = useCallback(() => {
     api
       .get("/arcade/tetris/leaderboard")
       .then((res) => {
         if (res.data) {
           const sortedData = res.data.sort((a, b) => b.score - a.score);
-          setLeaderboard(sortedData);
-
           if (currentUser) {
             const myBest = sortedData.find(
               (entry) => entry.user?.username === currentUser.username,
@@ -124,8 +118,8 @@ export default function TetrisGame() {
   }, [currentUser]);
 
   useEffect(() => {
-    fetchLeaderboardAndBest();
-  }, [fetchLeaderboardAndBest]);
+    fetchHighScore();
+  }, [fetchHighScore]);
   useEffect(() => {
     if (score > highScore) setHighScore(score);
   }, [score, highScore]);
@@ -282,7 +276,7 @@ export default function TetrisGame() {
     if (score > 0) {
       try {
         await api.post("/arcade/tetris/score", { score });
-        fetchLeaderboardAndBest();
+        fetchHighScore();
       } catch (err) {
         console.error(err);
       }
@@ -317,13 +311,16 @@ export default function TetrisGame() {
 
   return (
     <div style={{ padding: "0" }}>
-      {/* MOBILE HEADER (Hidden on Desktop) */}
-      <div className="arcade-mobile-header mobile-only">
+      {/* MOBILE TOP BAR (Matches your exact wireframe: back, score, lines, high score) */}
+      <div
+        className="arcade-mobile-header mobile-only"
+        style={{ display: "grid", gridTemplateColumns: "40px 1fr 1fr 1fr" }}
+      >
         <button
           className="arcade-mobile-back"
           onClick={() => navigate("/arcade")}
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={18} />
         </button>
         <div>
           Score <span>{score}</span>
@@ -334,12 +331,6 @@ export default function TetrisGame() {
         <div>
           High <span>{highScore}</span>
         </div>
-        <button
-          className="arcade-mobile-trophy"
-          onClick={() => setIsModalOpen(true)}
-        >
-          Top Scorers
-        </button>
       </div>
 
       <div className="snake-wireframe-container">
@@ -424,18 +415,11 @@ export default function TetrisGame() {
               className="snake-action-btn"
               onClick={() => {
                 if (!isStarted) startGame();
-                else setIsPaused(false);
+                else setIsPaused((prev) => !prev);
               }}
-              disabled={isStarted && !isPaused}
+              disabled={isGameOver}
             >
-              Play
-            </button>
-            <button
-              className="snake-action-btn"
-              onClick={() => setIsPaused(true)}
-              disabled={!isStarted || isGameOver}
-            >
-              Pause
+              {isPaused ? "Resume" : isStarted ? "Pause" : "Play"}
             </button>
             <button className="snake-action-btn" onClick={startGame}>
               Restart
@@ -466,31 +450,57 @@ export default function TetrisGame() {
           </div>
         </div>
 
-        {/* MOBILE CONTROLS (Hidden on Desktop) */}
-        <div className="arcade-mobile-controls mobile-only">
-          <div className="arcade-mobile-actions">
+        {/* MOBILE CONTROLS (Matches your exact wireframe: Play/Pause stacked on left, Reset below, D-Pad on right) */}
+        <div
+          className="arcade-mobile-controls mobile-only"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            width: "100%",
+            alignItems: "flex-start",
+            marginTop: "15px",
+          }}
+        >
+          {/* Left Column: Play/Pause and Reset */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              width: "110px",
+            }}
+          >
             <button
               className="snake-action-btn"
               onClick={() => {
                 if (!isStarted) startGame();
-                else setIsPaused(false);
+                else setIsPaused((prev) => !prev);
               }}
-              disabled={isStarted && !isPaused}
+              disabled={isGameOver}
+              style={{
+                width: "100%",
+                padding: "12px 6px",
+                fontSize: "0.85rem",
+              }}
             >
-              Play
+              {isPaused ? "Resume" : isStarted ? "Pause/Play" : "Play"}
             </button>
             <button
               className="snake-action-btn"
-              onClick={() => setIsPaused(true)}
-              disabled={!isStarted || isGameOver}
+              onClick={startGame}
+              style={{
+                width: "100%",
+                padding: "12px 6px",
+                fontSize: "0.85rem",
+                backgroundColor: "var(--arcade-surface-2)",
+              }}
             >
-              Pause
-            </button>
-            <button className="snake-action-btn" onClick={startGame}>
-              Restart
+              Reset
             </button>
           </div>
-          <div className="d-pad">
+
+          {/* Right Column: D-Pad Layout matching wireframe */}
+          <div className="d-pad" style={{ margin: 0 }}>
             <button className="d-pad-btn d-up" onClick={rotatePlayer}>
               <RotateCw size={20} />
             </button>
@@ -515,13 +525,6 @@ export default function TetrisGame() {
           </div>
         </div>
       </div>
-
-      {/* Mobile Top Scorers Modal */}
-      <ScoreModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        leaderboard={leaderboard}
-      />
     </div>
   );
 }
