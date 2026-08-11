@@ -345,7 +345,7 @@ export default function TetrisGame() {
       <div className="snake-wireframe-container">
         {/* GAME BOARD */}
         <div
-          className="snake-wireframe-board"
+          className="snake-wireframe-board tetris-mobile-board"
           style={{
             aspectRatio: `${COLS} / ${ROWS}`,
             flex: "0 1 440px",

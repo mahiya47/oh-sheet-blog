@@ -2445,9 +2445,8 @@ body.chat-page-active {
     display: none !important;
   }
 }
-
 /* =========================================================================
-   ARCADE & SNAKE GAME - UNIFIED CSS (Desktop & Mobile)
+   ARCADE & SNAKE/TETRIS GAME - UNIFIED CSS (Desktop & Mobile)
    ========================================================================= */
 
 :root {
@@ -2461,193 +2460,6 @@ body.chat-page-active {
   --arcade-surface-2: #1a1a1a;
   --arcade-border: #333333;
   --arcade-text-dim: #b3b3b3;
-}
-
-/* ---- Main Container ---- */
-.snake-wireframe-container {
-  display: flex;
-  gap: 30px;
-  width: 100%;
-  max-width: 850px;
-  margin: 0 auto;
-  align-items: flex-start;
-  padding: 10px;
-}
-
-/* ---- Left: Game Board ---- */
-.snake-wireframe-board {
-  flex: 1;
-  aspect-ratio: 1 / 1;
-  background-color: var(--arcade-surface-2);
-  border: 2px solid var(--arcade-border);
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-.snake-wireframe-board canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* ---- Right/Middle: Controls Column ---- */
-.snake-wireframe-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 160px; /* Fixed width matching the wireframe */
-  flex-shrink: 0;
-}
-
-/* Vertically Stacked Stats Box */
-.snake-wireframe-stats {
-  border: 2px solid var(--arcade-border);
-  border-radius: 8px;
-  background-color: var(--arcade-surface);
-  display: flex;
-  flex-direction: column;
-}
-
-.snake-stat-row {
-  padding: 12px;
-  text-align: center;
-  border-bottom: 2px solid var(--arcade-border);
-  font-weight: bold;
-  font-size: 0.95rem;
-  color: #fff;
-}
-.snake-stat-row:last-child {
-  border-bottom: none;
-}
-.snake-stat-row span {
-  color: var(--arcade-green);
-  display: block;
-  margin-top: 4px;
-  font-size: 1.1rem;
-}
-
-/* Action Buttons */
-.snake-action-btn {
-  padding: 12px;
-  font-weight: bold;
-  font-size: 1rem;
-  background-color: var(--arcade-surface);
-  border: 2px solid var(--arcade-border);
-  color: #fff;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.2s;
-}
-.snake-action-btn:hover:not(:disabled) {
-  background-color: #333;
-}
-.snake-action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* D-Pad */
-.d-pad {
-  display: grid;
-  grid-template-columns: repeat(3, 50px);
-  grid-template-rows: repeat(2, 50px);
-  gap: 5px;
-  justify-content: center;
-}
-.d-pad-btn {
-  background-color: var(--arcade-surface);
-  border: 2px solid var(--arcade-border);
-  border-radius: 8px;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.d-pad-btn:active {
-  background-color: var(--arcade-green);
-  color: black;
-}
-.d-up {
-  grid-column: 2;
-  grid-row: 1;
-}
-.d-left {
-  grid-column: 1;
-  grid-row: 2;
-}
-.d-right {
-  grid-column: 3;
-  grid-row: 2;
-}
-.d-down {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-/* Overlays (Start & Game Over Screens) */
-.snake-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(0, 0, 0, 0.75);
-  padding: 20px;
-  text-align: center;
-}
-.snake-overlay h2 {
-  color: #ff5252;
-  margin-bottom: 15px;
-  font-size: 2rem;
-  margin-top: 0;
-}
-.snake-overlay p {
-  color: var(--arcade-text-dim);
-}
-
-/* --- MOBILE SPECIFIC STYLES --- */
-@media (max-width: 768px) {
-  .snake-wireframe-container {
-    flex-direction: column;
-    gap: 20px;
-    padding: 5px;
-  }
-
-  .snake-wireframe-controls {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  /* Make stats row horizontal on mobile */
-  .snake-wireframe-stats {
-    flex-direction: row;
-    width: 100%;
-    justify-content: space-between;
-  }
-  .snake-stat-row {
-    border-bottom: none;
-    border-right: 2px solid var(--arcade-border);
-    flex: 1;
-    padding: 8px;
-  }
-  .snake-stat-row:last-child {
-    border-right: none;
-  }
-
-  /* Make buttons fill width side-by-side */
-  .snake-action-buttons {
-    display: flex;
-    width: 100%;
-    gap: 10px;
-  }
-  .snake-action-buttons > button {
-    flex: 1;
-  }
 }
 
 /* =========================================================================
@@ -2698,14 +2510,13 @@ body.chat-page-active {
   width: 100%;
   height: 160px;
   border-bottom: 2px solid var(--border, #333);
-  background-color: var(--surface-2, #1a1a1a);
+  background-color: var(--arcade-surface-2);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
 
-/* Fallback styling just in case an image fails to load */
 .arcade-card-img-wrapper img {
   width: 100%;
   height: 100%;
@@ -2735,9 +2546,9 @@ body.chat-page-active {
 }
 
 .arcade-badge {
-  background: var(--surface-2, #1a1a1a);
-  border: 1px solid var(--border-soft, #333);
-  color: var(--accent, #4caf50);
+  background: var(--arcade-surface-2);
+  border: 1px solid var(--arcade-border);
+  color: var(--arcade-green);
   font-size: 0.65rem;
   font-weight: 700;
   padding: 4px 8px;
@@ -2748,10 +2559,10 @@ body.chat-page-active {
 
 .arcade-card-desc {
   font-size: 0.85rem;
-  color: var(--text-muted, #999);
+  color: var(--arcade-text-dim);
   line-height: 1.5;
   margin: 0;
-  flex: 1; /* Pushes the button to the bottom */
+  flex: 1;
 }
 
 .arcade-play-btn {
@@ -2771,59 +2582,156 @@ body.chat-page-active {
 }
 
 .arcade-game-card:hover .arcade-play-btn {
-  background: var(--accent, #4caf50);
+  background: var(--arcade-green);
   color: #000;
-  border-color: var(--accent, #4caf50);
-}
-
-/* --- MOBILE SPECIFIC STYLES FOR ARCADE HUB --- */
-@media (max-width: 768px) {
-  .arcade-hub-container {
-    gap: 16px;
-    padding: 10px;
-  }
-
-  .arcade-hub-header {
-    font-size: 1.5rem; /* Slightly smaller header */
-  }
-
-  .arcade-hub-grid {
-    /* Forces a clean single column on mobile */
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .arcade-game-card {
-    border-width: 1px; /* Thinner borders for mobile */
-  }
-
-  .arcade-card-img-wrapper {
-    height: 120px; /* Shorter image to save vertical space */
-  }
-
-  .arcade-card-content {
-    padding: 16px; /* Tighter padding inside the card */
-    gap: 10px;
-  }
-
-  .arcade-card-title {
-    font-size: 1.1rem;
-  }
-
-  .arcade-card-desc {
-    font-size: 0.8rem;
-  }
-
-  .arcade-play-btn {
-    padding: 8px;
-    font-size: 0.85rem;
-  }
+  border-color: var(--arcade-green);
 }
 
 /* =========================================================================
-   ARCADE MOBILE SPECIFIC LAYOUT (Wireframe Match)
+   SNAKE & GAME WIREFRAME LAYOUT (3-Column Integration)
    ========================================================================= */
 
+.snake-wireframe-container {
+  display: flex;
+  gap: 30px;
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+  align-items: flex-start;
+  padding: 10px;
+}
+
+.snake-wireframe-board {
+  flex: 1;
+  aspect-ratio: 1 / 1;
+  background-color: var(--arcade-surface-2);
+  border: 2px solid var(--arcade-border);
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.snake-wireframe-board canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.snake-wireframe-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.snake-wireframe-stats {
+  border: 2px solid var(--arcade-border);
+  border-radius: 8px;
+  background-color: var(--arcade-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.snake-stat-row {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 2px solid var(--arcade-border);
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #fff;
+}
+.snake-stat-row:last-child {
+  border-bottom: none;
+}
+.snake-stat-row span {
+  color: var(--arcade-green);
+  display: block;
+  margin-top: 4px;
+  font-size: 1.1rem;
+}
+
+.snake-action-btn {
+  padding: 12px;
+  font-weight: bold;
+  font-size: 1rem;
+  background-color: var(--arcade-surface);
+  border: 2px solid var(--arcade-border);
+  color: #fff;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+.snake-action-btn:hover:not(:disabled) {
+  background-color: #333;
+}
+.snake-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.d-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 50px);
+  grid-template-rows: repeat(2, 50px);
+  gap: 5px;
+  justify-content: center;
+}
+.d-pad-btn {
+  background-color: var(--arcade-surface);
+  border: 2px solid var(--arcade-border);
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.d-pad-btn:active {
+  background-color: var(--arcade-green);
+  color: black;
+}
+.d-up {
+  grid-column: 2;
+  grid-row: 1;
+}
+.d-left {
+  grid-column: 1;
+  grid-row: 2;
+}
+.d-right {
+  grid-column: 3;
+  grid-row: 2;
+}
+.d-down {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.snake-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.75);
+  padding: 20px;
+  text-align: center;
+}
+.snake-overlay h2 {
+  color: #ff5252;
+  margin-bottom: 15px;
+  font-size: 2rem;
+  margin-top: 0;
+}
+.snake-overlay p {
+  color: var(--arcade-text-dim);
+}
+
+/* =========================================================================
+   MOBILE RESPONSIVE ADJUSTMENTS
+   ========================================================================= */
 .mobile-only {
   display: none !important;
 }
@@ -2839,11 +2747,10 @@ body.chat-page-active {
 
   .snake-wireframe-container {
     flex-direction: column;
-    gap: 0; /* Tighten up for mobile */
+    gap: 0;
     padding: 5px;
   }
 
-  /* --- Mobile Top Header --- */
   .arcade-mobile-header {
     align-items: center;
     width: 100%;
@@ -2892,7 +2799,6 @@ body.chat-page-active {
     cursor: pointer;
   }
 
-  /* --- Mobile Bottom Controls --- */
   .arcade-mobile-controls {
     justify-content: space-between;
     align-items: center;
@@ -2916,5 +2822,50 @@ body.chat-page-active {
 
   .arcade-mobile-controls .d-pad {
     margin-top: 0;
+  }
+
+  .arcade-hub-container {
+    gap: 16px;
+    padding: 10px;
+  }
+
+  .arcade-hub-header {
+    font-size: 1.5rem;
+  }
+
+  .arcade-hub-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .arcade-game-card {
+    border-width: 1px;
+  }
+
+  .arcade-card-img-wrapper {
+    height: 120px;
+  }
+
+  .arcade-card-content {
+    padding: 16px;
+    gap: 10px;
+  }
+
+  .arcade-card-title {
+    font-size: 1.1rem;
+  }
+
+  .arcade-card-desc {
+    font-size: 0.8rem;
+  }
+
+  .arcade-play-btn {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .tetris-mobile-board {
+    max-width: 70% !important;
+    margin: 0 auto;
   }
 }
