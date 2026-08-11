@@ -107,30 +107,39 @@ export default function RightSidebar() {
   const location = useLocation();
   const isHome = location.pathname === "/" || location.pathname === "/feed";
   const isChat = location.pathname.startsWith("/chat");
-  const isSnakeGame = location.pathname === "/arcade/snake";
-  const isOther = !isHome && !isChat && !isSnakeGame;
 
-  // --- SNAKE LEADERBOARD STATE & FETCH ---
+  // --- DYNAMIC ARCADE LEADERBOARD LOGIC ---
+  const isArcadeGame =
+    location.pathname.startsWith("/arcade/") &&
+    location.pathname !== "/arcade/";
+  const gameSlug = isArcadeGame ? location.pathname.split("/")[2] : null; // Extracts "snake", "tetris", etc.
+  const isOther = !isHome && !isChat && !isArcadeGame;
+
   const [topScores, setTopScores] = useState([]);
 
   useEffect(() => {
-    if (isSnakeGame) {
+    if (gameSlug) {
       api
-        .get("/arcade/snake/leaderboard")
+        .get(`/arcade/${gameSlug}/leaderboard`)
         .then((res) => {
-          const sortedData = res.data.sort((a, b) => b.score - a.score);
+          // Sort appropriately (Reaction game is asc, others are desc)
+          const isReaction = gameSlug === "reaction";
+          const sortedData = res.data.sort((a, b) =>
+            isReaction ? a.score - b.score : b.score - a.score,
+          );
           setTopScores(sortedData.slice(0, 5)); // Keep only top 5 for sidebar
         })
         .catch(console.error);
     }
-  }, [isSnakeGame]);
+  }, [gameSlug]);
 
+  // View Toggles
   // Home: everything. Chat: following + suggestions only.
-  // Snake: Leaderboard only. Everywhere else: trending + tags.
-  const showFollowingActivity = !isSnakeGame && (isHome || isChat);
-  const showTrending = !isSnakeGame && (isHome || isOther);
-  const showTags = !isSnakeGame && (isHome || isOther);
-  const showSuggestions = !isSnakeGame && (isHome || isChat);
+  // Arcade Game: Leaderboard only. Everywhere else: trending + tags.
+  const showFollowingActivity = !isArcadeGame && (isHome || isChat);
+  const showTrending = !isArcadeGame && (isHome || isOther);
+  const showTags = !isArcadeGame && (isHome || isOther);
+  const showSuggestions = !isArcadeGame && (isHome || isChat);
   const showFooter = true; // Footer always shows everywhere
 
   useEffect(() => {
@@ -151,8 +160,8 @@ export default function RightSidebar() {
   return (
     <aside className="rail-right-wrapper" aria-label="Activity">
       <div className="rail-right" ref={railRef}>
-        {/* --- SNAKE GAME LEADERBOARD PANEL --- */}
-        {isSnakeGame && (
+        {/* --- ARCADE GAME LEADERBOARD PANEL --- */}
+        {isArcadeGame && (
           <section className="panel">
             <h2
               className="panel-head"

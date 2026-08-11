@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  ArrowLeft,
-  Trophy,
   ArrowUp,
   ArrowDown,
   ArrowLeft as ArrowLeftIcon,
@@ -10,13 +8,13 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
+import { useStore } from "../lib/store.jsx";
 
 // --- TETRIS CONSTANTS ---
 const COLS = 10;
 const ROWS = 20;
 const INITIAL_SPEED = 500;
 
-// Tetromino shapes and their colors
 const TETROMINOES = {
   I: { shape: [[1, 1, 1, 1]], color: "#00f0f0" },
   J: {
@@ -82,24 +80,45 @@ const createEmptyBoard = () =>
 
 export default function TetrisGame() {
   const navigate = useNavigate();
+  const { currentUser } = useStore();
+
   const [board, setBoard] = useState(createEmptyBoard());
   const [currentPiece, setCurrentPiece] = useState(null);
+
   const [isGameOver, setIsGameOver] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
-  const [score, setScore] = useState(0);
-  const [leaderboard, setLeaderboard] = useState([]);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // Fetch Leaderboard
-  const fetchLeaderboard = useCallback(() => {
+  const [score, setScore] = useState(0);
+  const [lines, setLines] = useState(0);
+  const [highScore, setHighScore] = useState(0);
+
+  // --- FETCH HIGH SCORE ON LOAD ---
+  useEffect(() => {
     api
       .get("/arcade/tetris/leaderboard")
-      .then((res) => setLeaderboard(res.data))
+      .then((res) => {
+        if (currentUser && res.data) {
+          const myBest = res.data.find(
+            (entry) => entry.user?.username === currentUser.username,
+          );
+          if (myBest) {
+            setHighScore(myBest.score);
+            return;
+          }
+        }
+        if (res.data && res.data.length > 0) {
+          setHighScore(Math.max(...res.data.map((entry) => entry.score)));
+        }
+      })
       .catch(console.error);
-  }, []);
+  }, [currentUser]);
 
-  useEffect(() => fetchLeaderboard(), [fetchLeaderboard]);
+  // Update local high score in real-time
+  useEffect(() => {
+    if (score > highScore) setHighScore(score);
+  }, [score, highScore]);
 
-  // Collision Detection
   const checkCollision = (piece, newPos) => {
     for (let y = 0; y < piece.shape.length; y++) {
       for (let x = 0; x < piece.shape[y].length; x++) {
@@ -108,9 +127,9 @@ export default function TetrisGame() {
           const boardX = newPos.x + x;
           if (
             boardX < 0 ||
-            boardX >= COLS || // Walls
-            boardY >= ROWS || // Floor
-            (boardY >= 0 && board[boardY][boardX] !== null) // Other pieces
+            boardX >= COLS ||
+            boardY >= ROWS ||
+            (boardY >= 0 && board[boardY][boardX] !== null)
           ) {
             return true;
           }
@@ -120,9 +139,8 @@ export default function TetrisGame() {
     return false;
   };
 
-  // Movement Logic
   const movePlayer = (dirX, dirY) => {
-    if (!isStarted || isGameOver || !currentPiece) return;
+    if (!isStarted || isGameOver || isPaused || !currentPiece) return;
     const newPos = {
       x: currentPiece.pos.x + dirX,
       y: currentPiece.pos.y + dirY,
@@ -131,32 +149,24 @@ export default function TetrisGame() {
     if (!checkCollision(currentPiece, newPos)) {
       setCurrentPiece((prev) => ({ ...prev, pos: newPos }));
     } else if (dirY > 0) {
-      // If moving down and hit something, lock piece
       lockPiece();
     }
   };
 
-  // Rotation Logic
   const rotatePlayer = () => {
-    if (!isStarted || isGameOver || !currentPiece) return;
-
+    if (!isStarted || isGameOver || isPaused || !currentPiece) return;
     const rotatedShape = currentPiece.shape[0].map((_, index) =>
       currentPiece.shape.map((row) => row[index]).reverse(),
     );
-
     const rotatedPiece = { ...currentPiece, shape: rotatedShape };
-
     if (!checkCollision(rotatedPiece, currentPiece.pos)) {
       setCurrentPiece(rotatedPiece);
     }
   };
 
-  // Lock Piece & Clear Lines
   const lockPiece = useCallback(() => {
     setBoard((prevBoard) => {
       const newBoard = prevBoard.map((row) => [...row]);
-
-      // Add piece to board
       currentPiece.shape.forEach((row, y) => {
         row.forEach((value, x) => {
           if (value) {
@@ -167,12 +177,11 @@ export default function TetrisGame() {
         });
       });
 
-      // Clear Lines
       let linesCleared = 0;
       const finalBoard = newBoard.reduce((acc, row) => {
         if (row.every((cell) => cell !== null)) {
           linesCleared += 1;
-          acc.unshift(Array(COLS).fill(null)); // Add empty row at top
+          acc.unshift(Array(COLS).fill(null));
           return acc;
         }
         acc.push(row);
@@ -180,13 +189,12 @@ export default function TetrisGame() {
       }, []);
 
       if (linesCleared > 0) {
-        setScore((prev) => prev + linesCleared * 100); // Simple scoring
+        setScore((prev) => prev + linesCleared * 100);
+        setLines((prev) => prev + linesCleared);
       }
-
       return finalBoard;
     });
 
-    // Spawn new piece or trigger game over
     const nextPiece = getRandomPiece();
     if (checkCollision(nextPiece, nextPiece.pos)) {
       handleGameOver();
@@ -195,17 +203,14 @@ export default function TetrisGame() {
     }
   }, [currentPiece, board]);
 
-  // Keyboard Controls
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (
         ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)
       ) {
         e.preventDefault();
-        if (!isStarted && !isGameOver) startGame();
       }
-
-      if (!isStarted || isGameOver) return;
+      if (!isStarted || isGameOver || isPaused) return;
 
       switch (e.key) {
         case "ArrowLeft":
@@ -229,43 +234,49 @@ export default function TetrisGame() {
           }
           setCurrentPiece((prev) => ({ ...prev, pos: dropPos }));
           break;
+        case "p":
+        case "Escape":
+          setIsPaused((prev) => !prev);
+          break;
         default:
           break;
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPiece, isStarted, isGameOver]);
+  }, [currentPiece, isStarted, isGameOver, isPaused]);
 
-  // Game Loop (Gravity)
   useEffect(() => {
-    if (!isStarted || isGameOver) return;
-
+    if (!isStarted || isGameOver || isPaused) return;
+    const speed = Math.max(100, INITIAL_SPEED - lines * 10); // Gets faster with lines
     const interval = setInterval(() => {
       movePlayer(0, 1);
-    }, INITIAL_SPEED);
-
+    }, speed);
     return () => clearInterval(interval);
-  }, [currentPiece, isStarted, isGameOver]);
+  }, [currentPiece, isStarted, isGameOver, isPaused, lines]);
 
   const startGame = () => {
     setBoard(createEmptyBoard());
     setCurrentPiece(getRandomPiece());
     setScore(0);
+    setLines(0);
     setIsGameOver(false);
     setIsStarted(true);
+    setIsPaused(false);
   };
 
   const handleGameOver = async () => {
     setIsGameOver(true);
     setIsStarted(false);
     if (score > 0) {
-      await api.post("/arcade/tetris/score", { score });
-      fetchLeaderboard();
+      try {
+        await api.post("/arcade/tetris/score", { score });
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
-  // Render Helpers
   const renderCell = (x, y) => {
     let color = board[y][x];
     if (currentPiece && !color) {
@@ -284,157 +295,141 @@ export default function TetrisGame() {
     return (
       <div
         key={`${x}-${y}`}
-        className="tetris-cell"
-        style={{ backgroundColor: color || "transparent" }}
+        style={{
+          backgroundColor: color || "transparent",
+          border: "1px solid rgba(255, 255, 255, 0.05)",
+        }}
       />
     );
   };
 
   return (
-    <div className="feed-col" style={{ padding: "20px" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 20,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button className="btn btn-ghost" onClick={() => navigate("/arcade")}>
-            <ArrowLeft size={18} />
-          </button>
-          <h1 style={{ fontSize: "1.2rem", margin: 0 }}>Tetris</h1>
-        </div>
-        <strong style={{ color: "var(--accent)", fontSize: "1.2rem" }}>
-          Score: {score}
-        </strong>
-      </div>
-
-      {/* GAME BOARD */}
-      <div
-        style={{
-          position: "relative",
-          width: "100%",
-          maxWidth: "300px",
-          margin: "0 auto",
-          aspectRatio: "1 / 2",
-        }}
-      >
-        <div className="tetris-grid">
+    <div style={{ padding: "0" }}>
+      <div className="snake-wireframe-container">
+        {/* LEFT/MAIN: Game Box (Overridden for Tetris Dimensions) */}
+        <div
+          className="snake-wireframe-board"
+          style={{
+            aspectRatio: "1 / 2",
+            flex: "0 1 350px", // Keeps it from getting too wide
+            display: "grid",
+            gridTemplateColumns: `repeat(${COLS}, 1fr)`,
+            gridTemplateRows: `repeat(${ROWS}, 1fr)`,
+          }}
+        >
           {Array.from({ length: ROWS }).map((_, y) =>
             Array.from({ length: COLS }).map((_, x) => renderCell(x, y)),
           )}
-        </div>
 
-        {/* OVERLAYS */}
-        {!isStarted && !isGameOver && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(0,0,0,0.7)",
-            }}
-          >
-            <button className="btn" onClick={startGame}>
-              Start Game
-            </button>
-          </div>
-        )}
-        {isGameOver && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(0,0,0,0.8)",
-            }}
-          >
-            <h2 style={{ color: "#f44336", textAlign: "center" }}>
-              Game Over!
-            </h2>
-            <button
-              className="btn"
-              onClick={startGame}
-              style={{ marginTop: 10 }}
-            >
-              Play Again
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* MOBILE CONTROLS */}
-      <div
-        className="d-pad"
-        style={{ maxWidth: "300px", margin: "20px auto 0 auto" }}
-      >
-        <button className="d-pad-btn d-left" onClick={() => movePlayer(-1, 0)}>
-          <ArrowLeftIcon />
-        </button>
-        <button className="d-pad-btn d-right" onClick={() => movePlayer(1, 0)}>
-          <ArrowRight />
-        </button>
-        <button className="d-pad-btn d-down" onClick={() => movePlayer(0, 1)}>
-          <ArrowDown />
-        </button>
-        <button className="d-pad-btn rotate-btn" onClick={rotatePlayer}>
-          <RotateCw size={20} /> Rotate
-        </button>
-      </div>
-
-      {/* LEADERBOARD */}
-      <div
-        style={{
-          marginTop: "30px",
-          backgroundColor: "var(--surface)",
-          padding: "20px",
-          borderRadius: "12px",
-        }}
-      >
-        <h3
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            margin: "0 0 16px 0",
-            color: "var(--accent)",
-          }}
-        >
-          <Trophy size={20} /> Top 10 Tetris Players
-        </h3>
-        {leaderboard.length === 0 ? (
-          <p>No scores yet.</p>
-        ) : (
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-          >
-            {leaderboard.map((entry, index) => (
-              <div
-                key={entry.id}
+          {!isStarted && !isGameOver && (
+            <div className="snake-overlay">
+              <button
+                className="snake-action-btn"
+                onClick={startGame}
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  borderBottom: "1px solid var(--border)",
-                  paddingBottom: "8px",
+                  backgroundColor: "var(--accent)",
+                  color: "black",
+                  padding: "16px 32px",
                 }}
               >
-                <span>
-                  #{index + 1} {entry.user.username}
-                </span>
-                <strong style={{ color: "var(--accent)" }}>
-                  {entry.score} pts
-                </strong>
-              </div>
-            ))}
+                Start Game
+              </button>
+            </div>
+          )}
+          {isPaused && !isGameOver && (
+            <div className="snake-overlay">
+              <h2>Paused</h2>
+              <button
+                className="snake-action-btn"
+                onClick={() => setIsPaused(false)}
+              >
+                Continue
+              </button>
+            </div>
+          )}
+          {isGameOver && (
+            <div className="snake-overlay">
+              <h2>Game Over</h2>
+              <button
+                className="snake-action-btn"
+                onClick={startGame}
+                style={{ marginTop: "10px" }}
+              >
+                Play Again
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT/MIDDLE: Stats & Controls */}
+        <div className="snake-wireframe-controls">
+          <div className="snake-wireframe-stats">
+            <div className="snake-stat-row">
+              Score <span>{score}</span>
+            </div>
+            <div className="snake-stat-row">
+              Lines <span>{lines}</span>
+            </div>
+            <div className="snake-stat-row">
+              High Score <span>{highScore}</span>
+            </div>
           </div>
-        )}
+
+          <div
+            className="snake-action-buttons"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              marginTop: "10px",
+            }}
+          >
+            <button
+              className="snake-action-btn"
+              onClick={() => {
+                if (!isStarted) startGame();
+                else setIsPaused(false);
+              }}
+              disabled={isStarted && !isPaused}
+            >
+              Play
+            </button>
+            <button
+              className="snake-action-btn"
+              onClick={() => setIsPaused(true)}
+              disabled={!isStarted || isGameOver}
+            >
+              Pause
+            </button>
+            <button className="snake-action-btn" onClick={startGame}>
+              Restart
+            </button>
+          </div>
+
+          <div className="d-pad" style={{ marginTop: "10px" }}>
+            <button className="d-pad-btn d-up" onClick={rotatePlayer}>
+              <RotateCw size={20} />
+            </button>
+            <button
+              className="d-pad-btn d-left"
+              onClick={() => movePlayer(-1, 0)}
+            >
+              <ArrowLeftIcon size={20} />
+            </button>
+            <button
+              className="d-pad-btn d-right"
+              onClick={() => movePlayer(1, 0)}
+            >
+              <ArrowRight size={20} />
+            </button>
+            <button
+              className="d-pad-btn d-down"
+              onClick={() => movePlayer(0, 1)}
+            >
+              <ArrowDown size={20} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

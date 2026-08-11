@@ -6,12 +6,14 @@ import {
   ArrowRight,
 } from "lucide-react";
 import api from "../api";
+import { useStore } from "../lib/store.jsx";
 
 const GRID_SIZE = 20;
 const INITIAL_SPEED = 120;
 const SPEED_STEP = 5;
 
 export default function SnakeGame() {
+  const { currentUser } = useStore(); // Grab current user to find personal best
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
   const [canvasPx, setCanvasPx] = useState(500);
@@ -34,6 +36,29 @@ export default function SnakeGame() {
   const isGameOverRef = useRef(false);
   const scoreRef = useRef(0);
   const tickTimeoutRef = useRef(null);
+
+  // --- FETCH HIGH SCORE ON LOAD ---
+  useEffect(() => {
+    api
+      .get("/arcade/snake/leaderboard")
+      .then((res) => {
+        if (currentUser && res.data) {
+          // Look for your specific score in the database
+          const myBest = res.data.find(
+            (entry) => entry.user?.username === currentUser.username,
+          );
+          if (myBest) {
+            setHighScore(myBest.score);
+            return;
+          }
+        }
+        // Fallback: If you haven't played, show the #1 global high score
+        if (res.data && res.data.length > 0) {
+          setHighScore(Math.max(...res.data.map((entry) => entry.score)));
+        }
+      })
+      .catch(console.error);
+  }, [currentUser]);
 
   // Auto-resize canvas
   useEffect(() => {
@@ -151,6 +176,7 @@ export default function SnakeGame() {
     tickTimeoutRef.current = setTimeout(tick, speedRef.current);
   }, [draw, spawnFood, handleGameOver]);
 
+  // Update local high score in real-time if we beat it during the current session
   useEffect(() => {
     if (score > highScore) setHighScore(score);
   }, [score, highScore]);
