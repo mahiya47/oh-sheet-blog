@@ -2869,3 +2869,91 @@ body.chat-page-active {
     margin: 0 auto;
   }
 }
+
+/* --- NEW TETRIS MOBILE WIREFRAME --- */
+.tetris-mobile-wrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+  padding: 5px;
+  /* Forces the game to fill available height between navbars */
+  height: calc(100vh - 160px);
+}
+
+/* Left Column */
+.tetris-mobile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 75px; /* Fixed compact width for side stats */
+  flex-shrink: 0;
+}
+
+.tetris-mobile-sidebar > button,
+.tetris-mobile-sidebar > div {
+  background: var(--arcade-surface);
+  border: 2px solid var(--arcade-border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  color: var(--text);
+  font-size: 0.65rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+}
+
+.tetris-mobile-sidebar > button:active {
+  background: var(--arcade-surface-2);
+}
+
+.tetris-mobile-sidebar > div span {
+  color: var(--arcade-green);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+/* Right Column (Board + D-Pad) */
+.tetris-mobile-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.tetris-mobile-board-container {
+  flex: 1;
+  min-height: 0; /* Prevents overflow */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Bottom Row D-Pad */
+.tetris-mobile-dpad-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  height: 55px; /* Nice big thumb targets */
+}
+
+.tetris-mobile-dpad-row button {
+  flex: 1;
+  background: var(--arcade-surface);
+  border: 2px solid var(--arcade-border);
+  border-radius: 8px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tetris-mobile-dpad-row button:active {
+  background: var(--arcade-green);
+  color: #000;
+}
