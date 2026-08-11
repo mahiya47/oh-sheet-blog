@@ -11,8 +11,8 @@ import api from "../api";
 import { useStore } from "../lib/store.jsx";
 
 // --- ADJUSTED TETRIS BOARD DIMENSIONS ---
-const COLS = 16;
-const ROWS = 20;
+const COLS = 20;
+const ROWS = 22;
 const INITIAL_SPEED = 500;
 
 const TETROMINOES = {
@@ -312,7 +312,7 @@ export default function TetrisGame() {
           className="snake-wireframe-board"
           style={{
             aspectRatio: `${COLS} / ${ROWS}`,
-            flex: "0 1 440px", // Increased width
+            flex: "0 1 490px", // Increased width
             display: "grid",
             gridTemplateColumns: `repeat(${COLS}, 1fr)`,
             gridTemplateRows: `repeat(${ROWS}, 1fr)`,
