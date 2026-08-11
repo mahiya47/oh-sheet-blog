@@ -328,7 +328,7 @@ export default function TetrisGame() {
             Line <span>{lines}</span>
           </div>
           <div>
-            High Score <span>{highScore}</span>
+            High <span>{highScore}</span>
           </div>
 
           <button
@@ -430,7 +430,7 @@ export default function TetrisGame() {
           className="snake-wireframe-board"
           style={{
             aspectRatio: `${COLS} / ${ROWS}`,
-            flex: "0 1 350px",
+            flex: "0 1 300px",
             display: "grid",
             gridTemplateColumns: `repeat(${COLS}, 1fr)`,
             gridTemplateRows: `repeat(${ROWS}, 1fr)`,
