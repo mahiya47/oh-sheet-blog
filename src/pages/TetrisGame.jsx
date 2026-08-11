@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useStore } from "../lib/store.jsx";
 
-// Classic 10x20 Grid
+// Classic 10x20 Grid works perfectly with the new mobile layout!
 const COLS = 10;
 const ROWS = 20;
 const INITIAL_SPEED = 500;
@@ -313,32 +313,24 @@ export default function TetrisGame() {
   return (
     <div style={{ padding: "0" }}>
       {/* =========================================================
-          MOBILE LAYOUT
+          NEW MOBILE LAYOUT (Matches Image Wireframe Exactly) 
           ========================================================= */}
-      <div
-        className="arcade-mobile-header mobile-only"
-        style={{ display: "grid", gridTemplateColumns: "40px 1fr 1fr 1fr" }}
-      >
-        <button
-          className="arcade-mobile-back"
-          onClick={() => navigate("/arcade")}
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <div>
-          Score <span>{score}</span>
-        </div>
-        <div>
-          Lines <span>{lines}</span>
-        </div>
-        <div>
-          High <span>{highScore}</span>
-        </div>
-      </div>
-
       <div className="tetris-mobile-wrapper mobile-only">
-        {/* LEFT COLUMN */}
+        {/* LEFT COLUMN: Stats & Action Buttons */}
         <div className="tetris-mobile-sidebar">
+          <button onClick={() => navigate("/arcade")}>
+            <ArrowLeft size={24} />
+          </button>
+          <div>
+            Score <span>{score}</span>
+          </div>
+          <div>
+            Line <span>{lines}</span>
+          </div>
+          <div>
+            High Score <span>{highScore}</span>
+          </div>
+
           <button
             onClick={() => {
               if (!isStarted) startGame();
@@ -352,15 +344,15 @@ export default function TetrisGame() {
           <button onClick={startGame}>Reset</button>
         </div>
 
-        {/* RIGHT COLUMN */}
+        {/* RIGHT COLUMN: Game Board & D-Pad */}
         <div className="tetris-mobile-main">
           <div className="tetris-mobile-board-container">
             <div
               className="snake-wireframe-board"
               style={{
                 aspectRatio: `${COLS} / ${ROWS}`,
-                height: "100%",
-                width: "auto",
+                height: "100%", // Scales cleanly to fill available height
+                width: "auto", // Width calculates automatically
                 display: "grid",
                 gridTemplateColumns: `repeat(${COLS}, 1fr)`,
                 gridTemplateRows: `repeat(${ROWS}, 1fr)`,
@@ -411,7 +403,7 @@ export default function TetrisGame() {
             </div>
           </div>
 
-          {/* BOTTOM ROW D-PAD */}
+          {/* BOTTOM ROW: D-Pad Controls */}
           <div className="tetris-mobile-dpad-row">
             <button onClick={rotatePlayer}>
               <RotateCw size={24} />
@@ -430,7 +422,7 @@ export default function TetrisGame() {
       </div>
 
       {/* =========================================================
-          DESKTOP LAYOUT (Height Reduced via width adjustment)
+          DESKTOP LAYOUT (Unchanged, remains perfect) 
           ========================================================= */}
       <div className="snake-wireframe-container desktop-only">
         {/* GAME BOARD */}
@@ -438,7 +430,7 @@ export default function TetrisGame() {
           className="snake-wireframe-board"
           style={{
             aspectRatio: `${COLS} / ${ROWS}`,
-            flex: "0 1 280px", // Reduced from 350px -> cuts height by 140px!
+            flex: "0 1 350px",
             display: "grid",
             gridTemplateColumns: `repeat(${COLS}, 1fr)`,
             gridTemplateRows: `repeat(${ROWS}, 1fr)`,
