@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useStore } from "../lib/store.jsx";
+import ScoreModal from "../components/ScoreModal";
 
 // Classic 10x20 Grid works perfectly with the new mobile layout!
 const COLS = 10;
@@ -93,7 +94,8 @@ export default function TetrisGame() {
   const [score, setScore] = useState(0);
   const [lines, setLines] = useState(0);
   const [highScore, setHighScore] = useState(0);
-
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   // --- FETCH HIGH SCORE ON LOAD ---
   const fetchHighScore = useCallback(() => {
     api
@@ -101,6 +103,7 @@ export default function TetrisGame() {
       .then((res) => {
         if (res.data) {
           const sortedData = res.data.sort((a, b) => b.score - a.score);
+          setLeaderboard(sortedData);
           if (currentUser) {
             const myBest = sortedData.find(
               (entry) => entry.user?.username === currentUser.username,
@@ -330,6 +333,12 @@ export default function TetrisGame() {
           <div>
             High <span>{highScore}</span>
           </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            style={{ color: "var(--arcade-orange, #ff9800)" }}
+          >
+            <Trophy size={18} style={{ marginBottom: "4px" }} /> Top
+          </button>
 
           <button
             onClick={() => {
@@ -541,6 +550,11 @@ export default function TetrisGame() {
           </div>
         </div>
       </div>
+      <ScoreModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        leaderboard={leaderboard}
+      />
     </div>
   );
 }

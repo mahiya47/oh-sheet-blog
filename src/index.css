@@ -2958,3 +2958,70 @@ body.chat-page-active {
   background: var(--arcade-green);
   color: #000;
 }
+
+/* =========================================================================
+   SCORE MODAL CSS
+   ========================================================================= */
+.arcade-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.arcade-modal-content {
+  background-color: var(--arcade-surface, #1e1e1e);
+  border: 1px solid var(--arcade-border, #333);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 350px;
+  padding: 20px;
+}
+
+.arcade-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  color: var(--arcade-green, #4caf50);
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.arcade-modal-close {
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+}
+
+.arcade-modal-item {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--arcade-border, #333);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.arcade-modal-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.arcade-modal-score {
+  color: var(--arcade-green, #4caf50);
+  font-weight: bold;
+}
+
+.arcade-modal-empty {
+  color: var(--arcade-text-dim, #b3b3b3);
+  font-size: 0.9rem;
+  text-align: center;
+}
