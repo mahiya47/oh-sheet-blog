@@ -2775,3 +2775,47 @@ body.chat-page-active {
   color: #000;
   border-color: var(--accent, #4caf50);
 }
+
+/* --- MOBILE SPECIFIC STYLES FOR ARCADE HUB --- */
+@media (max-width: 768px) {
+  .arcade-hub-container {
+    gap: 16px;
+    padding: 10px;
+  }
+
+  .arcade-hub-header {
+    font-size: 1.5rem; /* Slightly smaller header */
+  }
+
+  .arcade-hub-grid {
+    /* Forces a clean single column on mobile */
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .arcade-game-card {
+    border-width: 1px; /* Thinner borders for mobile */
+  }
+
+  .arcade-card-img-wrapper {
+    height: 120px; /* Shorter image to save vertical space */
+  }
+
+  .arcade-card-content {
+    padding: 16px; /* Tighter padding inside the card */
+    gap: 10px;
+  }
+
+  .arcade-card-title {
+    font-size: 1.1rem;
+  }
+
+  .arcade-card-desc {
+    font-size: 0.8rem;
+  }
+
+  .arcade-play-btn {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+}
