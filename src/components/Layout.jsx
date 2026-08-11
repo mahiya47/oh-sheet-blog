@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useStore } from "../lib/store.jsx";
 import Navbar from "./Navbar.jsx";
 import LeftSidebar from "./LeftSidebar.jsx";
@@ -17,7 +17,6 @@ const mainStyle = {
 export default function Layout() {
   const { currentUser } = useStore();
   const [showWelcome, setShowWelcome] = useState(false);
-  const location = useLocation(); // Gets the current route path
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -34,12 +33,6 @@ export default function Layout() {
     setShowWelcome(false);
   };
 
-  // True if playing a game (e.g., /arcade/snake), but False on the main hub (/arcade)
-  const isArcadeGame =
-    location.pathname.startsWith("/arcade") &&
-    location.pathname !== "/arcade" &&
-    location.pathname !== "/arcade/";
-
   return (
     <>
       <Navbar />
@@ -48,8 +41,8 @@ export default function Layout() {
         <main style={mainStyle}>
           <Outlet />
         </main>
-        {/* Only render RightSidebar if NOT inside an actual game */}
-        {!isArcadeGame && <RightSidebar />}
+        {/* We want the Right Sidebar on every page now */}
+        <RightSidebar />
       </div>
       <BottomNav />
       {showWelcome && <WelcomeModal onClose={dismissWelcome} />}

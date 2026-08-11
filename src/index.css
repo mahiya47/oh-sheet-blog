@@ -2463,168 +2463,111 @@ body.chat-page-active {
   --arcade-text-dim: #b3b3b3;
 }
 
-/* ---- Page Container ---- */
-.snake-page-container {
-  padding: 10px 20px 20px 20px; /* Reduced top padding to sit closer to navbar */
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-/* ---- Desktop Layout ---- */
-.snake-desktop-layout {
+/* ---- Main Container ---- */
+.snake-wireframe-container {
   display: flex;
   gap: 30px;
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
   align-items: flex-start;
-  justify-content: center;
-  width: 100%;
+  padding: 10px;
 }
 
-.snake-game-column {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+/* ---- Left: Game Board ---- */
+.snake-wireframe-board {
   flex: 1;
-  max-width: 700px;
-  width: 100%;
-}
-
-.snake-controls-column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 260px;
-  flex-shrink: 0;
-  padding-top: 55px;
-}
-
-/* ---- Desktop Stats ---- */
-.snake-stats-desktop {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-}
-
-.snake-stat-box {
-  background-color: var(--arcade-surface);
-  padding: 8px 24px;
-  border-radius: 6px;
-  border: 1px solid var(--arcade-border);
-  font-size: 1rem;
-  font-weight: bold;
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-.snake-stat-box span {
-  color: var(--arcade-green);
-}
-
-/* ---- Game Board ---- */
-.snake-board-wrapper {
-  position: relative;
-  width: 100%;
   aspect-ratio: 1 / 1;
+  background-color: var(--arcade-surface-2);
+  border: 2px solid var(--arcade-border);
+  position: relative;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  background-color: var(--arcade-surface-2);
-  border: 2px solid var(--arcade-border);
 }
-.snake-board-wrapper canvas {
+.snake-wireframe-board canvas {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-/* ---- Right Side Controls ---- */
-.snake-btn-trophy-large {
-  background-color: var(--arcade-surface);
-  border: 1px solid var(--arcade-border);
-  color: var(--arcade-orange);
-  height: 120px;
-  border-radius: 12px;
+/* ---- Right/Middle: Controls Column ---- */
+.snake-wireframe-controls {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition:
-    transform 0.1s ease,
-    background-color 0.2s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-.snake-btn-trophy-large:hover {
-  background-color: #262626;
-  transform: scale(1.02);
+  gap: 20px;
+  width: 160px; /* Fixed width matching the wireframe */
+  flex-shrink: 0;
 }
 
-.snake-action-row {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-}
-.snake-btn-action {
-  flex: 1;
-  padding: 12px 0;
-  font-size: 0.95rem;
-  font-weight: bold;
-  color: #fff;
-  background-color: var(--arcade-orange);
-  border: none;
+/* Vertically Stacked Stats Box */
+.snake-wireframe-stats {
+  border: 2px solid var(--arcade-border);
   border-radius: 8px;
-  cursor: pointer;
-  transition:
-    transform 0.1s ease,
-    background-color 0.2s ease;
-}
-.snake-btn-action:hover:not(:disabled) {
-  background-color: var(--arcade-orange-hover);
-  transform: scale(1.03);
-}
-.snake-btn-action:disabled {
-  background-color: var(--arcade-border);
-  color: #777;
-  cursor: not-allowed;
-}
-.snake-btn-action.restart {
   background-color: var(--arcade-surface);
-  border: 1px solid var(--arcade-border);
+  display: flex;
+  flex-direction: column;
 }
-.snake-btn-action.restart:hover {
+
+.snake-stat-row {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 2px solid var(--arcade-border);
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #fff;
+}
+.snake-stat-row:last-child {
+  border-bottom: none;
+}
+.snake-stat-row span {
+  color: var(--arcade-green);
+  display: block;
+  margin-top: 4px;
+  font-size: 1.1rem;
+}
+
+/* Action Buttons */
+.snake-action-btn {
+  padding: 12px;
+  font-weight: bold;
+  font-size: 1rem;
+  background-color: var(--arcade-surface);
+  border: 2px solid var(--arcade-border);
+  color: #fff;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+.snake-action-btn:hover:not(:disabled) {
   background-color: #333;
 }
-
-/* ---- D-Pad ---- */
-.d-pad-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
+.snake-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
+
+/* D-Pad */
 .d-pad {
   display: grid;
-  grid-template-columns: repeat(3, 60px);
-  grid-template-rows: repeat(2, 60px);
-  gap: 8px;
+  grid-template-columns: repeat(3, 50px);
+  grid-template-rows: repeat(2, 50px);
+  gap: 5px;
+  justify-content: center;
 }
 .d-pad-btn {
   background-color: var(--arcade-surface);
-  border: 1px solid var(--arcade-border);
-  border-radius: 10px;
+  border: 2px solid var(--arcade-border);
+  border-radius: 8px;
   color: #fff;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
 }
 .d-pad-btn:active {
-  transform: scale(0.94);
   background-color: var(--arcade-green);
-  color: #121212;
+  color: black;
 }
 .d-up {
   grid-column: 2;
@@ -2643,149 +2586,66 @@ body.chat-page-active {
   grid-row: 2;
 }
 
-/* ---- Overlays ---- */
+/* Overlays (Start & Game Over Screens) */
 .snake-overlay {
   position: absolute;
   inset: 0;
-  background-color: rgba(18, 18, 18, 0.88);
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 15px;
-  text-align: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.75);
   padding: 20px;
-}
-.snake-overlay h1 {
-  font-size: 2.4rem;
-  color: var(--arcade-green);
-  margin: 0;
+  text-align: center;
 }
 .snake-overlay h2 {
+  color: #ff5252;
+  margin-bottom: 15px;
   font-size: 2rem;
-  color: var(--arcade-orange);
-  margin: 0;
+  margin-top: 0;
 }
 .snake-overlay p {
-  font-size: 1.05rem;
   color: var(--arcade-text-dim);
 }
-.snake-overlay .btn {
-  padding: 12px 28px;
-  font-weight: bold;
-  background-color: var(--arcade-green);
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  color: #121212;
-}
 
-/* ---- Score Modal ---- */
-.arcade-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-}
-.arcade-modal-content {
-  background-color: var(--arcade-surface);
-  border: 1px solid var(--arcade-border);
-  border-radius: 12px;
-  width: 100%;
-  max-width: 350px;
-  padding: 20px;
-}
-.arcade-modal-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  color: var(--arcade-green);
-  font-size: 1.1rem;
-  font-weight: bold;
-}
-.arcade-modal-close {
-  background: transparent;
-  border: none;
-  color: #888;
-  cursor: pointer;
-}
-.arcade-modal-item {
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--arcade-border);
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-}
-.arcade-modal-score {
-  color: var(--arcade-green);
-  font-weight: bold;
-}
-
-/* ---- MOBILE SPECIFIC ADJUSTMENTS ---- */
-.mobile-only {
-  display: none;
-}
-.desktop-only {
-  display: flex;
-}
-
+/* --- MOBILE SPECIFIC STYLES --- */
 @media (max-width: 768px) {
-  .desktop-only {
-    display: none !important;
-  }
-  .mobile-only {
-    display: flex !important;
-  }
-
-  .snake-page-container {
-    padding: 10px;
-  }
-  .snake-desktop-layout {
+  .snake-wireframe-container {
     flex-direction: column;
-    gap: 15px;
-  }
-  .snake-controls-column {
-    width: 100%;
-    padding-top: 0;
+    gap: 20px;
+    padding: 5px;
   }
 
-  /* Mobile Tiny Header */
-  .snake-mobile-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--arcade-surface);
-    border: 1px solid var(--arcade-border);
-    padding: 6px 10px;
-    border-radius: 8px;
+  .snake-wireframe-controls {
     width: 100%;
-  }
-  .mobile-back-btn,
-  .mobile-top-btn {
-    background: transparent;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    padding: 4px;
-    display: flex;
-    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
   }
-  .mobile-top-btn {
-    color: var(--arcade-orange);
+
+  /* Make stats row horizontal on mobile */
+  .snake-wireframe-stats {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
   }
-  .snake-stats-mobile {
+  .snake-stat-row {
+    border-bottom: none;
+    border-right: 2px solid var(--arcade-border);
+    flex: 1;
+    padding: 8px;
+  }
+  .snake-stat-row:last-child {
+    border-right: none;
+  }
+
+  /* Make buttons fill width side-by-side */
+  .snake-action-buttons {
     display: flex;
-    gap: 12px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: var(--arcade-text-dim);
+    width: 100%;
+    gap: 10px;
   }
-  .snake-stats-mobile span {
-    color: var(--arcade-green);
+  .snake-action-buttons > button {
+    flex: 1;
   }
 }

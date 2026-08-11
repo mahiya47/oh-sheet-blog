@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Sheet } from "lucide-react";
+import { Sheet, Trophy } from "lucide-react";
 import { useStore } from "../lib/store.jsx";
 import { useBidirectionalSticky } from "../lib/useBidirectionalSticky.js";
 import Avatar from "./Avatar.jsx";
+import api from "../api";
 
 const MAX_ITEMS = 5;
 
@@ -106,14 +107,31 @@ export default function RightSidebar() {
   const location = useLocation();
   const isHome = location.pathname === "/" || location.pathname === "/feed";
   const isChat = location.pathname.startsWith("/chat");
-  const isOther = !isHome && !isChat;
+  const isSnakeGame = location.pathname === "/arcade/snake";
+  const isOther = !isHome && !isChat && !isSnakeGame;
 
-  // Home: everything. Chat: following + suggestions only. Everywhere else: trending + tags + footer only.
-  const showFollowingActivity = isHome || isChat;
-  const showTrending = isHome || isOther;
-  const showTags = isHome || isOther;
-  const showSuggestions = isHome || isChat;
-  const showFooter = true;
+  // --- SNAKE LEADERBOARD STATE & FETCH ---
+  const [topScores, setTopScores] = useState([]);
+
+  useEffect(() => {
+    if (isSnakeGame) {
+      api
+        .get("/arcade/snake/leaderboard")
+        .then((res) => {
+          const sortedData = res.data.sort((a, b) => b.score - a.score);
+          setTopScores(sortedData.slice(0, 5)); // Keep only top 5 for sidebar
+        })
+        .catch(console.error);
+    }
+  }, [isSnakeGame]);
+
+  // Home: everything. Chat: following + suggestions only.
+  // Snake: Leaderboard only. Everywhere else: trending + tags.
+  const showFollowingActivity = !isSnakeGame && (isHome || isChat);
+  const showTrending = !isSnakeGame && (isHome || isOther);
+  const showTags = !isSnakeGame && (isHome || isOther);
+  const showSuggestions = !isSnakeGame && (isHome || isChat);
+  const showFooter = true; // Footer always shows everywhere
 
   useEffect(() => {
     if (currentUser) {
@@ -133,6 +151,54 @@ export default function RightSidebar() {
   return (
     <aside className="rail-right-wrapper" aria-label="Activity">
       <div className="rail-right" ref={railRef}>
+        {/* --- SNAKE GAME LEADERBOARD PANEL --- */}
+        {isSnakeGame && (
+          <section className="panel">
+            <h2
+              className="panel-head"
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              <Trophy size={16} style={{ color: "var(--accent)" }} /> Top 5
+              Scores
+            </h2>
+            {topScores.length === 0 ? (
+              <p className="empty-note">No scores yet.</p>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: "0 var(--space-4) var(--space-4) var(--space-4)",
+                }}
+              >
+                {topScores.map((entry, index) => (
+                  <div
+                    key={entry.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      borderBottom:
+                        index === topScores.length - 1
+                          ? "none"
+                          : "1px solid var(--border-soft)",
+                      padding: "10px 0",
+                    }}
+                  >
+                    <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+                      #{index + 1} {entry.user?.username || "Player"}
+                    </span>
+                    <strong
+                      style={{ color: "var(--accent)", fontSize: "0.85rem" }}
+                    >
+                      {entry.score}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
         {showFollowingActivity && (
           <section className="panel">
             <h2 className="panel-head">Following activity</h2>
