@@ -11,8 +11,8 @@ import api from "../api";
 import { useStore } from "../lib/store.jsx";
 
 // --- WIDER, SHORTER TETRIS BOARD ---
-const COLS = 14;
-const ROWS = 18;
+const COLS = 18;
+const ROWS = 20;
 const INITIAL_SPEED = 500;
 
 const TETROMINOES = {
