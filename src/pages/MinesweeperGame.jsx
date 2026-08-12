@@ -52,21 +52,22 @@ export default function MinesweeperGame() {
       .get("/arcade/minesweeper/leaderboard")
       .then((res) => {
         if (res.data) {
-          // Lowest time in seconds is best
+          // Lowest time in seconds is best, so sort ascending (lowest to highest)
           const sortedData = res.data.sort((a, b) => a.score - b.score);
           setLeaderboard(sortedData);
 
+          // ONLY set personal best if it actually belongs to the current user
           if (currentUser) {
             const myBest = sortedData.find(
               (entry) => entry.user?.username === currentUser.username,
             );
             if (myBest) {
               setBestTime(myBest.score);
-              return;
+            } else {
+              setBestTime(null); // Ensures it stays blank until YOU win
             }
-          }
-          if (sortedData.length > 0) {
-            setBestTime(sortedData[0].score);
+          } else {
+            setBestTime(null);
           }
         }
       })
