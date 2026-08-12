@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useStore } from "../lib/store.jsx";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://api.ohsheet.blog");
 
 const WEAPONS = {
   ROCK: { name: "Rock", icon: "✊" },
