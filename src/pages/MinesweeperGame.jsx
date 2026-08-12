@@ -306,10 +306,9 @@ export default function MinesweeperGame() {
             width: "100%",
             maxWidth: "500px",
             margin: "0 auto",
-            gap: "0px", // Classic minesweeper has no gaps between tiles
+            gap: "0px",
             padding: "8px",
-            // The outer retro border of the game board
-            backgroundColor: "#252525",
+            backgroundColor: "#c0c0c0",
             boxShadow: "inset 4px 4px 0px #808080, inset -4px -4px 0px #ffffff",
           }}
         >
@@ -332,13 +331,15 @@ export default function MinesweeperGame() {
                     justifyContent: "center",
                     cursor: "pointer",
                     userSelect: "none",
-                    // Change background to red if mine is clicked, otherwise classic gray
-                    backgroundColor:
-                      cell.revealed && cell.hasMine ? "#f44336" : "#c0c0c0",
-                    // The magic CSS to make the classic 3D tiles:
+                    // Darker gray when revealed safely, red for bomb, light gray for unclicked
+                    backgroundColor: cell.revealed
+                      ? cell.hasMine
+                        ? "#f44336"
+                        : "#a8a8a8"
+                      : "#c0c0c0",
                     boxShadow: !cell.revealed
-                      ? "inset 3px 3px 0px #ffffff, inset -3px -3px 0px #808080" // Raised 3D block
-                      : "inset 1px 1px 0px #808080", // Flat/indented revealed block
+                      ? "inset 3px 3px 0px #ffffff, inset -3px -3px 0px #808080"
+                      : "inset 1px 1px 0px #808080",
                   }}
                 >
                   {cell.revealed ? (
