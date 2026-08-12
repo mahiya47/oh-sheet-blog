@@ -101,6 +101,7 @@ export default function RightSidebar() {
     getTrendingTags,
     getSuggestedUsers,
   } = useStore();
+
   const [following, setFollowing] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const trending = getTrending(MAX_ITEMS);
@@ -108,15 +109,17 @@ export default function RightSidebar() {
   const railRef = useBidirectionalSticky(72, 16);
 
   const location = useLocation();
-  const isHome = location.pathname === "/" || location.pathname === "/feed";
-  const isChat = location.pathname.startsWith("/chat");
+  const path = location.pathname;
 
-  // --- SMART ROUTING LOGIC ---
-  const isArcadeHub =
-    location.pathname === "/arcade" || location.pathname === "/arcade/";
-  const isArcadeGame = location.pathname.startsWith("/arcade/") && !isArcadeHub;
-  const gameSlug = isArcadeGame ? location.pathname.split("/")[2] : null;
-  const isOther = !isHome && !isChat && !isArcadeGame && !isArcadeHub;
+  // --- BULLETPROOF ROUTING LOGIC ---
+  const isHome = path === "/" || path === "/feed";
+  const isChat = path.startsWith("/chat");
+
+  const isArcadeAny = path.startsWith("/arcade");
+  const isArcadeHub = path === "/arcade" || path === "/arcade/";
+  const isArcadeGame = isArcadeAny && !isArcadeHub;
+
+  const gameSlug = isArcadeGame ? path.split("/")[2] : null;
 
   const [topScores, setTopScores] = useState([]);
 
@@ -125,26 +128,24 @@ export default function RightSidebar() {
       api
         .get(`/arcade/${gameSlug}/leaderboard`)
         .then((res) => {
-          // Sort appropriately (Reaction game is asc, others are desc)
           const isTimeBased =
             gameSlug === "reaction" || gameSlug === "minesweeper";
           const sortedData = res.data.sort((a, b) =>
             isTimeBased ? a.score - b.score : b.score - a.score,
           );
-          setTopScores(sortedData.slice(0, 5)); // Keep only top 5 for sidebar
+          setTopScores(sortedData.slice(0, 5));
         })
         .catch(console.error);
     }
   }, [gameSlug]);
 
-  // --- VIEW TOGGLES ---
-  // Hide standard widgets if we are in the Arcade Hub OR an Arcade Game
-  const showFollowingActivity =
-    !isArcadeGame && !isArcadeHub && (isHome || isChat);
-  const showTrending = !isArcadeGame && !isArcadeHub && (isHome || isOther);
-  const showTags = !isArcadeGame && !isArcadeHub && (isHome || isOther);
-  const showSuggestions = !isArcadeGame && !isArcadeHub && (isHome || isChat);
-  const showFooter = true; // Footer always shows everywhere
+  // --- STRICT VIEW TOGGLES ---
+  // If we are ANYWHERE in the arcade, forcibly hide the standard widgets
+  const showFollowingActivity = !isArcadeAny && (isHome || isChat);
+  const showTrending = !isArcadeAny; // Show everywhere EXCEPT arcade
+  const showTags = !isArcadeAny; // Show everywhere EXCEPT arcade
+  const showSuggestions = !isArcadeAny && (isHome || isChat);
+  const showFooter = true;
 
   useEffect(() => {
     if (currentUser) {
