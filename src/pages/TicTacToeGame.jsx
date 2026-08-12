@@ -258,6 +258,7 @@ export default function TicTacToeGame() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(3, 1fr)",
+                  gridTemplateRows: "repeat(3, 1fr)",
                   gap: "10px",
                   width: "100%",
                   maxWidth: "350px",
@@ -273,10 +274,12 @@ export default function TicTacToeGame() {
                     onClick={() => handleCellClick(index)}
                     disabled={gameState !== "playing" || !isMyTurn || cell}
                     style={{
+                      width: "100%",
+                      height: "100%",
                       backgroundColor: "var(--arcade-surface)",
                       border: "none",
                       borderRadius: "8px",
-                      fontSize: "4rem",
+                      fontSize: "clamp(2.5rem, 10vw, 4rem)",
                       fontWeight: "bold",
                       color:
                         cell === "X"
