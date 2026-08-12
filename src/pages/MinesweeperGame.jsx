@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { ArrowLeft, Trophy, Flag, Bomb, RotateCw, Eye } from "lucide-react";
+import { ArrowLeft, Flag, Bomb, RotateCw, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useStore } from "../lib/store.jsx";
@@ -8,17 +8,17 @@ import ScoreModal from "../components/ScoreModal";
 const BOARD_SIZE = 9; // 9x9 Grid
 const TOTAL_MINES = 10;
 
-// Color coding for neighbor numbers
+// Classic Minesweeper Colors
 const NUMBER_COLORS = [
   "",
-  "#2196f3", // 1: Blue
-  "#4caf50", // 2: Green
-  "#f44336", // 3: Red
-  "#9c27b0", // 4: Purple
-  "#ff9800", // 5: Orange
-  "#00bcd4", // 6: Teal
-  "#e91e63", // 7: Pink
-  "#ffffff", // 8: White
+  "#0000FF", // 1: Blue
+  "#008000", // 2: Green
+  "#FF0000", // 3: Red
+  "#000080", // 4: Navy
+  "#800000", // 5: Maroon
+  "#008080", // 6: Teal
+  "#000000", // 7: Black
+  "#808080", // 8: Gray
 ];
 
 const createEmptyBoard = () =>
@@ -37,7 +37,7 @@ export default function MinesweeperGame() {
 
   const [board, setBoard] = useState(createEmptyBoard());
   const [gameState, setGameState] = useState("idle"); // idle, playing, won, lost
-  const [flagMode, setFlagMode] = useState(false); // Mobile dig vs flag toggle
+  const [flagMode, setFlagMode] = useState(false);
   const [timer, setTimer] = useState(0);
   const [bestTime, setBestTime] = useState(null);
 
@@ -46,17 +46,14 @@ export default function MinesweeperGame() {
 
   const timerRef = useRef(null);
 
-  // --- FETCH LEADERBOARD & BEST TIME ---
   const fetchLeaderboardAndBest = useCallback(() => {
     api
       .get("/arcade/minesweeper/leaderboard")
       .then((res) => {
         if (res.data) {
-          // Lowest time in seconds is best, so sort ascending (lowest to highest)
           const sortedData = res.data.sort((a, b) => a.score - b.score);
           setLeaderboard(sortedData);
 
-          // ONLY set personal best if it actually belongs to the current user
           if (currentUser) {
             const myBest = sortedData.find(
               (entry) => entry.user?.username === currentUser.username,
@@ -64,7 +61,7 @@ export default function MinesweeperGame() {
             if (myBest) {
               setBestTime(myBest.score);
             } else {
-              setBestTime(null); // Ensures it stays blank until YOU win
+              setBestTime(null);
             }
           } else {
             setBestTime(null);
@@ -79,7 +76,6 @@ export default function MinesweeperGame() {
     return () => clearInterval(timerRef.current);
   }, [fetchLeaderboardAndBest]);
 
-  // --- TIMER EFFECT ---
   useEffect(() => {
     if (gameState === "playing") {
       timerRef.current = setInterval(() => {
@@ -91,24 +87,20 @@ export default function MinesweeperGame() {
     return () => clearInterval(timerRef.current);
   }, [gameState]);
 
-  // Count placed flags
   const flaggedCount = board.reduce(
     (acc, row) => acc + row.filter((cell) => cell.flagged).length,
     0,
   );
   const minesLeft = TOTAL_MINES - flaggedCount;
 
-  // --- GENERATE MINES AFTER FIRST CLICK (SAFE START) ---
   const initializeMines = (startR, startC) => {
     const newBoard = createEmptyBoard();
     let placed = 0;
 
-    // Place mines randomly excluding initial clicked area
     while (placed < TOTAL_MINES) {
       const r = Math.floor(Math.random() * BOARD_SIZE);
       const c = Math.floor(Math.random() * BOARD_SIZE);
 
-      // Keep starting cell and its adjacent cells mine-free for a good opening
       const isStartArea =
         Math.abs(r - startR) <= 1 && Math.abs(c - startC) <= 1;
 
@@ -118,7 +110,6 @@ export default function MinesweeperGame() {
       }
     }
 
-    // Calculate neighboring mine counts
     for (let r = 0; r < BOARD_SIZE; r++) {
       for (let c = 0; c < BOARD_SIZE; c++) {
         if (!newBoard[r][c].hasMine) {
@@ -146,7 +137,6 @@ export default function MinesweeperGame() {
     return newBoard;
   };
 
-  // --- RECURSIVE REVEAL FOR ZERO-COUNT CELLS ---
   const revealEmptyNeighbors = (grid, startR, startC) => {
     const stack = [[startR, startC]];
 
@@ -176,7 +166,6 @@ export default function MinesweeperGame() {
     }
   };
 
-  // --- CHECK WIN CONDITION ---
   const checkWin = (grid) => {
     let unrevealedSafeCells = 0;
     for (let r = 0; r < BOARD_SIZE; r++) {
@@ -189,13 +178,11 @@ export default function MinesweeperGame() {
     return unrevealedSafeCells === 0;
   };
 
-  // --- CELL CLICK HANDLER ---
   const handleCellClick = async (r, c) => {
     if (gameState === "won" || gameState === "lost") return;
 
     let currentGrid = board;
 
-    // Start Game on First Click
     if (gameState === "idle") {
       currentGrid = initializeMines(r, c);
       setGameState("playing");
@@ -203,7 +190,6 @@ export default function MinesweeperGame() {
 
     const cell = currentGrid[r][c];
 
-    // FLAG MODE ACTIVE
     if (flagMode) {
       if (!cell.revealed) {
         const updated = currentGrid.map((rowArr, rowIdx) =>
@@ -219,14 +205,11 @@ export default function MinesweeperGame() {
       return;
     }
 
-    // DIG MODE ACTIVE
     if (cell.flagged || cell.revealed) return;
 
     const nextGrid = currentGrid.map((row) => row.map((item) => ({ ...item })));
 
-    // HIT A MINE!
     if (nextGrid[r][c].hasMine) {
-      // Reveal all mines
       for (let i = 0; i < BOARD_SIZE; i++) {
         for (let j = 0; j < BOARD_SIZE; j++) {
           if (nextGrid[i][j].hasMine) nextGrid[i][j].revealed = true;
@@ -237,7 +220,6 @@ export default function MinesweeperGame() {
       return;
     }
 
-    // REVEAL SAFE CELL
     nextGrid[r][c].revealed = true;
 
     if (nextGrid[r][c].count === 0) {
@@ -246,7 +228,6 @@ export default function MinesweeperGame() {
 
     setBoard(nextGrid);
 
-    // CHECK WIN
     if (checkWin(nextGrid)) {
       setGameState("won");
       const finalTime = timer;
@@ -264,7 +245,6 @@ export default function MinesweeperGame() {
     }
   };
 
-  // Right click toggles flag on desktop
   const handleContextMenu = (e, r, c) => {
     e.preventDefault();
     if (gameState === "won" || gameState === "lost" || board[r][c].revealed)
@@ -315,7 +295,7 @@ export default function MinesweeperGame() {
       </div>
 
       <div className="snake-wireframe-container">
-        {/* GAME BOARD */}
+        {/* GAME BOARD (Classic Retro Style) */}
         <div
           className="snake-wireframe-board"
           style={{
@@ -326,9 +306,11 @@ export default function MinesweeperGame() {
             width: "100%",
             maxWidth: "500px",
             margin: "0 auto",
-            gap: "2px",
-            padding: "4px",
-            backgroundColor: "var(--arcade-border, #333)",
+            gap: "0px", // Classic minesweeper has no gaps between tiles
+            padding: "8px",
+            // The outer retro border of the game board
+            backgroundColor: "#c0c0c0",
+            boxShadow: "inset 4px 4px 0px #808080, inset -4px -4px 0px #ffffff",
           }}
         >
           {board.map((row, r) =>
@@ -340,34 +322,35 @@ export default function MinesweeperGame() {
                   onContextMenu={(e) => handleContextMenu(e, r, c)}
                   style={{
                     border: "none",
-                    borderRadius: "4px",
-                    fontWeight: "bold",
-                    fontSize: "clamp(0.8rem, 2.5vw, 1.2rem)",
+                    margin: 0,
+                    padding: 0,
+                    fontWeight: "900",
+                    fontFamily: "Arial, sans-serif",
+                    fontSize: "clamp(1rem, 4vw, 1.8rem)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     cursor: "pointer",
                     userSelect: "none",
-                    backgroundColor: cell.revealed
-                      ? cell.hasMine
-                        ? "#f44336"
-                        : "var(--arcade-surface-2, #1a1a1a)"
-                      : "var(--arcade-surface, #2c2c2c)",
+                    // Change background to red if mine is clicked, otherwise classic gray
+                    backgroundColor:
+                      cell.revealed && cell.hasMine ? "#f44336" : "#c0c0c0",
+                    // The magic CSS to make the classic 3D tiles:
                     boxShadow: !cell.revealed
-                      ? "inset 1px 1px 0 rgba(255,255,255,0.2), inset -1px -1px 0 rgba(0,0,0,0.5)"
-                      : "none",
+                      ? "inset 3px 3px 0px #ffffff, inset -3px -3px 0px #808080" // Raised 3D block
+                      : "inset 1px 1px 0px #808080", // Flat/indented revealed block
                   }}
                 >
                   {cell.revealed ? (
                     cell.hasMine ? (
-                      <Bomb size={18} color="#fff" />
+                      <Bomb size={24} color="#000" />
                     ) : cell.count > 0 ? (
                       <span style={{ color: NUMBER_COLORS[cell.count] }}>
                         {cell.count}
                       </span>
                     ) : null
                   ) : cell.flagged ? (
-                    <Flag size={16} color="var(--arcade-orange, #ff9800)" />
+                    <Flag size={20} color="#ff0000" fill="#ff0000" />
                   ) : null}
                 </button>
               );
@@ -377,7 +360,14 @@ export default function MinesweeperGame() {
           {/* OVERLAYS FOR WIN / LOSS */}
           {gameState === "won" && (
             <div className="snake-overlay">
-              <h2 style={{ color: "var(--arcade-green)" }}>You Win!</h2>
+              <h2
+                style={{
+                  color: "var(--arcade-green)",
+                  textShadow: "2px 2px 0 #000",
+                }}
+              >
+                You Win!
+              </h2>
               <p style={{ color: "#fff", marginBottom: "15px" }}>
                 Time: {timer}s
               </p>
@@ -389,7 +379,7 @@ export default function MinesweeperGame() {
 
           {gameState === "lost" && (
             <div className="snake-overlay">
-              <h2>BOOM! Game Over</h2>
+              <h2 style={{ textShadow: "2px 2px 0 #000" }}>BOOM! Game Over</h2>
               <button
                 className="snake-action-btn"
                 onClick={resetGame}
@@ -424,7 +414,6 @@ export default function MinesweeperGame() {
               marginTop: "10px",
             }}
           >
-            {/* DIG / FLAG MODE TOGGLE FOR DESKTOP */}
             <button
               className="snake-action-btn"
               onClick={() => setFlagMode((prev) => !prev)}
