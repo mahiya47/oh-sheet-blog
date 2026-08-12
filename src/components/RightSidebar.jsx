@@ -6,6 +6,9 @@ import { useBidirectionalSticky } from "../lib/useBidirectionalSticky.js";
 import Avatar from "./Avatar.jsx";
 import api from "../api";
 
+// IMPORT YOUR NEW CHAMPIONS WIDGET
+import ArcadeChampions from "./ArcadeChampions";
+
 const MAX_ITEMS = 5;
 
 function MiniRow({ post }) {
@@ -108,12 +111,12 @@ export default function RightSidebar() {
   const isHome = location.pathname === "/" || location.pathname === "/feed";
   const isChat = location.pathname.startsWith("/chat");
 
-  // --- DYNAMIC ARCADE LEADERBOARD LOGIC ---
-  const isArcadeGame =
-    location.pathname.startsWith("/arcade/") &&
-    location.pathname !== "/arcade/";
-  const gameSlug = isArcadeGame ? location.pathname.split("/")[2] : null; // Extracts "snake", "tetris", etc.
-  const isOther = !isHome && !isChat && !isArcadeGame;
+  // --- SMART ROUTING LOGIC ---
+  const isArcadeHub =
+    location.pathname === "/arcade" || location.pathname === "/arcade/";
+  const isArcadeGame = location.pathname.startsWith("/arcade/") && !isArcadeHub;
+  const gameSlug = isArcadeGame ? location.pathname.split("/")[2] : null;
+  const isOther = !isHome && !isChat && !isArcadeGame && !isArcadeHub;
 
   const [topScores, setTopScores] = useState([]);
 
@@ -123,9 +126,10 @@ export default function RightSidebar() {
         .get(`/arcade/${gameSlug}/leaderboard`)
         .then((res) => {
           // Sort appropriately (Reaction game is asc, others are desc)
-          const isReaction = gameSlug === "reaction";
+          const isTimeBased =
+            gameSlug === "reaction" || gameSlug === "minesweeper";
           const sortedData = res.data.sort((a, b) =>
-            isReaction ? a.score - b.score : b.score - a.score,
+            isTimeBased ? a.score - b.score : b.score - a.score,
           );
           setTopScores(sortedData.slice(0, 5)); // Keep only top 5 for sidebar
         })
@@ -133,13 +137,13 @@ export default function RightSidebar() {
     }
   }, [gameSlug]);
 
-  // View Toggles
-  // Home: everything. Chat: following + suggestions only.
-  // Arcade Game: Leaderboard only. Everywhere else: trending + tags.
-  const showFollowingActivity = !isArcadeGame && (isHome || isChat);
-  const showTrending = !isArcadeGame && (isHome || isOther);
-  const showTags = !isArcadeGame && (isHome || isOther);
-  const showSuggestions = !isArcadeGame && (isHome || isChat);
+  // --- VIEW TOGGLES ---
+  // Hide standard widgets if we are in the Arcade Hub OR an Arcade Game
+  const showFollowingActivity =
+    !isArcadeGame && !isArcadeHub && (isHome || isChat);
+  const showTrending = !isArcadeGame && !isArcadeHub && (isHome || isOther);
+  const showTags = !isArcadeGame && !isArcadeHub && (isHome || isOther);
+  const showSuggestions = !isArcadeGame && !isArcadeHub && (isHome || isChat);
   const showFooter = true; // Footer always shows everywhere
 
   useEffect(() => {
@@ -160,7 +164,10 @@ export default function RightSidebar() {
   return (
     <aside className="rail-right-wrapper" aria-label="Activity">
       <div className="rail-right" ref={railRef}>
-        {/* --- ARCADE GAME LEADERBOARD PANEL --- */}
+        {/* --- 1. ARCADE HUB: SHOW CHAMPIONS WIDGET --- */}
+        {isArcadeHub && <ArcadeChampions />}
+
+        {/* --- 2. ARCADE GAME: SHOW TOP 5 LEADERBOARD --- */}
         {isArcadeGame && (
           <section className="panel">
             <h2
@@ -208,6 +215,7 @@ export default function RightSidebar() {
           </section>
         )}
 
+        {/* --- 3. ALL OTHER PAGES: SHOW NORMAL WIDGETS --- */}
         {showFollowingActivity && (
           <section className="panel">
             <h2 className="panel-head">Following activity</h2>
