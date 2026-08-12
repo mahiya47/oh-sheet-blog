@@ -309,7 +309,7 @@ export default function MinesweeperGame() {
             gap: "0px", // Classic minesweeper has no gaps between tiles
             padding: "8px",
             // The outer retro border of the game board
-            backgroundColor: "#c0c0c0",
+            backgroundColor: "#252525",
             boxShadow: "inset 4px 4px 0px #808080, inset -4px -4px 0px #ffffff",
           }}
         >
