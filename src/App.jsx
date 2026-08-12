@@ -33,7 +33,7 @@ import TetrisGame from "./pages/TetrisGame.jsx";
 import MinesweeperGame from "./pages/MinesweeperGame.jsx";
 // import SudokuGame from "./pages/SudokuGame.jsx";
 // import TicTacToeGame from "./pages/TicTacToeGame.jsx";
-import RPSGame from "./pages/RPSGame.jsx";
+import RPSGame from "./pages/RpsGame.jsx";
 
 export default function App() {
   return (
