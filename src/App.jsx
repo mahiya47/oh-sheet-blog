@@ -33,7 +33,7 @@ import TetrisGame from "./pages/TetrisGame.jsx";
 import MinesweeperGame from "./pages/MinesweeperGame.jsx";
 // import SudokuGame from "./pages/SudokuGame.jsx";
 // import TicTacToeGame from "./pages/TicTacToeGame.jsx";
-// import RPSGame from "./pages/RPSGame.jsx";
+import RPSGame from "./pages/RPSGame.jsx";
 
 export default function App() {
   return (
@@ -81,7 +81,7 @@ export default function App() {
             <Route path="/arcade/minesweeper" element={<MinesweeperGame />} />
             {/* <Route path="/arcade/sudoku" element={<SudokuGame />} /> */}
             {/* <Route path="/arcade/tictactoe" element={<TicTacToeGame />} /> */}
-            {/* <Route path="/arcade/rps" element={<RPSGame />} /> */}
+            <Route path="/arcade/rps" element={<RPSGame />} />
             <Route
               path="/agreement"
               element={<StaticPage page="agreement" />}
