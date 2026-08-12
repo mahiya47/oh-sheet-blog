@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Gamepad2 } from "lucide-react";
+import ArcadeChampions from "../components/ArcadeChampions";
 
 export default function ArcadeHub() {
   const games = [
@@ -96,6 +97,18 @@ export default function ArcadeHub() {
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* MOBILE ONLY ARCADE CHAMPIONS WIDGET */}
+      <div
+        className="mobile-only"
+        style={{
+          width: "100%",
+          marginTop: "30px",
+          paddingBottom: "40px",
+        }}
+      >
+        <ArcadeChampions />
       </div>
     </div>
   );
