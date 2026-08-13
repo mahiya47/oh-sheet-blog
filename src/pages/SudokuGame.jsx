@@ -193,10 +193,8 @@ export default function SudokuGame() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             padding: "20px",
-            height: "auto", // FIX: Stops the number pad from getting cut off
-            minHeight: "fit-content", // FIX: Forces container to wrap all content
-            overflow: "visible",
           }}
         >
           <div
@@ -205,7 +203,7 @@ export default function SudokuGame() {
               gridTemplateColumns: "repeat(9, 1fr)",
               gridTemplateRows: "repeat(9, 1fr)",
               width: "100%",
-              maxWidth: "450px",
+              maxWidth: "360px", // Shrunk to fit
               aspectRatio: "1 / 1",
               backgroundColor: "var(--arcade-surface)",
               userSelect: "none",
@@ -229,7 +227,6 @@ export default function SudokuGame() {
                         ? "rgba(76, 175, 80, 0.3)"
                         : "transparent",
 
-                      // FIX: Cells now draw the exact thick & thin borders themselves!
                       borderTop:
                         r % 3 === 0
                           ? "2px solid var(--accent)"
@@ -245,7 +242,7 @@ export default function SudokuGame() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "clamp(1.2rem, 5vw, 1.8rem)",
+                      fontSize: "clamp(1rem, 4vw, 1.4rem)", // Slightly smaller font
                       fontWeight: cell.isFixed ? "900" : "600",
                       color: cell.isFixed ? "#fff" : "var(--arcade-orange)",
                       cursor: cell.isFixed ? "default" : "pointer",
@@ -254,7 +251,6 @@ export default function SudokuGame() {
                       outline: "none",
                     }}
                   >
-                    {/* THE MAGIC FIX: Using a non-breaking space "\u00A0" for empty cells */}
                     {cell.isFixed
                       ? cell.val
                       : cell.userVal
@@ -271,10 +267,10 @@ export default function SudokuGame() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(5, 1fr)",
-              gap: "10px",
-              marginTop: "20px",
+              gap: "8px",
+              marginTop: "15px",
               width: "100%",
-              maxWidth: "450px",
+              maxWidth: "360px",
             }}
           >
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
@@ -283,10 +279,10 @@ export default function SudokuGame() {
                 className="snake-action-btn"
                 onClick={() => handleInput(num)}
                 style={{
-                  padding: "15px 0",
-                  fontSize: "1.5rem",
+                  padding: "10px 0",
+                  fontSize: "1.2rem",
                   fontWeight: "bold",
-                }}
+                }} // Reduced padding and font size
               >
                 {num}
               </button>
@@ -295,11 +291,11 @@ export default function SudokuGame() {
               className="snake-action-btn"
               onClick={() => handleInput(null)}
               style={{
-                padding: "15px 0",
+                padding: "10px 0",
                 backgroundColor: "var(--arcade-border)",
               }}
             >
-              <Delete size={24} style={{ margin: "0 auto" }} />
+              <Delete size={20} style={{ margin: "0 auto" }} />
             </button>
           </div>
 
