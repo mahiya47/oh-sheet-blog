@@ -211,16 +211,8 @@ export default function CrosswordGame() {
         </button>
       </div>
 
-      <div
-        className="snake-wireframe-container"
-        style={{
-          height: "auto",
-          minHeight: "fit-content",
-          maxHeight: "none",
-          overflow: "visible",
-          paddingBottom: "30px",
-        }}
-      >
+      <div className="snake-wireframe-container">
+        {/* Reverted back to standard CSS layout for Desktop */}
         <div
           className="snake-wireframe-board"
           style={{
@@ -228,14 +220,8 @@ export default function CrosswordGame() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "flex-start",
-            padding: "20px",
-            height: "auto",
-            minHeight: "fit-content", // FIX: Forces the container to wrap all content
-            maxHeight: "none", // FIX: Removes any artificial limit
-            overflow: "visible", // FIX: Prevents clipping
-            flex: "none",
-            width: "100%",
+            justifyContent: "center",
+            padding: "10px",
           }}
         >
           <input
@@ -270,16 +256,16 @@ export default function CrosswordGame() {
           <div
             style={{
               width: "100%",
-              maxWidth: "450px",
+              maxWidth: "340px",
               backgroundColor: "var(--arcade-surface)",
-              padding: "15px",
+              padding: "10px",
               borderRadius: "8px",
-              marginBottom: "20px",
+              marginBottom: "10px",
               border: "1px solid var(--arcade-border)",
               textAlign: "center",
               color: "var(--arcade-orange)",
               fontWeight: "bold",
-              fontSize: "1.1rem",
+              fontSize: "1rem",
             }}
           >
             {getActiveClue()}
@@ -290,7 +276,7 @@ export default function CrosswordGame() {
               display: "grid",
               gridTemplateColumns: "repeat(5, 1fr)",
               width: "100%",
-              maxWidth: "450px",
+              maxWidth: "340px", // Scaled down to prevent mobile clipping
               aspectRatio: "1 / 1",
               backgroundColor: "#fff",
               border: "3px solid #000",

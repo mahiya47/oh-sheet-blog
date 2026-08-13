@@ -69,6 +69,7 @@ export default function SudokuGame() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const timerRef = useRef(null);
+  const hiddenInputRef = useRef(null); // FIX: Added for mobile keyboard
 
   const fetchLeaderboard = useCallback(() => {
     api
@@ -104,6 +105,8 @@ export default function SudokuGame() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (gameState !== "playing" || !selectedCell) return;
+      if (document.activeElement === hiddenInputRef.current) return;
+
       if (e.key >= "1" && e.key <= "9") {
         handleInput(parseInt(e.key));
       } else if (e.key === "Backspace" || e.key === "Delete") {
@@ -137,6 +140,7 @@ export default function SudokuGame() {
 
   const handleCellClick = (r, c) => {
     if (gameState === "playing") setSelectedCell({ r, c });
+    hiddenInputRef.current?.focus(); // FIX: Pops up keyboard on mobile
   };
 
   const resetGame = () => {
@@ -169,12 +173,8 @@ export default function SudokuGame() {
         </button>
       </div>
 
-      {/* FIX: Forced height to auto to prevent mobile squishing */}
-      <div
-        className="snake-wireframe-container"
-        style={{ height: "auto", minHeight: "auto", paddingBottom: "30px" }}
-      >
-        {/* FIX: Forced height to auto and removed flex limitations */}
+      <div className="snake-wireframe-container">
+        {/* Reverted back to standard CSS layout for Desktop */}
         <div
           className="snake-wireframe-board"
           style={{
@@ -182,20 +182,48 @@ export default function SudokuGame() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "flex-start",
-            padding: "15px",
-            height: "auto",
-            flex: "none",
-            width: "100%",
+            justifyContent: "center",
+            padding: "10px",
           }}
         >
+          {/* FIX: Hidden input for mobile native keyboard */}
+          <input
+            ref={hiddenInputRef}
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
+            value=" "
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "") {
+                handleInput(null);
+              } else if (val.length > 1) {
+                const char = val.slice(-1);
+                if (/[1-9]/.test(char)) {
+                  handleInput(parseInt(char));
+                }
+              }
+            }}
+            style={{
+              position: "absolute",
+              opacity: 0,
+              top: 0,
+              left: 0,
+              height: 0,
+              width: 0,
+              zIndex: -1,
+            }}
+          />
+
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(9, 1fr)",
               gridTemplateRows: "repeat(9, 1fr)",
               width: "100%",
-              maxWidth: "360px",
+              maxWidth: "320px", // Scaled down to prevent mobile clipping
               aspectRatio: "1 / 1",
               backgroundColor: "var(--arcade-surface)",
               userSelect: "none",
@@ -231,7 +259,7 @@ export default function SudokuGame() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "clamp(1rem, 4vw, 1.4rem)",
+                      fontSize: "clamp(0.9rem, 4vw, 1.2rem)",
                       fontWeight: cell.isFixed ? "900" : "600",
                       color: cell.isFixed ? "#fff" : "var(--arcade-orange)",
                       cursor: cell.isFixed ? "default" : "pointer",
@@ -255,10 +283,10 @@ export default function SudokuGame() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(5, 1fr)",
-              gap: "8px",
-              marginTop: "20px",
+              gap: "5px",
+              marginTop: "10px",
               width: "100%",
-              maxWidth: "360px",
+              maxWidth: "320px",
             }}
           >
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
@@ -267,8 +295,8 @@ export default function SudokuGame() {
                 className="snake-action-btn"
                 onClick={() => handleInput(num)}
                 style={{
-                  padding: "10px 0",
-                  fontSize: "1.2rem",
+                  padding: "8px 0",
+                  fontSize: "1.1rem",
                   fontWeight: "bold",
                 }}
               >
@@ -279,11 +307,11 @@ export default function SudokuGame() {
               className="snake-action-btn"
               onClick={() => handleInput(null)}
               style={{
-                padding: "10px 0",
+                padding: "8px 0",
                 backgroundColor: "var(--arcade-border)",
               }}
             >
-              <Delete size={20} style={{ margin: "0 auto" }} />
+              <Delete size={18} style={{ margin: "0 auto" }} />
             </button>
           </div>
 
