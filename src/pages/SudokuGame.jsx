@@ -5,7 +5,6 @@ import api from "../api";
 import { useStore } from "../lib/store.jsx";
 import ScoreModal from "../components/ScoreModal";
 
-// A valid, fully solved base board
 const BASE_BOARD = [
   [5, 3, 4, 6, 7, 8, 9, 1, 2],
   [6, 7, 2, 1, 9, 5, 3, 4, 8],
@@ -18,16 +17,11 @@ const BASE_BOARD = [
   [3, 4, 5, 2, 8, 6, 1, 7, 9],
 ];
 
-// Randomizes numbers 1-9 to create a brand new valid board every time
 const generatePuzzle = (emptyCells = 45) => {
   const numMap = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
-
-  // Map base board to new numbers
   let board = BASE_BOARD.map((row) =>
     row.map((val) => ({ val: numMap[val - 1], isFixed: true, userVal: null })),
   );
-
-  // Remove cells to create the puzzle
   let removed = 0;
   while (removed < emptyCells) {
     const r = Math.floor(Math.random() * 9);
@@ -40,22 +34,16 @@ const generatePuzzle = (emptyCells = 45) => {
   return board;
 };
 
-// Checks if the current board state is perfectly valid and complete
 const validateBoard = (board) => {
   const getVal = (cell) => (cell.isFixed ? cell.val : cell.userVal);
-
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       const val = getVal(board[r][c]);
-      if (!val) return false; // Incomplete
-
-      // Check row & col
+      if (!val) return false;
       for (let i = 0; i < 9; i++) {
         if (i !== c && getVal(board[r][i]) === val) return false;
         if (i !== r && getVal(board[i][c]) === val) return false;
       }
-
-      // Check 3x3 block
       const startR = Math.floor(r / 3) * 3;
       const startC = Math.floor(c / 3) * 3;
       for (let i = startR; i < startR + 3; i++) {
@@ -65,7 +53,7 @@ const validateBoard = (board) => {
       }
     }
   }
-  return true; // Complete and Valid!
+  return true;
 };
 
 export default function SudokuGame() {
@@ -73,9 +61,8 @@ export default function SudokuGame() {
   const { currentUser } = useStore();
 
   const [board, setBoard] = useState(generatePuzzle());
-  const [selectedCell, setSelectedCell] = useState(null); // { r, c }
-
-  const [gameState, setGameState] = useState("playing"); // playing, won
+  const [selectedCell, setSelectedCell] = useState(null);
+  const [gameState, setGameState] = useState("playing");
   const [timer, setTimer] = useState(0);
   const [bestTime, setBestTime] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
@@ -114,7 +101,6 @@ export default function SudokuGame() {
     return () => clearInterval(timerRef.current);
   }, [gameState]);
 
-  // Support typing numbers directly on keyboard
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (gameState !== "playing" || !selectedCell) return;
@@ -162,7 +148,6 @@ export default function SudokuGame() {
 
   return (
     <div style={{ padding: "0" }}>
-      {/* MOBILE HEADER */}
       <div className="arcade-mobile-header mobile-only">
         <button
           className="arcade-mobile-back"
@@ -184,8 +169,12 @@ export default function SudokuGame() {
         </button>
       </div>
 
-      <div className="snake-wireframe-container">
-        {/* GAME BOARD */}
+      {/* FIX: Forced height to auto to prevent mobile squishing */}
+      <div
+        className="snake-wireframe-container"
+        style={{ height: "auto", minHeight: "auto", paddingBottom: "30px" }}
+      >
+        {/* FIX: Forced height to auto and removed flex limitations */}
         <div
           className="snake-wireframe-board"
           style={{
@@ -193,8 +182,11 @@ export default function SudokuGame() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
+            justifyContent: "flex-start",
+            padding: "15px",
+            height: "auto",
+            flex: "none",
+            width: "100%",
           }}
         >
           <div
@@ -203,7 +195,7 @@ export default function SudokuGame() {
               gridTemplateColumns: "repeat(9, 1fr)",
               gridTemplateRows: "repeat(9, 1fr)",
               width: "100%",
-              maxWidth: "420px",
+              maxWidth: "360px",
               aspectRatio: "1 / 1",
               backgroundColor: "var(--arcade-surface)",
               userSelect: "none",
@@ -214,7 +206,6 @@ export default function SudokuGame() {
               row.map((cell, c) => {
                 const isSelected =
                   selectedCell?.r === r && selectedCell?.c === c;
-
                 return (
                   <button
                     key={`${r}-${c}`}
@@ -226,7 +217,6 @@ export default function SudokuGame() {
                       backgroundColor: isSelected
                         ? "rgba(76, 175, 80, 0.3)"
                         : "transparent",
-
                       borderTop:
                         r % 3 === 0
                           ? "2px solid var(--accent)"
@@ -238,11 +228,10 @@ export default function SudokuGame() {
                       borderRight: c === 8 ? "2px solid var(--accent)" : "none",
                       borderBottom:
                         r === 8 ? "2px solid var(--accent)" : "none",
-
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "clamp(1rem, 4vw, 1.4rem)", // Slightly smaller font
+                      fontSize: "clamp(1rem, 4vw, 1.4rem)",
                       fontWeight: cell.isFixed ? "900" : "600",
                       color: cell.isFixed ? "#fff" : "var(--arcade-orange)",
                       cursor: cell.isFixed ? "default" : "pointer",
@@ -262,13 +251,12 @@ export default function SudokuGame() {
             )}
           </div>
 
-          {/* ON-SCREEN NUMBER PAD */}
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(5, 1fr)",
               gap: "8px",
-              marginTop: "15px",
+              marginTop: "20px",
               width: "100%",
               maxWidth: "360px",
             }}
@@ -282,7 +270,7 @@ export default function SudokuGame() {
                   padding: "10px 0",
                   fontSize: "1.2rem",
                   fontWeight: "bold",
-                }} // Reduced padding and font size
+                }}
               >
                 {num}
               </button>
@@ -299,7 +287,6 @@ export default function SudokuGame() {
             </button>
           </div>
 
-          {/* WIN OVERLAY */}
           {gameState === "won" && (
             <div className="snake-overlay">
               <h2
@@ -320,7 +307,6 @@ export default function SudokuGame() {
           )}
         </div>
 
-        {/* DESKTOP CONTROLS */}
         <div className="snake-wireframe-controls desktop-only">
           <div className="snake-wireframe-stats">
             <div className="snake-stat-row">
@@ -345,7 +331,6 @@ export default function SudokuGame() {
           </div>
         </div>
       </div>
-
       <ScoreModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

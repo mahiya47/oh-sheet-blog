@@ -5,7 +5,6 @@ import api from "../api";
 import { useStore } from "../lib/store.jsx";
 import ScoreModal from "../components/ScoreModal";
 
-// A perfect symmetric 5x5 Mini Crossword!
 const SOLUTION = [
   ["S", "T", "A", "R", "T"],
   ["T", "H", "R", "E", "E"],
@@ -49,7 +48,7 @@ export default function CrosswordGame() {
 
   const [grid, setGrid] = useState(Array(5).fill(Array(5).fill("")));
   const [selected, setSelected] = useState({ r: 0, c: 0 });
-  const [direction, setDirection] = useState("across"); // 'across' or 'down'
+  const [direction, setDirection] = useState("across");
 
   const [gameState, setGameState] = useState("playing");
   const [timer, setTimer] = useState(0);
@@ -58,7 +57,7 @@ export default function CrosswordGame() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const timerRef = useRef(null);
-  const hiddenInputRef = useRef(null); // Used to trigger mobile keyboards
+  const hiddenInputRef = useRef(null);
 
   const fetchLeaderboard = useCallback(() => {
     api
@@ -91,12 +90,9 @@ export default function CrosswordGame() {
     return () => clearInterval(timerRef.current);
   }, [gameState]);
 
-  // Global Keyboard Listener for Desktop & Arrow Keys
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (gameState !== "playing") return;
-
-      // If typing in the hidden input, ignore letters/backspace here so it doesn't double-fire
       if (document.activeElement === hiddenInputRef.current) {
         if (
           !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)
@@ -104,7 +100,6 @@ export default function CrosswordGame() {
           return;
         }
       }
-
       if (e.key === "Backspace") {
         handleInput("DEL");
       } else if (/^[a-zA-Z]$/.test(e.key)) {
@@ -140,20 +135,16 @@ export default function CrosswordGame() {
   const handleInput = async (char) => {
     if (gameState !== "playing") return;
     const { r, c } = selected;
-
     const newGrid = grid.map((row) => [...row]);
 
     if (char === "DEL") {
       newGrid[r][c] = "";
       setGrid(newGrid);
-      // Move backwards
       if (direction === "across" && c > 0) setSelected({ r, c: c - 1 });
       if (direction === "down" && r > 0) setSelected({ r: r - 1, c });
     } else {
       newGrid[r][c] = char;
       setGrid(newGrid);
-
-      // Check Win
       if (validateGrid(newGrid)) {
         setGameState("won");
         if (!bestTime || timer < bestTime) setBestTime(timer);
@@ -165,8 +156,6 @@ export default function CrosswordGame() {
         }
         return;
       }
-
-      // Move forwards
       if (direction === "across" && c < 4) setSelected({ r, c: c + 1 });
       if (direction === "down" && r < 4) setSelected({ r: r + 1, c });
     }
@@ -178,7 +167,6 @@ export default function CrosswordGame() {
     } else {
       setSelected({ r, c });
     }
-    // FIX: Focus the hidden input to force the mobile keyboard to open!
     hiddenInputRef.current?.focus();
   };
 
@@ -190,7 +178,6 @@ export default function CrosswordGame() {
     setTimer(0);
   };
 
-  // Determine which clue is active
   const getActiveClue = () => {
     if (direction === "across") {
       const startNum = NUMBERS[`${selected.r},0`];
@@ -203,7 +190,6 @@ export default function CrosswordGame() {
 
   return (
     <div style={{ padding: "0" }}>
-      {/* MOBILE HEADER */}
       <div className="arcade-mobile-header mobile-only">
         <button
           className="arcade-mobile-back"
@@ -225,7 +211,12 @@ export default function CrosswordGame() {
         </button>
       </div>
 
-      <div className="snake-wireframe-container">
+      {/* FIX: Forced height to auto to prevent clipping */}
+      <div
+        className="snake-wireframe-container"
+        style={{ height: "auto", minHeight: "auto", paddingBottom: "30px" }}
+      >
+        {/* FIX: Forced height to auto and flex to none */}
         <div
           className="snake-wireframe-board"
           style={{
@@ -233,25 +224,26 @@ export default function CrosswordGame() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: "flex-start",
             padding: "20px",
+            height: "auto",
+            flex: "none",
+            width: "100%",
           }}
         >
-          {/* HIDDEN INPUT FOR MOBILE KEYBOARD */}
           <input
             ref={hiddenInputRef}
             type="text"
             autoComplete="off"
             autoCorrect="off"
             spellCheck="false"
-            // The " " space trick: Mobile keyboards send backspace properly when there is a space to delete!
             value=" "
             onChange={(e) => {
               const val = e.target.value;
               if (val === "") {
-                handleInput("DEL"); // Backspace was hit (deleted the space)
+                handleInput("DEL");
               } else if (val.length > 1) {
-                const char = val.slice(-1); // A letter was typed
+                const char = val.slice(-1);
                 if (/^[a-zA-Z]$/.test(char)) {
                   handleInput(char.toUpperCase());
                 }
@@ -268,7 +260,6 @@ export default function CrosswordGame() {
             }}
           />
 
-          {/* ACTIVE CLUE DISPLAY */}
           <div
             style={{
               width: "100%",
@@ -287,18 +278,17 @@ export default function CrosswordGame() {
             {getActiveClue()}
           </div>
 
-          {/* CROSSWORD GRID */}
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(5, 1fr)",
               width: "100%",
-              maxWidth: "450px", // Increased to take up the space the keyboard left behind!
+              maxWidth: "450px",
               aspectRatio: "1 / 1",
               backgroundColor: "#fff",
               border: "3px solid #000",
               userSelect: "none",
-              boxSizing: "border-box", // Fix for collapsing grid
+              boxSizing: "border-box",
             }}
           >
             {grid.map((row, r) =>
@@ -323,9 +313,9 @@ export default function CrosswordGame() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      aspectRatio: "1 / 1", // Fix for collapsing cells
-                      boxSizing: "border-box", // Fix for collapsing cells
-                      fontSize: "clamp(1.5rem, 6vw, 2.8rem)", // Scaled up font slightly
+                      aspectRatio: "1 / 1",
+                      boxSizing: "border-box",
+                      fontSize: "clamp(1.5rem, 6vw, 2.8rem)",
                       fontWeight: "bold",
                       color: "#000",
                       textTransform: "uppercase",
@@ -347,7 +337,6 @@ export default function CrosswordGame() {
                         {cellNum}
                       </span>
                     )}
-                    {/* FIX: Non-breaking space \u00A0 prevents empty cells from collapsing */}
                     {letter || "\u00A0"}
                   </div>
                 );
@@ -355,7 +344,6 @@ export default function CrosswordGame() {
             )}
           </div>
 
-          {/* WIN OVERLAY */}
           {gameState === "won" && (
             <div className="snake-overlay">
               <h2
@@ -376,7 +364,6 @@ export default function CrosswordGame() {
           )}
         </div>
 
-        {/* DESKTOP CONTROLS */}
         <div className="snake-wireframe-controls desktop-only">
           <div className="snake-wireframe-stats">
             <div className="snake-stat-row">
@@ -401,7 +388,6 @@ export default function CrosswordGame() {
           </div>
         </div>
       </div>
-
       <ScoreModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
