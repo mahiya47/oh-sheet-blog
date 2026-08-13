@@ -68,8 +68,17 @@ export default function SudokuGame() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // COMPLETELY SEPARATE MOBILE AND PC LOGIC
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
   const timerRef = useRef(null);
-  const hiddenInputRef = useRef(null); // FIX: Added for mobile keyboard
+  const hiddenInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const fetchLeaderboard = useCallback(() => {
     api
@@ -140,7 +149,8 @@ export default function SudokuGame() {
 
   const handleCellClick = (r, c) => {
     if (gameState === "playing") setSelectedCell({ r, c });
-    hiddenInputRef.current?.focus(); // FIX: Pops up keyboard on mobile
+    // Force mobile keyboard to open!
+    setTimeout(() => hiddenInputRef.current?.focus(), 10);
   };
 
   const resetGame = () => {
@@ -150,191 +160,211 @@ export default function SudokuGame() {
     setTimer(0);
   };
 
-  return (
-    <div style={{ padding: "0" }}>
-      <div className="arcade-mobile-header mobile-only">
-        <button
-          className="arcade-mobile-back"
-          onClick={() => navigate("/arcade")}
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          Time <span>{timer}s</span>
-        </div>
-        <div>
-          Best <span>{bestTime ? `${bestTime}s` : "-"}</span>
-        </div>
-        <button
-          className="arcade-mobile-trophy"
-          onClick={() => setIsModalOpen(true)}
-        >
-          Top Scorers
-        </button>
-      </div>
+  // --- REUSABLE UI BLOCKS ---
+  const mobileKeyboardInput = (
+    <input
+      ref={hiddenInputRef}
+      type="text"
+      inputMode="numeric" // Forces numbers on mobile
+      autoComplete="off"
+      autoCorrect="off"
+      spellCheck="false"
+      value=" "
+      onChange={(e) => {
+        const val = e.target.value;
+        if (val === "") {
+          handleInput(null);
+        } else if (val.length > 1) {
+          const char = val.slice(-1);
+          if (/[1-9]/.test(char)) {
+            handleInput(parseInt(char));
+          }
+        }
+      }}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "1px",
+        height: "1px",
+        opacity: 0.01,
+      }}
+    />
+  );
 
-      <div className="snake-wireframe-container">
-        {/* Reverted back to standard CSS layout for Desktop */}
+  const sudokuGrid = (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(9, 1fr)",
+        gridTemplateRows: "repeat(9, 1fr)",
+        width: "100%",
+        maxWidth: isMobile ? "400px" : "450px", // Full 450px on PC, responsive on Mobile
+        aspectRatio: "1 / 1",
+        backgroundColor: "var(--arcade-surface)",
+        userSelect: "none",
+        boxSizing: "border-box",
+      }}
+    >
+      {board.map((row, r) =>
+        row.map((cell, c) => {
+          const isSelected = selectedCell?.r === r && selectedCell?.c === c;
+          return (
+            <button
+              key={`${r}-${c}`}
+              onClick={() => handleCellClick(r, c)}
+              style={{
+                width: "100%",
+                height: "100%",
+                boxSizing: "border-box",
+                backgroundColor: isSelected
+                  ? "rgba(76, 175, 80, 0.3)"
+                  : "transparent",
+                borderTop:
+                  r % 3 === 0
+                    ? "2px solid var(--accent)"
+                    : "1px solid var(--border-soft, #333)",
+                borderLeft:
+                  c % 3 === 0
+                    ? "2px solid var(--accent)"
+                    : "1px solid var(--border-soft, #333)",
+                borderRight: c === 8 ? "2px solid var(--accent)" : "none",
+                borderBottom: r === 8 ? "2px solid var(--accent)" : "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: isMobile ? "clamp(1.2rem, 5vw, 1.5rem)" : "1.8rem", // Proper sizing
+                fontWeight: cell.isFixed ? "900" : "600",
+                color: cell.isFixed ? "#fff" : "var(--arcade-orange)",
+                cursor: cell.isFixed ? "default" : "pointer",
+                padding: 0,
+                margin: 0,
+                outline: "none",
+              }}
+            >
+              {cell.isFixed ? cell.val : cell.userVal ? cell.userVal : "\u00A0"}
+            </button>
+          );
+        }),
+      )}
+    </div>
+  );
+
+  const onScreenNumpad = (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(5, 1fr)",
+        gap: "8px",
+        marginTop: "15px",
+        width: "100%",
+        maxWidth: isMobile ? "400px" : "450px",
+      }}
+    >
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+        <button
+          key={num}
+          className="snake-action-btn"
+          onClick={() => handleInput(num)}
+          style={{ padding: "10px 0", fontSize: "1.2rem", fontWeight: "bold" }}
+        >
+          {num}
+        </button>
+      ))}
+      <button
+        className="snake-action-btn"
+        onClick={() => handleInput(null)}
+        style={{ padding: "10px 0", backgroundColor: "var(--arcade-border)" }}
+      >
+        <Delete size={20} style={{ margin: "0 auto" }} />
+      </button>
+    </div>
+  );
+
+  const winOverlay = gameState === "won" && (
+    <div className="snake-overlay">
+      <h2
+        style={{ color: "var(--arcade-green)", textShadow: "2px 2px 0 #000" }}
+      >
+        Puzzle Solved!
+      </h2>
+      <p style={{ color: "#fff", marginBottom: "15px" }}>Time: {timer}s</p>
+      <button className="snake-action-btn" onClick={resetGame}>
+        Play Again
+      </button>
+    </div>
+  );
+
+  // --- RENDER SEPARATE LAYOUTS ---
+  if (isMobile) {
+    return (
+      <div style={{ padding: "0" }}>
+        <div className="arcade-mobile-header mobile-only">
+          <button
+            className="arcade-mobile-back"
+            onClick={() => navigate("/arcade")}
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            Time <span>{timer}s</span>
+          </div>
+          <div>
+            Best <span>{bestTime ? `${bestTime}s` : "-"}</span>
+          </div>
+          <button
+            className="arcade-mobile-trophy"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Top Scorers
+          </button>
+        </div>
+
+        {/* Strictly Mobile Wrapper: Zero height restrictions, zero clipping */}
         <div
-          className="snake-wireframe-board"
           style={{
-            position: "relative",
+            width: "100%",
+            padding: "15px",
+            paddingBottom: "40px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            padding: "10px",
+            position: "relative",
           }}
         >
-          {/* FIX: Hidden input for mobile native keyboard */}
-          <input
-            ref={hiddenInputRef}
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck="false"
-            value=" "
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === "") {
-                handleInput(null);
-              } else if (val.length > 1) {
-                const char = val.slice(-1);
-                if (/[1-9]/.test(char)) {
-                  handleInput(parseInt(char));
-                }
-              }
-            }}
-            style={{
-              position: "absolute",
-              opacity: 0,
-              top: 0,
-              left: 0,
-              height: 0,
-              width: 0,
-              zIndex: -1,
-            }}
-          />
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(9, 1fr)",
-              gridTemplateRows: "repeat(9, 1fr)",
-              width: "100%",
-              maxWidth: "320px", // Scaled down to prevent mobile clipping
-              aspectRatio: "1 / 1",
-              backgroundColor: "var(--arcade-surface)",
-              userSelect: "none",
-              boxSizing: "border-box",
-            }}
-          >
-            {board.map((row, r) =>
-              row.map((cell, c) => {
-                const isSelected =
-                  selectedCell?.r === r && selectedCell?.c === c;
-                return (
-                  <button
-                    key={`${r}-${c}`}
-                    onClick={() => handleCellClick(r, c)}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      boxSizing: "border-box",
-                      backgroundColor: isSelected
-                        ? "rgba(76, 175, 80, 0.3)"
-                        : "transparent",
-                      borderTop:
-                        r % 3 === 0
-                          ? "2px solid var(--accent)"
-                          : "1px solid var(--border-soft, #333)",
-                      borderLeft:
-                        c % 3 === 0
-                          ? "2px solid var(--accent)"
-                          : "1px solid var(--border-soft, #333)",
-                      borderRight: c === 8 ? "2px solid var(--accent)" : "none",
-                      borderBottom:
-                        r === 8 ? "2px solid var(--accent)" : "none",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "clamp(0.9rem, 4vw, 1.2rem)",
-                      fontWeight: cell.isFixed ? "900" : "600",
-                      color: cell.isFixed ? "#fff" : "var(--arcade-orange)",
-                      cursor: cell.isFixed ? "default" : "pointer",
-                      padding: 0,
-                      margin: 0,
-                      outline: "none",
-                    }}
-                  >
-                    {cell.isFixed
-                      ? cell.val
-                      : cell.userVal
-                        ? cell.userVal
-                        : "\u00A0"}
-                  </button>
-                );
-              }),
-            )}
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(5, 1fr)",
-              gap: "5px",
-              marginTop: "10px",
-              width: "100%",
-              maxWidth: "320px",
-            }}
-          >
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-              <button
-                key={num}
-                className="snake-action-btn"
-                onClick={() => handleInput(num)}
-                style={{
-                  padding: "8px 0",
-                  fontSize: "1.1rem",
-                  fontWeight: "bold",
-                }}
-              >
-                {num}
-              </button>
-            ))}
-            <button
-              className="snake-action-btn"
-              onClick={() => handleInput(null)}
-              style={{
-                padding: "8px 0",
-                backgroundColor: "var(--arcade-border)",
-              }}
-            >
-              <Delete size={18} style={{ margin: "0 auto" }} />
-            </button>
-          </div>
-
-          {gameState === "won" && (
-            <div className="snake-overlay">
-              <h2
-                style={{
-                  color: "var(--arcade-green)",
-                  textShadow: "2px 2px 0 #000",
-                }}
-              >
-                Puzzle Solved!
-              </h2>
-              <p style={{ color: "#fff", marginBottom: "15px" }}>
-                Time: {timer}s
-              </p>
-              <button className="snake-action-btn" onClick={resetGame}>
-                Play Again
-              </button>
-            </div>
-          )}
+          {mobileKeyboardInput}
+          {sudokuGrid}
+          {onScreenNumpad}
+          {winOverlay}
         </div>
+        <ScoreModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          leaderboard={leaderboard}
+        />
+      </div>
+    );
+  }
 
+  // Strictly PC Wrapper: Big, classic arcade box
+  return (
+    <div style={{ padding: "0" }}>
+      <div className="snake-wireframe-container">
+        <div
+          className="snake-wireframe-board"
+          style={{
+            padding: "20px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            position: "relative",
+          }}
+        >
+          {mobileKeyboardInput}
+          {sudokuGrid}
+          {onScreenNumpad}
+          {winOverlay}
+        </div>
         <div className="snake-wireframe-controls desktop-only">
           <div className="snake-wireframe-stats">
             <div className="snake-stat-row">

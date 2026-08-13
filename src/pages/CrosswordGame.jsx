@@ -56,8 +56,17 @@ export default function CrosswordGame() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // COMPLETELY SEPARATE MOBILE AND PC LOGIC
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
   const timerRef = useRef(null);
   const hiddenInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const fetchLeaderboard = useCallback(() => {
     api
@@ -96,9 +105,8 @@ export default function CrosswordGame() {
       if (document.activeElement === hiddenInputRef.current) {
         if (
           !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)
-        ) {
+        )
           return;
-        }
       }
       if (e.key === "Backspace") {
         handleInput("DEL");
@@ -118,7 +126,6 @@ export default function CrosswordGame() {
         setDirection("down");
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selected, direction, gameState, grid]);
@@ -167,7 +174,7 @@ export default function CrosswordGame() {
     } else {
       setSelected({ r, c });
     }
-    hiddenInputRef.current?.focus();
+    setTimeout(() => hiddenInputRef.current?.focus(), 10);
   };
 
   const resetGame = () => {
@@ -188,175 +195,209 @@ export default function CrosswordGame() {
     }
   };
 
-  return (
-    <div style={{ padding: "0" }}>
-      <div className="arcade-mobile-header mobile-only">
-        <button
-          className="arcade-mobile-back"
-          onClick={() => navigate("/arcade")}
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          Time <span>{timer}s</span>
-        </div>
-        <div>
-          Best <span>{bestTime ? `${bestTime}s` : "-"}</span>
-        </div>
-        <button
-          className="arcade-mobile-trophy"
-          onClick={() => setIsModalOpen(true)}
-        >
-          Top Scorers
-        </button>
-      </div>
+  // --- REUSABLE UI BLOCKS ---
+  const mobileKeyboardInput = (
+    <input
+      ref={hiddenInputRef}
+      type="text"
+      autoComplete="off"
+      autoCorrect="off"
+      spellCheck="false"
+      value=" "
+      onChange={(e) => {
+        const val = e.target.value;
+        if (val === "") {
+          handleInput("DEL");
+        } else if (val.length > 1) {
+          const char = val.slice(-1);
+          if (/^[a-zA-Z]$/.test(char)) {
+            handleInput(char.toUpperCase());
+          }
+        }
+      }}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "1px",
+        height: "1px",
+        opacity: 0.01,
+      }}
+    />
+  );
 
-      <div className="snake-wireframe-container">
-        {/* Reverted back to standard CSS layout for Desktop */}
+  const activeClueDisplay = (
+    <div
+      style={{
+        width: "100%",
+        maxWidth: isMobile ? "400px" : "450px",
+        backgroundColor: "var(--arcade-surface)",
+        padding: "15px",
+        borderRadius: "8px",
+        marginBottom: "20px",
+        border: "1px solid var(--arcade-border)",
+        textAlign: "center",
+        color: "var(--arcade-orange)",
+        fontWeight: "bold",
+        fontSize: "1.1rem",
+      }}
+    >
+      {getActiveClue()}
+    </div>
+  );
+
+  const crosswordGrid = (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(5, 1fr)",
+        width: "100%",
+        maxWidth: isMobile ? "400px" : "450px", // Full 450px on PC, responsive on Mobile
+        aspectRatio: "1 / 1",
+        backgroundColor: "#fff",
+        border: "3px solid #000",
+        userSelect: "none",
+        boxSizing: "border-box",
+      }}
+    >
+      {grid.map((row, r) =>
+        row.map((letter, c) => {
+          const isSelected = selected.r === r && selected.c === c;
+          const isWordHighlight =
+            direction === "across" ? selected.r === r : selected.c === c;
+          const cellNum = NUMBERS[`${r},${c}`];
+
+          return (
+            <div
+              key={`${r}-${c}`}
+              onClick={() => handleCellClick(r, c)}
+              style={{
+                position: "relative",
+                backgroundColor: isSelected
+                  ? "#ffeb3b"
+                  : isWordHighlight
+                    ? "#fff9c4"
+                    : "#fff",
+                border: "1px solid #000",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                aspectRatio: "1 / 1",
+                boxSizing: "border-box",
+                fontSize: isMobile ? "clamp(1.5rem, 6vw, 2.2rem)" : "2.8rem",
+                fontWeight: "bold",
+                color: "#000",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                padding: 0,
+              }}
+            >
+              {cellNum && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "2px",
+                    left: "4px",
+                    fontSize: "0.7rem",
+                    fontWeight: "normal",
+                    lineHeight: 1,
+                  }}
+                >
+                  {cellNum}
+                </span>
+              )}
+              {letter || "\u00A0"}
+            </div>
+          );
+        }),
+      )}
+    </div>
+  );
+
+  const winOverlay = gameState === "won" && (
+    <div className="snake-overlay">
+      <h2
+        style={{ color: "var(--arcade-green)", textShadow: "2px 2px 0 #000" }}
+      >
+        Puzzle Solved!
+      </h2>
+      <p style={{ color: "#fff", marginBottom: "15px" }}>Time: {timer}s</p>
+      <button className="snake-action-btn" onClick={resetGame}>
+        Play Again
+      </button>
+    </div>
+  );
+
+  // --- RENDER SEPARATE LAYOUTS ---
+  if (isMobile) {
+    return (
+      <div style={{ padding: "0" }}>
+        <div className="arcade-mobile-header mobile-only">
+          <button
+            className="arcade-mobile-back"
+            onClick={() => navigate("/arcade")}
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            Time <span>{timer}s</span>
+          </div>
+          <div>
+            Best <span>{bestTime ? `${bestTime}s` : "-"}</span>
+          </div>
+          <button
+            className="arcade-mobile-trophy"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Top Scorers
+          </button>
+        </div>
+
+        {/* Strictly Mobile Wrapper: Zero height restrictions, zero clipping */}
         <div
-          className="snake-wireframe-board"
           style={{
-            position: "relative",
+            width: "100%",
+            padding: "15px",
+            paddingBottom: "40px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            padding: "10px",
+            position: "relative",
           }}
         >
-          <input
-            ref={hiddenInputRef}
-            type="text"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck="false"
-            value=" "
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === "") {
-                handleInput("DEL");
-              } else if (val.length > 1) {
-                const char = val.slice(-1);
-                if (/^[a-zA-Z]$/.test(char)) {
-                  handleInput(char.toUpperCase());
-                }
-              }
-            }}
-            style={{
-              position: "absolute",
-              opacity: 0,
-              top: 0,
-              left: 0,
-              height: 0,
-              width: 0,
-              zIndex: -1,
-            }}
-          />
-
-          <div
-            style={{
-              width: "100%",
-              maxWidth: "340px",
-              backgroundColor: "var(--arcade-surface)",
-              padding: "10px",
-              borderRadius: "8px",
-              marginBottom: "10px",
-              border: "1px solid var(--arcade-border)",
-              textAlign: "center",
-              color: "var(--arcade-orange)",
-              fontWeight: "bold",
-              fontSize: "1rem",
-            }}
-          >
-            {getActiveClue()}
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(5, 1fr)",
-              width: "100%",
-              maxWidth: "340px", // Scaled down to prevent mobile clipping
-              aspectRatio: "1 / 1",
-              backgroundColor: "#fff",
-              border: "3px solid #000",
-              userSelect: "none",
-              boxSizing: "border-box",
-            }}
-          >
-            {grid.map((row, r) =>
-              row.map((letter, c) => {
-                const isSelected = selected.r === r && selected.c === c;
-                const isWordHighlight =
-                  direction === "across" ? selected.r === r : selected.c === c;
-                const cellNum = NUMBERS[`${r},${c}`];
-
-                return (
-                  <div
-                    key={`${r}-${c}`}
-                    onClick={() => handleCellClick(r, c)}
-                    style={{
-                      position: "relative",
-                      backgroundColor: isSelected
-                        ? "#ffeb3b"
-                        : isWordHighlight
-                          ? "#fff9c4"
-                          : "#fff",
-                      border: "1px solid #000",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      aspectRatio: "1 / 1",
-                      boxSizing: "border-box",
-                      fontSize: "clamp(1.5rem, 6vw, 2.8rem)",
-                      fontWeight: "bold",
-                      color: "#000",
-                      textTransform: "uppercase",
-                      cursor: "pointer",
-                      padding: 0,
-                    }}
-                  >
-                    {cellNum && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: "2px",
-                          left: "4px",
-                          fontSize: "0.7rem",
-                          fontWeight: "normal",
-                          lineHeight: 1,
-                        }}
-                      >
-                        {cellNum}
-                      </span>
-                    )}
-                    {letter || "\u00A0"}
-                  </div>
-                );
-              }),
-            )}
-          </div>
-
-          {gameState === "won" && (
-            <div className="snake-overlay">
-              <h2
-                style={{
-                  color: "var(--arcade-green)",
-                  textShadow: "2px 2px 0 #000",
-                }}
-              >
-                Puzzle Solved!
-              </h2>
-              <p style={{ color: "#fff", marginBottom: "15px" }}>
-                Time: {timer}s
-              </p>
-              <button className="snake-action-btn" onClick={resetGame}>
-                Play Again
-              </button>
-            </div>
-          )}
+          {mobileKeyboardInput}
+          {activeClueDisplay}
+          {crosswordGrid}
+          {winOverlay}
         </div>
+        <ScoreModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          leaderboard={leaderboard}
+        />
+      </div>
+    );
+  }
 
+  // Strictly PC Wrapper: Big, classic arcade box
+  return (
+    <div style={{ padding: "0" }}>
+      <div className="snake-wireframe-container">
+        <div
+          className="snake-wireframe-board"
+          style={{
+            padding: "20px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            position: "relative",
+          }}
+        >
+          {mobileKeyboardInput}
+          {activeClueDisplay}
+          {crosswordGrid}
+          {winOverlay}
+        </div>
         <div className="snake-wireframe-controls desktop-only">
           <div className="snake-wireframe-stats">
             <div className="snake-stat-row">
