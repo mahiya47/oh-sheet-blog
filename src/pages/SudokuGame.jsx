@@ -114,6 +114,20 @@ export default function SudokuGame() {
     return () => clearInterval(timerRef.current);
   }, [gameState]);
 
+  // Support typing numbers directly on keyboard
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (gameState !== "playing" || !selectedCell) return;
+      if (e.key >= "1" && e.key <= "9") {
+        handleInput(parseInt(e.key));
+      } else if (e.key === "Backspace" || e.key === "Delete") {
+        handleInput(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedCell, gameState, board]);
+
   const handleInput = async (num) => {
     if (gameState !== "playing" || !selectedCell) return;
     const { r, c } = selectedCell;
@@ -190,7 +204,7 @@ export default function SudokuGame() {
               gridTemplateRows: "repeat(9, 1fr)",
               width: "100%",
               maxWidth: "450px",
-              aspectRatio: "1 / 1",
+              aspectRatio: "1 / 1", // Forces the container to be a perfect square
               backgroundColor: "var(--arcade-surface)",
               border: "2px solid var(--accent)", // Outer thick border
               userSelect: "none",
@@ -209,7 +223,8 @@ export default function SudokuGame() {
                     style={{
                       width: "100%",
                       height: "100%",
-                      boxSizing: "border-box", // Prevents borders from blowing out the grid
+                      aspectRatio: "1 / 1", // Forces the button itself to stay square
+                      boxSizing: "border-box",
                       backgroundColor: isSelected
                         ? "rgba(76, 175, 80, 0.3)"
                         : "transparent",
@@ -236,7 +251,12 @@ export default function SudokuGame() {
                       outline: "none",
                     }}
                   >
-                    {cell.isFixed ? cell.val : cell.userVal || ""}
+                    {/* THE MAGIC FIX: Using a non-breaking space "\u00A0" for empty cells prevents them from collapsing */}
+                    {cell.isFixed
+                      ? cell.val
+                      : cell.userVal
+                        ? cell.userVal
+                        : "\u00A0"}
                   </button>
                 );
               }),
