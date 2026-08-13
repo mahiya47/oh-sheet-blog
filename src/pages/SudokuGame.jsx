@@ -203,7 +203,7 @@ export default function SudokuGame() {
               gridTemplateColumns: "repeat(9, 1fr)",
               gridTemplateRows: "repeat(9, 1fr)",
               width: "100%",
-              maxWidth: "390px",
+              maxWidth: "420px",
               aspectRatio: "1 / 1",
               backgroundColor: "var(--arcade-surface)",
               userSelect: "none",

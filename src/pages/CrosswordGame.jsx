@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, RotateCw, Delete } from "lucide-react";
+import { ArrowLeft, RotateCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useStore } from "../lib/store.jsx";
@@ -43,12 +43,6 @@ const CLUES = {
   },
 };
 
-const KEYBOARD_ROWS = [
-  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-  ["Z", "X", "C", "V", "B", "N", "M", "DEL"],
-];
-
 export default function CrosswordGame() {
   const navigate = useNavigate();
   const { currentUser } = useStore();
@@ -64,6 +58,7 @@ export default function CrosswordGame() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const timerRef = useRef(null);
+  const hiddenInputRef = useRef(null); // Used to trigger mobile keyboards
 
   const fetchLeaderboard = useCallback(() => {
     api
@@ -96,10 +91,19 @@ export default function CrosswordGame() {
     return () => clearInterval(timerRef.current);
   }, [gameState]);
 
-  // Global Keyboard Listener for Desktop
+  // Global Keyboard Listener for Desktop & Arrow Keys
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (gameState !== "playing") return;
+
+      // If typing in the hidden input, ignore letters/backspace here so it doesn't double-fire
+      if (document.activeElement === hiddenInputRef.current) {
+        if (
+          !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)
+        ) {
+          return;
+        }
+      }
 
       if (e.key === "Backspace") {
         handleInput("DEL");
@@ -112,7 +116,7 @@ export default function CrosswordGame() {
         setSelected((p) => ({ r: p.r, c: Math.max(0, p.c - 1) }));
         setDirection("across");
       } else if (e.key === "ArrowDown") {
-        setSelected((p) => ({ Math: Math.min(4, p.r + 1), c: p.c }));
+        setSelected((p) => ({ r: Math.min(4, p.r + 1), c: p.c }));
         setDirection("down");
       } else if (e.key === "ArrowUp") {
         setSelected((p) => ({ r: Math.max(0, p.r - 1), c: p.c }));
@@ -174,6 +178,8 @@ export default function CrosswordGame() {
     } else {
       setSelected({ r, c });
     }
+    // FIX: Focus the hidden input to force the mobile keyboard to open!
+    hiddenInputRef.current?.focus();
   };
 
   const resetGame = () => {
@@ -227,10 +233,41 @@ export default function CrosswordGame() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "flex-start",
+            justifyContent: "center",
             padding: "20px",
           }}
         >
+          {/* HIDDEN INPUT FOR MOBILE KEYBOARD */}
+          <input
+            ref={hiddenInputRef}
+            type="text"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
+            // The " " space trick: Mobile keyboards send backspace properly when there is a space to delete!
+            value=" "
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "") {
+                handleInput("DEL"); // Backspace was hit (deleted the space)
+              } else if (val.length > 1) {
+                const char = val.slice(-1); // A letter was typed
+                if (/^[a-zA-Z]$/.test(char)) {
+                  handleInput(char.toUpperCase());
+                }
+              }
+            }}
+            style={{
+              position: "absolute",
+              opacity: 0,
+              top: 0,
+              left: 0,
+              height: 0,
+              width: 0,
+              zIndex: -1,
+            }}
+          />
+
           {/* ACTIVE CLUE DISPLAY */}
           <div
             style={{
@@ -256,11 +293,12 @@ export default function CrosswordGame() {
               display: "grid",
               gridTemplateColumns: "repeat(5, 1fr)",
               width: "100%",
-              maxWidth: "350px",
+              maxWidth: "450px", // Increased to take up the space the keyboard left behind!
               aspectRatio: "1 / 1",
               backgroundColor: "#fff",
               border: "3px solid #000",
               userSelect: "none",
+              boxSizing: "border-box", // Fix for collapsing grid
             }}
           >
             {grid.map((row, r) =>
@@ -271,7 +309,7 @@ export default function CrosswordGame() {
                 const cellNum = NUMBERS[`${r},${c}`];
 
                 return (
-                  <button
+                  <div
                     key={`${r}-${c}`}
                     onClick={() => handleCellClick(r, c)}
                     style={{
@@ -285,7 +323,9 @@ export default function CrosswordGame() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "clamp(1.5rem, 6vw, 2.5rem)",
+                      aspectRatio: "1 / 1", // Fix for collapsing cells
+                      boxSizing: "border-box", // Fix for collapsing cells
+                      fontSize: "clamp(1.5rem, 6vw, 2.8rem)", // Scaled up font slightly
                       fontWeight: "bold",
                       color: "#000",
                       textTransform: "uppercase",
@@ -301,63 +341,18 @@ export default function CrosswordGame() {
                           left: "4px",
                           fontSize: "0.7rem",
                           fontWeight: "normal",
+                          lineHeight: 1,
                         }}
                       >
                         {cellNum}
                       </span>
                     )}
-                    {letter}
-                  </button>
+                    {/* FIX: Non-breaking space \u00A0 prevents empty cells from collapsing */}
+                    {letter || "\u00A0"}
+                  </div>
                 );
               }),
             )}
-          </div>
-
-          {/* ON-SCREEN QWERTY KEYBOARD (Great for Mobile) */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-              width: "100%",
-              maxWidth: "450px",
-              marginTop: "30px",
-            }}
-          >
-            {KEYBOARD_ROWS.map((row, rIdx) => (
-              <div
-                key={rIdx}
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "6px",
-                }}
-              >
-                {row.map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => handleInput(key)}
-                    className="snake-action-btn"
-                    style={{
-                      flex: key === "DEL" ? "1.5" : "1",
-                      padding: "12px 0",
-                      fontSize: key === "DEL" ? "0.9rem" : "1.1rem",
-                      backgroundColor:
-                        key === "DEL"
-                          ? "var(--arcade-border)"
-                          : "var(--arcade-surface)",
-                      minWidth: key === "DEL" ? "50px" : "30px",
-                    }}
-                  >
-                    {key === "DEL" ? (
-                      <Delete size={20} style={{ margin: "0 auto" }} />
-                    ) : (
-                      key
-                    )}
-                  </button>
-                ))}
-              </div>
-            ))}
           </div>
 
           {/* WIN OVERLAY */}
@@ -375,7 +370,7 @@ export default function CrosswordGame() {
                 Time: {timer}s
               </p>
               <button className="snake-action-btn" onClick={resetGame}>
-                Clear Board
+                Play Again
               </button>
             </div>
           )}
