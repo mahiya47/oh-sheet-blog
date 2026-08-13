@@ -211,12 +211,16 @@ export default function CrosswordGame() {
         </button>
       </div>
 
-      {/* FIX: Forced height to auto to prevent clipping */}
       <div
         className="snake-wireframe-container"
-        style={{ height: "auto", minHeight: "auto", paddingBottom: "30px" }}
+        style={{
+          height: "auto",
+          minHeight: "fit-content",
+          maxHeight: "none",
+          overflow: "visible",
+          paddingBottom: "30px",
+        }}
       >
-        {/* FIX: Forced height to auto and flex to none */}
         <div
           className="snake-wireframe-board"
           style={{
@@ -227,6 +231,9 @@ export default function CrosswordGame() {
             justifyContent: "flex-start",
             padding: "20px",
             height: "auto",
+            minHeight: "fit-content", // FIX: Forces the container to wrap all content
+            maxHeight: "none", // FIX: Removes any artificial limit
+            overflow: "visible", // FIX: Prevents clipping
             flex: "none",
             width: "100%",
           }}
