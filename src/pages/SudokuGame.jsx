@@ -192,8 +192,9 @@ export default function SudokuGame() {
               maxWidth: "450px",
               aspectRatio: "1 / 1",
               backgroundColor: "var(--arcade-surface)",
-              border: "3px solid var(--accent)", // Outer thick border
+              border: "2px solid var(--accent)", // Outer thick border
               userSelect: "none",
+              boxSizing: "border-box",
             }}
           >
             {board.map((row, r) =>
@@ -201,36 +202,38 @@ export default function SudokuGame() {
                 const isSelected =
                   selectedCell?.r === r && selectedCell?.c === c;
 
-                // Determine Thicker borders for the 3x3 blocks
-                const borderRight =
-                  c % 3 === 2 && c !== 8
-                    ? "2px solid var(--accent)"
-                    : "1px solid var(--border-soft)";
-                const borderBottom =
-                  r % 3 === 2 && r !== 8
-                    ? "2px solid var(--accent)"
-                    : "1px solid var(--border-soft)";
-
                 return (
                   <button
                     key={`${r}-${c}`}
                     onClick={() => handleCellClick(r, c)}
                     style={{
+                      width: "100%",
+                      height: "100%",
+                      boxSizing: "border-box", // Prevents borders from blowing out the grid
                       backgroundColor: isSelected
-                        ? "rgba(76, 175, 80, 0.2)"
+                        ? "rgba(76, 175, 80, 0.3)"
                         : "transparent",
-                      border: "none",
-                      borderRight,
-                      borderBottom,
+                      borderTop: "none",
+                      borderLeft: "none",
+                      // Thick green border for 3x3 blocks, thin gray border for standard cells
+                      borderRight:
+                        c % 3 === 2 && c !== 8
+                          ? "2px solid var(--accent)"
+                          : "1px solid var(--border-soft, #333)",
+                      borderBottom:
+                        r % 3 === 2 && r !== 8
+                          ? "2px solid var(--accent)"
+                          : "1px solid var(--border-soft, #333)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "clamp(1.2rem, 5vw, 2rem)",
-                      fontWeight: cell.isFixed ? "bold" : "500",
+                      fontSize: "clamp(1.2rem, 5vw, 1.8rem)",
+                      fontWeight: cell.isFixed ? "900" : "600",
                       color: cell.isFixed ? "#fff" : "var(--arcade-orange)",
                       cursor: cell.isFixed ? "default" : "pointer",
                       padding: 0,
                       margin: 0,
+                      outline: "none",
                     }}
                   >
                     {cell.isFixed ? cell.val : cell.userVal || ""}
