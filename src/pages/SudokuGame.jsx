@@ -193,8 +193,10 @@ export default function SudokuGame() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
             padding: "20px",
+            height: "auto", // FIX: Stops the number pad from getting cut off
+            minHeight: "fit-content", // FIX: Forces container to wrap all content
+            overflow: "visible",
           }}
         >
           <div
@@ -204,9 +206,8 @@ export default function SudokuGame() {
               gridTemplateRows: "repeat(9, 1fr)",
               width: "100%",
               maxWidth: "450px",
-              aspectRatio: "1 / 1", // Forces the container to be a perfect square
+              aspectRatio: "1 / 1",
               backgroundColor: "var(--arcade-surface)",
-              border: "2px solid var(--accent)", // Outer thick border
               userSelect: "none",
               boxSizing: "border-box",
             }}
@@ -223,22 +224,24 @@ export default function SudokuGame() {
                     style={{
                       width: "100%",
                       height: "100%",
-                      aspectRatio: "1 / 1", // Forces the button itself to stay square
                       boxSizing: "border-box",
                       backgroundColor: isSelected
                         ? "rgba(76, 175, 80, 0.3)"
                         : "transparent",
-                      borderTop: "none",
-                      borderLeft: "none",
-                      // Thick green border for 3x3 blocks, thin gray border for standard cells
-                      borderRight:
-                        c % 3 === 2 && c !== 8
+
+                      // FIX: Cells now draw the exact thick & thin borders themselves!
+                      borderTop:
+                        r % 3 === 0
                           ? "2px solid var(--accent)"
                           : "1px solid var(--border-soft, #333)",
+                      borderLeft:
+                        c % 3 === 0
+                          ? "2px solid var(--accent)"
+                          : "1px solid var(--border-soft, #333)",
+                      borderRight: c === 8 ? "2px solid var(--accent)" : "none",
                       borderBottom:
-                        r % 3 === 2 && r !== 8
-                          ? "2px solid var(--accent)"
-                          : "1px solid var(--border-soft, #333)",
+                        r === 8 ? "2px solid var(--accent)" : "none",
+
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -251,7 +254,7 @@ export default function SudokuGame() {
                       outline: "none",
                     }}
                   >
-                    {/* THE MAGIC FIX: Using a non-breaking space "\u00A0" for empty cells prevents them from collapsing */}
+                    {/* THE MAGIC FIX: Using a non-breaking space "\u00A0" for empty cells */}
                     {cell.isFixed
                       ? cell.val
                       : cell.userVal
