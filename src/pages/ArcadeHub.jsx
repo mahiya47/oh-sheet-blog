@@ -1,23 +1,40 @@
 import { Link } from "react-router-dom";
-import { 
-  Gamepad2, 
-  Activity, 
-  Blocks, 
-  Zap, 
-  Bomb, 
-  Hash, 
-  Scissors, 
-  LayoutGrid, 
-  Type 
+import {
+  Gamepad2,
+  Blocks,
+  Timer, // <-- Imported Timer for Stopwatch
+  Bomb,
+  Hash,
+  Scissors,
+  LayoutGrid,
+  Type,
 } from "lucide-react";
 import ArcadeChampions from "../components/ArcadeChampions";
+
+// Custom Retro Snake Icon
+const SnakeIcon = ({ size = 24, color = "currentColor" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="square"
+    strokeLinejoin="miter"
+  >
+    <path d="M3 18h6v-8h6V6h6v4h-3" />
+    <rect x="16" y="8" width="1" height="1" fill={color} stroke="none" />
+    <rect x="5" y="8" width="2" height="2" />
+  </svg>
+);
 
 export default function ArcadeHub() {
   const games = [
     {
       title: "Snake",
       slug: "snake",
-      icon: Activity,
+      icon: SnakeIcon,
       type: "Single Player",
       description:
         "Eat the red apples to grow longer and increase your speed. Don't bite your own tail or hit the walls!",
@@ -33,7 +50,7 @@ export default function ArcadeHub() {
     {
       title: "Reaction Tester",
       slug: "reaction",
-      icon: Zap,
+      icon: Timer, // <-- Changed from Zap to Timer (Stopwatch)
       type: "Single Player",
       description:
         "Test your reflexes! Wait for the screen to turn green and click as fast as humanly possible.",
@@ -94,15 +111,14 @@ export default function ArcadeHub() {
       <div className="arcade-hub-grid">
         {games.map((game) => {
           const IconComponent = game.icon;
-          
+
           return (
             <Link
               key={game.slug}
               to={`/arcade/${game.slug}`}
               className="arcade-game-card"
             >
-              {/* Custom SVG Icon Container */}
-              <div 
+              <div
                 className="arcade-card-img-wrapper"
                 style={{
                   display: "flex",
@@ -110,13 +126,12 @@ export default function ArcadeHub() {
                   justifyContent: "center",
                   height: "160px",
                   backgroundColor: "var(--surface-sunken, #111)",
-                  borderBottom: "1px solid var(--border-soft, #333)"
+                  borderBottom: "1px solid var(--border-soft, #333)",
                 }}
               >
                 <IconComponent size={72} color="var(--accent, #4caf50)" />
               </div>
 
-              {/* Card Info */}
               <div className="arcade-card-content">
                 <div className="arcade-card-top">
                   <h3 className="arcade-card-title">{game.title}</h3>
@@ -132,7 +147,6 @@ export default function ArcadeHub() {
         })}
       </div>
 
-      {/* MOBILE ONLY ARCADE CHAMPIONS WIDGET */}
       <div
         className="mobile-only"
         style={{
