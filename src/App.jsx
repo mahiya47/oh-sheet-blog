@@ -35,6 +35,8 @@ import SudokuGame from "./pages/SudokuGame";
 import TicTacToeGame from "./pages/TicTacToeGame.jsx";
 import RPSGame from "./pages/RpsGame.jsx";
 import CrosswordGame from "./pages/CrosswordGame";
+import SnakeAndLadderGame from "./pages/SnakeAndLadderGame.jsx";
+import LudoGame from "./pages/LudoGame.jsx";
 
 export default function App() {
   return (
@@ -75,8 +77,7 @@ export default function App() {
             {/* ARCADE ROUTES */}
             <Route path="/arcade" element={<ArcadeHub />} />
             <Route path="/arcade/reaction" element={<ReactionGame />} />
-            <Route path="/arcade/snake" element={<SnakeGame />} />{" "}
-            {/* Fixed Syntax */}
+            <Route path="/arcade/snake" element={<SnakeGame />} />
             <Route path="/arcade/tetris" element={<TetrisGame />} />
             {/* <Route path="/arcade/flappybird" element={<FlappyBirdGame />} /> */}
             <Route path="/arcade/minesweeper" element={<MinesweeperGame />} />
@@ -84,6 +85,11 @@ export default function App() {
             <Route path="/arcade/tictactoe" element={<TicTacToeGame />} />
             <Route path="/arcade/rps" element={<RPSGame />} />
             <Route path="/arcade/crossword" element={<CrosswordGame />} />
+            <Route
+              path="/arcade/snakeandladder"
+              element={<SnakeAndLadderGame />}
+            />
+            <Route path="/arcade/ludo" element={<LudoGame />} />
             <Route
               path="/agreement"
               element={<StaticPage page="agreement" />}
