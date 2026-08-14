@@ -7,14 +7,31 @@ const GAME_NAMES = {
   tetris: "Tetris",
   reaction: "Reaction Timer",
   minesweeper: "Minesweeper",
+  sudoku: "Sudoku",
+  crossword: "Crossword",
   tictactoe: "Tic-Tac-Toe",
   rps: "Rock Paper Scissors",
+  snakeandladder: "Snake & Ladder",
+  ludo: "Ludo",
+  flappybird: "Flappy Bird",
+  runner: "Endless Runner",
+  pictureslide: "Picture Slide",
+  wordladder: "Word Ladder",
 };
 
+const STREAK_GAMES = ["crossword", "sudoku"];
+
 const formatScore = (slug, score) => {
+  if (STREAK_GAMES.includes(slug)) return `${score}🔥 streak`;
   if (slug === "reaction") return `${score} ms`;
   if (slug === "minesweeper") return `${score}s`;
-  if (slug === "tictactoe" || slug === "rps") return `${score} wins`;
+  if (
+    slug === "tictactoe" ||
+    slug === "rps" ||
+    slug === "snakeandladder" ||
+    slug === "ludo"
+  )
+    return `${score} wins`;
   return `${score} pts`;
 };
 

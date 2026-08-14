@@ -116,7 +116,6 @@ export default function ArcadeHub() {
       type: "Multiplayer",
       description:
         "The classic board game. Climb ladders, avoid snakes, and race friends to square 100.",
-      comingSoon: true,
     },
     {
       title: "Ludo",
@@ -126,7 +125,6 @@ export default function ArcadeHub() {
       type: "Multiplayer",
       description:
         "Roll the dice, race your tokens home, and send your opponents back to base.",
-      comingSoon: true,
     },
     {
       title: "Flappy Bird",
