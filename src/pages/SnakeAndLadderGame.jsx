@@ -345,11 +345,12 @@ export default function SnakeAndLadderGame() {
         <div
           className="snake-wireframe-board"
           style={{
-            padding: "12px",
+            padding: "10px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "14px",
+            gap: "10px",
+            width: "100%",
           }}
         >
           {disconnected && (
@@ -363,13 +364,13 @@ export default function SnakeAndLadderGame() {
               display: "grid",
               gridTemplateColumns: "repeat(10, 1fr)",
               gridTemplateRows: "repeat(10, 1fr)",
-              width: "100%",
-              maxWidth: "480px",
+              width: "min(100%, 480px, 90vh)",
               aspectRatio: "1 / 1",
               border: "3px solid #3a2b1a",
               borderRadius: "6px",
               overflow: "hidden",
               boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
+              margin: "0 auto",
             }}
           >
             {Array.from({ length: 100 }).map((_, idx) => {
@@ -470,6 +471,7 @@ export default function SnakeAndLadderGame() {
               flexWrap: "wrap",
               justifyContent: "center",
               width: "100%",
+              margin: 0,
             }}
           >
             {Array.from({ length: playerCount }).map((_, seat) => (
@@ -524,7 +526,7 @@ export default function SnakeAndLadderGame() {
                   turn === mySeat && !rolling
                     ? "#000"
                     : "var(--arcade-text-dim)",
-                padding: "14px 32px",
+                padding: "12px 28px",
                 fontSize: "1.05rem",
                 display: "flex",
                 alignItems: "center",
@@ -533,6 +535,7 @@ export default function SnakeAndLadderGame() {
                 width: "100%",
                 maxWidth: "300px",
                 justifyContent: "center",
+                margin: 0,
               }}
             >
               <Dices size={20} />
@@ -570,6 +573,7 @@ export default function SnakeAndLadderGame() {
                 color: "var(--arcade-text-dim)",
                 fontSize: "0.82rem",
                 textAlign: "center",
+                margin: 0,
               }}
             >
               {PLAYER_NAMES[lastRoll.seat]} rolled a {lastRoll.roll}

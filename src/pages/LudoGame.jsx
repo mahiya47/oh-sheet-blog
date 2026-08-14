@@ -266,6 +266,7 @@ export default function LudoGame() {
   const moveToken = (tokenIndex) => {
     if (turn !== mySeat || currentRoll === null) return;
     const step = tokens[mySeat][tokenIndex];
+    if (step === 0 && currentRoll !== 6) return; // must roll a 6 to leave the yard
     if (step + currentRoll > TOTAL_STEPS - 1 || step === TOTAL_STEPS - 1)
       return;
     socket.emit("ludo_move_token", { room: roomRef.current, tokenIndex });
@@ -509,11 +510,12 @@ export default function LudoGame() {
         <div
           className="snake-wireframe-board"
           style={{
-            padding: "12px",
+            padding: "10px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "14px",
+            gap: "10px",
+            width: "100%",
           }}
         >
           {disconnected && (
@@ -525,8 +527,7 @@ export default function LudoGame() {
           <div
             style={{
               position: "relative",
-              width: "100%",
-              maxWidth: "480px",
+              width: "min(100%, 480px, 90vh)",
               aspectRatio: "1 / 1",
               display: "grid",
               gridTemplateColumns: "repeat(15, 1fr)",
@@ -535,6 +536,7 @@ export default function LudoGame() {
               borderRadius: "8px",
               overflow: "hidden",
               background: "#111",
+              margin: "0 auto",
             }}
           >
             {boardCells.map((cell) => {
@@ -630,6 +632,7 @@ export default function LudoGame() {
                   seat === mySeat &&
                   turn === mySeat &&
                   currentRoll !== null &&
+                  (step !== 0 || currentRoll === 6) &&
                   step + currentRoll <= TOTAL_STEPS - 1 &&
                   !finished;
 
@@ -664,7 +667,12 @@ export default function LudoGame() {
             <>
               {turn === mySeat && currentRoll !== null && (
                 <p
-                  style={{ color: "var(--arcade-green)", fontSize: "0.85rem" }}
+                  style={{
+                    color: "var(--arcade-green)",
+                    fontSize: "0.85rem",
+                    margin: 0,
+                    textAlign: "center",
+                  }}
                 >
                   Tap a glowing token to move it {currentRoll} step
                   {currentRoll > 1 ? "s" : ""}.
@@ -683,8 +691,8 @@ export default function LudoGame() {
                     turn === mySeat && !rolling && currentRoll === null
                       ? "#000"
                       : "var(--arcade-text-dim)",
-                  padding: "14px 32px",
-                  fontSize: "1.1rem",
+                  padding: "12px 28px",
+                  fontSize: "1.05rem",
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
@@ -692,6 +700,9 @@ export default function LudoGame() {
                     turn === mySeat && !rolling && currentRoll === null
                       ? "pointer"
                       : "not-allowed",
+                  width: "100%",
+                  maxWidth: "300px",
+                  justifyContent: "center",
                 }}
               >
                 <Dices size={20} />
@@ -726,7 +737,14 @@ export default function LudoGame() {
           )}
 
           {lastEvent && (
-            <p style={{ color: "var(--arcade-text-dim)", fontSize: "0.85rem" }}>
+            <p
+              style={{
+                color: "var(--arcade-text-dim)",
+                fontSize: "0.82rem",
+                margin: 0,
+                textAlign: "center",
+              }}
+            >
               {lastEvent}
             </p>
           )}
