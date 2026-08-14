@@ -134,7 +134,6 @@ export default function ArcadeHub() {
       type: "Single Player",
       description:
         "Tap to flap and dodge the pipes. One touch and it's game over \u2014 how far can you get?",
-      comingSoon: true,
     },
     {
       title: "Endless Runner",
