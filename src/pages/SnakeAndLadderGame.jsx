@@ -332,7 +332,7 @@ export default function SnakeAndLadderGame() {
         >
           <ArrowLeft size={20} />
         </button>
-        <div style={{ flex: 1, textAlign: "center" }}>
+        <div style={{ flex: 1, textAlign: "center", fontWeight: 600 }}>
           {winner !== null
             ? `${PLAYER_NAMES[winner]} wins!`
             : turn === mySeat
@@ -345,11 +345,11 @@ export default function SnakeAndLadderGame() {
         <div
           className="snake-wireframe-board"
           style={{
-            padding: "16px",
+            padding: "12px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "16px",
+            gap: "14px",
           }}
         >
           {disconnected && (
@@ -366,41 +366,70 @@ export default function SnakeAndLadderGame() {
               width: "100%",
               maxWidth: "480px",
               aspectRatio: "1 / 1",
-              border: "3px solid var(--arcade-border)",
-              borderRadius: "8px",
+              border: "3px solid #3a2b1a",
+              borderRadius: "6px",
               overflow: "hidden",
+              boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
             }}
           >
             {Array.from({ length: 100 }).map((_, idx) => {
               const cellNumber = CELL_ORDER[idx];
               const isSnakeHead = !!SNAKES[cellNumber];
               const isLadderBase = !!LADDERS[cellNumber];
+              const row = Math.floor(idx / 10);
+              const checker = (row + idx) % 2 === 0;
+
               const tokensHere = positions
                 .map((pos, seat) => ({ pos, seat }))
                 .filter((p) => p.pos === cellNumber && p.seat < playerCount);
+
+              let bg = checker ? "#f0e6d2" : "#e3d5b8";
+              if (isSnakeHead) bg = "#f8c9c5";
+              if (isLadderBase) bg = "#c9e8c9";
 
               return (
                 <div
                   key={idx}
                   style={{
                     position: "relative",
-                    border: "1px solid rgba(255,255,255,0.06)",
-                    backgroundColor: isSnakeHead
-                      ? "rgba(239,83,80,0.18)"
-                      : isLadderBase
-                        ? "rgba(76,175,80,0.18)"
-                        : (Math.floor(idx / 10) + idx) % 2 === 0
-                          ? "var(--arcade-surface-2, #1a1a1a)"
-                          : "var(--arcade-surface, #1e1e1e)",
+                    border: "1px solid rgba(0,0,0,0.12)",
+                    backgroundColor: bg,
                     display: "flex",
                     alignItems: "flex-start",
                     justifyContent: "flex-start",
-                    padding: "2px",
-                    fontSize: "0.55rem",
-                    color: "var(--arcade-text-dim)",
+                    padding: "2px 3px",
+                    fontSize: "clamp(0.5rem, 1.6vw, 0.65rem)",
+                    fontWeight: 700,
+                    color: "#3a2b1a",
                   }}
                 >
                   {cellNumber}
+                  {isSnakeHead && (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%,-50%)",
+                        fontSize: "clamp(0.9rem, 3vw, 1.3rem)",
+                      }}
+                    >
+                      🐍
+                    </span>
+                  )}
+                  {isLadderBase && (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%,-50%)",
+                        fontSize: "clamp(0.9rem, 3vw, 1.3rem)",
+                      }}
+                    >
+                      🪜
+                    </span>
+                  )}
                   {tokensHere.length > 0 && (
                     <div
                       style={{
@@ -410,17 +439,20 @@ export default function SnakeAndLadderGame() {
                         display: "flex",
                         gap: "1px",
                         flexWrap: "wrap",
+                        maxWidth: "80%",
                       }}
                     >
                       {tokensHere.map((t) => (
                         <div
                           key={t.seat}
                           style={{
-                            width: 10,
-                            height: 10,
+                            width: "22%",
+                            aspectRatio: "1 / 1",
+                            minWidth: 7,
                             borderRadius: "50%",
                             backgroundColor: PLAYER_COLORS[t.seat],
                             border: "1px solid #000",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.5)",
                           }}
                         />
                       ))}
@@ -434,9 +466,10 @@ export default function SnakeAndLadderGame() {
           <div
             style={{
               display: "flex",
-              gap: "10px",
+              gap: "8px",
               flexWrap: "wrap",
               justifyContent: "center",
+              width: "100%",
             }}
           >
             {Array.from({ length: playerCount }).map((_, seat) => (
@@ -450,6 +483,8 @@ export default function SnakeAndLadderGame() {
                   borderRadius: "8px",
                   border: `2px solid ${seat === turn ? PLAYER_COLORS[seat] : "var(--arcade-border)"}`,
                   background: "var(--arcade-surface)",
+                  boxShadow:
+                    seat === turn ? `0 0 8px ${PLAYER_COLORS[seat]}66` : "none",
                 }}
               >
                 <div
@@ -458,9 +493,16 @@ export default function SnakeAndLadderGame() {
                     height: 12,
                     borderRadius: "50%",
                     backgroundColor: PLAYER_COLORS[seat],
+                    flexShrink: 0,
                   }}
                 />
-                <span style={{ color: "#fff", fontSize: "0.8rem" }}>
+                <span
+                  style={{
+                    color: "#fff",
+                    fontSize: "0.78rem",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {PLAYER_NAMES[seat]}
                   {seat === mySeat ? " (You)" : ""}: {positions[seat]}
                 </span>
@@ -483,11 +525,14 @@ export default function SnakeAndLadderGame() {
                     ? "#000"
                     : "var(--arcade-text-dim)",
                 padding: "14px 32px",
-                fontSize: "1.1rem",
+                fontSize: "1.05rem",
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
                 cursor: turn === mySeat && !rolling ? "pointer" : "not-allowed",
+                width: "100%",
+                maxWidth: "300px",
+                justifyContent: "center",
               }}
             >
               <Dices size={20} />
@@ -518,8 +563,15 @@ export default function SnakeAndLadderGame() {
               </button>
             </div>
           )}
+
           {lastRoll && (
-            <p style={{ color: "var(--arcade-text-dim)", fontSize: "0.85rem" }}>
+            <p
+              style={{
+                color: "var(--arcade-text-dim)",
+                fontSize: "0.82rem",
+                textAlign: "center",
+              }}
+            >
               {PLAYER_NAMES[lastRoll.seat]} rolled a {lastRoll.roll}
               {lastRoll.bust ? " — overshoot, no move!" : ""}
             </p>
