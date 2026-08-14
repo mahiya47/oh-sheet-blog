@@ -42,11 +42,14 @@ const CLUES = {
   },
 };
 
+const createEmptyGrid = () =>
+  Array.from({ length: 5 }, () => Array(5).fill(""));
+
 export default function CrosswordGame() {
   const navigate = useNavigate();
   const { currentUser } = useStore();
 
-  const [grid, setGrid] = useState(Array(5).fill(Array(5).fill("")));
+  const [grid, setGrid] = useState(createEmptyGrid());
   const [selected, setSelected] = useState({ r: 0, c: 0 });
   const [direction, setDirection] = useState("across");
 
@@ -61,6 +64,21 @@ export default function CrosswordGame() {
 
   const timerRef = useRef(null);
   const hiddenInputRef = useRef(null);
+  const selectedRef = useRef(selected);
+  const directionRef = useRef(direction);
+  const gridRef = useRef(grid);
+
+  // Keep refs in sync so the (single) onChange handler always reads
+  // fresh values without needing to be re-created every render.
+  useEffect(() => {
+    selectedRef.current = selected;
+  }, [selected]);
+  useEffect(() => {
+    directionRef.current = direction;
+  }, [direction]);
+  useEffect(() => {
+    gridRef.current = grid;
+  }, [grid]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -99,36 +117,38 @@ export default function CrosswordGame() {
     return () => clearInterval(timerRef.current);
   }, [gameState]);
 
+  // Auto-focus on mount so typing works immediately, no click needed
+  useEffect(() => {
+    hiddenInputRef.current?.focus();
+  }, []);
+
+  // Arrow-key navigation ONLY. Letters + Backspace are handled exclusively
+  // by the hidden input's onChange below — having both paths process
+  // characters caused a focus-timing race (double/skipped letters).
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (gameState !== "playing") return;
-      if (document.activeElement === hiddenInputRef.current) {
-        if (
-          !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)
-        )
-          return;
-      }
-      if (e.key === "Backspace") {
-        handleInput("DEL");
-      } else if (/^[a-zA-Z]$/.test(e.key)) {
-        handleInput(e.key.toUpperCase());
-      } else if (e.key === "ArrowRight") {
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
         setSelected((p) => ({ r: p.r, c: Math.min(4, p.c + 1) }));
         setDirection("across");
       } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
         setSelected((p) => ({ r: p.r, c: Math.max(0, p.c - 1) }));
         setDirection("across");
       } else if (e.key === "ArrowDown") {
+        e.preventDefault();
         setSelected((p) => ({ r: Math.min(4, p.r + 1), c: p.c }));
         setDirection("down");
       } else if (e.key === "ArrowUp") {
+        e.preventDefault();
         setSelected((p) => ({ r: Math.max(0, p.r - 1), c: p.c }));
         setDirection("down");
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selected, direction, gameState, grid]);
+  }, [gameState]);
 
   const validateGrid = (currentGrid) => {
     for (let r = 0; r < 5; r++) {
@@ -141,8 +161,9 @@ export default function CrosswordGame() {
 
   const handleInput = async (char) => {
     if (gameState !== "playing") return;
-    const { r, c } = selected;
-    const newGrid = grid.map((row) => [...row]);
+    const { r, c } = selectedRef.current;
+    const direction = directionRef.current;
+    const newGrid = gridRef.current.map((row) => [...row]);
 
     if (char === "DEL") {
       newGrid[r][c] = "";
@@ -174,15 +195,16 @@ export default function CrosswordGame() {
     } else {
       setSelected({ r, c });
     }
-    setTimeout(() => hiddenInputRef.current?.focus(), 10);
+    hiddenInputRef.current?.focus();
   };
 
   const resetGame = () => {
-    setGrid(Array(5).fill(Array(5).fill("")));
+    setGrid(createEmptyGrid());
     setSelected({ r: 0, c: 0 });
     setDirection("across");
     setGameState("playing");
     setTimer(0);
+    hiddenInputRef.current?.focus();
   };
 
   const getActiveClue = () => {
@@ -213,6 +235,14 @@ export default function CrosswordGame() {
           if (/^[a-zA-Z]$/.test(char)) {
             handleInput(char.toUpperCase());
           }
+        }
+      }}
+      onKeyDown={(e) => {
+        // Backspace on an already-empty (single-space) value doesn't
+        // always fire onChange in every browser — handle it directly.
+        if (e.key === "Backspace") {
+          e.preventDefault();
+          handleInput("DEL");
         }
       }}
       style={{
@@ -364,6 +394,7 @@ export default function CrosswordGame() {
             alignItems: "center",
             position: "relative",
           }}
+          onClick={() => hiddenInputRef.current?.focus()}
         >
           {mobileKeyboardInput}
           {activeClueDisplay}
