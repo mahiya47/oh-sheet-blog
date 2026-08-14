@@ -350,7 +350,7 @@ export default function EndlessRunnerGame() {
 
     if (isMobile) {
       // Wall on the side, dash texture scrolling vertically
-      const wallX = GROUND_Y;
+      const wallX = physW - GROUND_Y;
       ctx.strokeStyle = "#3a2b1a";
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -369,7 +369,7 @@ export default function EndlessRunnerGame() {
       // Transpose the simulation onto the screen: obstacle-travel axis (x)
       // becomes vertical, jump axis (y) becomes horizontal.
       ctx.save();
-      ctx.transform(0, 1, 1, 0, 0, 0);
+      ctx.transform(0, 1, -1, 0, physW, 0);
       obstaclesRef.current.forEach((o) => drawObstacle(ctx, o));
       const legPhase = Math.floor(trackOffsetRef.current / 8) % 2;
       drawRunner(ctx, runnerYRef.current, legPhase, onGroundRef.current);
