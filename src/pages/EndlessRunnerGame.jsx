@@ -9,7 +9,7 @@ import ScoreModal from "../components/ScoreModal";
 // runner — "x" is the obstacle-travel axis, "y" is the jump/dodge axis).
 // We only change HOW this gets drawn to the screen. ---
 const SIM_W = 600; // obstacle travel axis (maps to physical height on screen)
-const SIM_H = 220; // jump/dodge axis (maps to physical width on screen)
+const SIM_H = 260; // jump/dodge axis (maps to physical width on screen)
 
 const GROUND_Y = SIM_H - 30; // the "wall" the character rests against
 const GRAVITY = 2600;
@@ -319,9 +319,12 @@ export default function EndlessRunnerGame() {
       setIsMobile(window.innerWidth <= 768);
       if (!wrapperRef.current) return;
       const availW = wrapperRef.current.offsetWidth;
-      const availH = Math.min(window.innerHeight * 0.62, 640);
-      const w = window.innerWidth <= 768 ? SIM_H : SIM_W;
-      const h = window.innerWidth <= 768 ? SIM_W : SIM_H;
+      const mobile = window.innerWidth <= 768;
+      const availH = mobile
+        ? Math.min(window.innerHeight * 0.78, 780)
+        : Math.min(window.innerHeight * 0.72, 560);
+      const w = mobile ? SIM_H : SIM_W;
+      const h = mobile ? SIM_W : SIM_H;
       const s = Math.min(availW / w, availH / h);
       setScale(s > 0 ? s : 1);
     };
