@@ -5,18 +5,18 @@ import api from "../api";
 import { useStore } from "../lib/store.jsx";
 import ScoreModal from "../components/ScoreModal";
 
-const LOGICAL_W = 600;
-const LOGICAL_H = 220;
+const LOGICAL_W = 320;
+const LOGICAL_H = 500;
 
-const GROUND_Y = LOGICAL_H - 30;
+const GROUND_Y = LOGICAL_H - 60;
 const GRAVITY = 2600;
 const JUMP_VELOCITY = -820;
 const RUNNER_X = 60;
 const RUNNER_SIZE = 38;
 
-const INITIAL_SPEED = 260;
-const MAX_SPEED = 620;
-const SPEED_RAMP = 8;
+const INITIAL_SPEED = 150;
+const MAX_SPEED = 340;
+const SPEED_RAMP = 5;
 
 const OBSTACLE_TYPES = ["cactus", "rock", "bush", "tree"];
 
@@ -316,37 +316,17 @@ export default function EndlessRunnerGame() {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
 
-  const [isLandscape, setIsLandscape] = useState(
-    typeof window !== "undefined" && window.innerWidth > window.innerHeight,
-  );
-
   useEffect(() => {
     const resize = () => {
-      const landscape = window.innerWidth > window.innerHeight;
-      setIsLandscape(landscape);
-
-      // Measure against the real viewport (not the wrapper element) so any
-      // inherited max-width from shared page CSS can't shrink the game.
-      const pagePadding = 24;
-      const availW = window.innerWidth - pagePadding;
-      const availH = landscape
-        ? window.innerHeight * 0.85
-        : Math.min(window.innerHeight * 0.4, 260);
-
-      const s = Math.min(
-        availW / LOGICAL_W,
-        availH / LOGICAL_H,
-        landscape ? 2.2 : 1,
-      );
+      if (!wrapperRef.current) return;
+      const availW = wrapperRef.current.offsetWidth;
+      const availH = Math.min(window.innerHeight * 0.62, 620);
+      const s = Math.min(availW / LOGICAL_W, availH / LOGICAL_H);
       setScale(s > 0 ? s : 1);
     };
     resize();
     window.addEventListener("resize", resize);
-    window.addEventListener("orientationchange", resize);
-    return () => {
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("orientationchange", resize);
-    };
+    return () => window.removeEventListener("resize", resize);
   }, []);
 
   const draw = useCallback(() => {
@@ -584,22 +564,8 @@ export default function EndlessRunnerGame() {
             padding: "10px",
             aspectRatio: "auto",
             width: "100%",
-            maxWidth: "none",
           }}
         >
-          {!isLandscape && (
-            <p
-              className="mobile-only"
-              style={{
-                color: "var(--arcade-text-dim)",
-                fontSize: "0.75rem",
-                marginBottom: "8px",
-                textAlign: "center",
-              }}
-            >
-              🔄 Turn your phone sideways for a bigger, full-screen view
-            </p>
-          )}
           <div
             onPointerDown={(e) => {
               e.preventDefault();
