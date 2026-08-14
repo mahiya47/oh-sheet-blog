@@ -130,6 +130,7 @@ export default function RightSidebar() {
         .then((res) => {
           const isTimeBased =
             gameSlug === "reaction" || gameSlug === "minesweeper";
+          // crossword/sudoku store a streak count — higher is always better
           const sortedData = res.data.sort((a, b) =>
             isTimeBased ? a.score - b.score : b.score - a.score,
           );
@@ -175,8 +176,10 @@ export default function RightSidebar() {
               className="panel-head"
               style={{ display: "flex", alignItems: "center", gap: "8px" }}
             >
-              <Trophy size={16} style={{ color: "var(--accent)" }} /> Top 5
-              Scores
+              <Trophy size={16} style={{ color: "var(--accent)" }} />{" "}
+              {gameSlug === "crossword" || gameSlug === "sudoku"
+                ? "Top Streaks"
+                : "Top 5 Scores"}
             </h2>
             {topScores.length === 0 ? (
               <p className="empty-note">No scores yet.</p>
@@ -207,7 +210,9 @@ export default function RightSidebar() {
                     <strong
                       style={{ color: "var(--accent)", fontSize: "0.85rem" }}
                     >
-                      {entry.score}
+                      {gameSlug === "crossword" || gameSlug === "sudoku"
+                        ? `${entry.score}🔥`
+                        : entry.score}
                     </strong>
                   </div>
                 ))}

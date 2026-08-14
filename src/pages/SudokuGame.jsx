@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, RotateCw, Delete } from "lucide-react";
+import { ArrowLeft, Delete, Flame } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { useStore } from "../lib/store.jsx";
@@ -17,22 +17,61 @@ const BASE_BOARD = [
   [3, 4, 5, 2, 8, 6, 1, 7, 9],
 ];
 
-const generatePuzzle = (emptyCells = 45) => {
-  const numMap = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
+const EMPTY_CELLS = 45;
+
+// --- Deterministic seeded RNG (mulberry32) so everyone gets the SAME
+// puzzle on the same calendar date. Same technique as the daily crossword. ---
+function hashStringToInt(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return h >>> 0;
+}
+function mulberry32(seed) {
+  let a = seed;
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+function shuffleSeeded(arr, rng) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateDailyPuzzle(dateKey) {
+  const rng = mulberry32(hashStringToInt(dateKey));
+
+  const numMap = shuffleSeeded([1, 2, 3, 4, 5, 6, 7, 8, 9], rng);
   let board = BASE_BOARD.map((row) =>
     row.map((val) => ({ val: numMap[val - 1], isFixed: true, userVal: null })),
   );
+
   let removed = 0;
-  while (removed < emptyCells) {
-    const r = Math.floor(Math.random() * 9);
-    const c = Math.floor(Math.random() * 9);
+  let guard = 0;
+  while (removed < EMPTY_CELLS && guard < 5000) {
+    guard++;
+    const r = Math.floor(rng() * 9);
+    const c = Math.floor(rng() * 9);
     if (board[r][c].isFixed) {
       board[r][c].isFixed = false;
       removed++;
     }
   }
   return board;
-};
+}
 
 const validateBoard = (board) => {
   const getVal = (cell) => (cell.isFixed ? cell.val : cell.userVal);
@@ -60,15 +99,22 @@ export default function SudokuGame() {
   const navigate = useNavigate();
   const { currentUser } = useStore();
 
-  const [board, setBoard] = useState(generatePuzzle());
+  const dateKey = todayKey();
+  const [board, setBoard] = useState(() => generateDailyPuzzle(dateKey));
   const [selectedCell, setSelectedCell] = useState(null);
-  const [gameState, setGameState] = useState("playing");
+
+  const alreadySolvedToday =
+    typeof window !== "undefined" &&
+    localStorage.getItem("sudoku-solved-date") === dateKey;
+
+  const [gameState, setGameState] = useState(
+    alreadySolvedToday ? "won" : "playing",
+  );
   const [timer, setTimer] = useState(0);
-  const [bestTime, setBestTime] = useState(null);
+  const [streak, setStreak] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // COMPLETELY SEPARATE MOBILE AND PC LOGIC
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const timerRef = useRef(null);
@@ -85,13 +131,13 @@ export default function SudokuGame() {
       .get("/arcade/sudoku/leaderboard")
       .then((res) => {
         if (res.data) {
-          const sorted = res.data.sort((a, b) => a.score - b.score);
+          const sorted = res.data.sort((a, b) => b.score - a.score); // score = streak, highest first
           setLeaderboard(sorted);
           if (currentUser) {
-            const myBest = sorted.find(
+            const mine = sorted.find(
               (entry) => entry.user?.username === currentUser.username,
             );
-            if (myBest) setBestTime(myBest.score);
+            if (mine) setStreak(mine.score);
           }
         }
       })
@@ -137,35 +183,29 @@ export default function SudokuGame() {
 
     if (validateBoard(newBoard)) {
       setGameState("won");
-      if (!bestTime || timer < bestTime) setBestTime(timer);
+      localStorage.setItem("sudoku-solved-date", dateKey);
       try {
-        await api.post("/arcade/sudoku/score", { score: timer });
+        const res = await api.post("/arcade/sudoku/score", { score: timer });
+        if (res.data?.streak != null) setStreak(res.data.streak);
         fetchLeaderboard();
       } catch (err) {
-        console.error("Failed to save sudoku score", err);
+        console.error("Failed to save sudoku streak", err);
       }
     }
   };
 
   const handleCellClick = (r, c) => {
     if (gameState === "playing") setSelectedCell({ r, c });
-    // Force mobile keyboard to open!
     setTimeout(() => hiddenInputRef.current?.focus(), 10);
   };
 
-  const resetGame = () => {
-    setBoard(generatePuzzle());
-    setSelectedCell(null);
-    setGameState("playing");
-    setTimer(0);
-  };
+  const boardMaxWidth = isMobile ? 400 : 450;
 
-  // --- REUSABLE UI BLOCKS ---
   const mobileKeyboardInput = (
     <input
       ref={hiddenInputRef}
       type="text"
-      inputMode="numeric" // Forces numbers on mobile
+      inputMode="numeric"
       autoComplete="off"
       autoCorrect="off"
       spellCheck="false"
@@ -176,9 +216,7 @@ export default function SudokuGame() {
           handleInput(null);
         } else if (val.length > 1) {
           const char = val.slice(-1);
-          if (/[1-9]/.test(char)) {
-            handleInput(parseInt(char));
-          }
+          if (/[1-9]/.test(char)) handleInput(parseInt(char));
         }
       }}
       style={{
@@ -199,11 +237,13 @@ export default function SudokuGame() {
         gridTemplateColumns: "repeat(9, 1fr)",
         gridTemplateRows: "repeat(9, 1fr)",
         width: "100%",
-        maxWidth: isMobile ? "400px" : "450px", // Full 450px on PC, responsive on Mobile
+        maxWidth: boardMaxWidth,
         aspectRatio: "1 / 1",
         backgroundColor: "var(--arcade-surface)",
         userSelect: "none",
         boxSizing: "border-box",
+        opacity: gameState === "playing" ? 1 : 0.55,
+        pointerEvents: gameState === "playing" ? "auto" : "none",
       }}
     >
       {board.map((row, r) =>
@@ -233,7 +273,7 @@ export default function SudokuGame() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: isMobile ? "clamp(1.2rem, 5vw, 1.5rem)" : "1.8rem", // Proper sizing
+                fontSize: isMobile ? "clamp(1.2rem, 5vw, 1.5rem)" : "1.8rem",
                 fontWeight: cell.isFixed ? "900" : "600",
                 color: cell.isFixed ? "#fff" : "var(--arcade-orange)",
                 cursor: cell.isFixed ? "default" : "pointer",
@@ -250,7 +290,7 @@ export default function SudokuGame() {
     </div>
   );
 
-  const onScreenNumpad = (
+  const onScreenNumpad = gameState === "playing" && (
     <div
       style={{
         display: "grid",
@@ -258,7 +298,7 @@ export default function SudokuGame() {
         gap: "8px",
         marginTop: "15px",
         width: "100%",
-        maxWidth: isMobile ? "400px" : "450px",
+        maxWidth: boardMaxWidth,
       }}
     >
       {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
@@ -286,41 +326,56 @@ export default function SudokuGame() {
       <h2
         style={{ color: "var(--arcade-green)", textShadow: "2px 2px 0 #000" }}
       >
-        Puzzle Solved!
+        {alreadySolvedToday && timer === 0
+          ? "Already solved today!"
+          : "Puzzle Solved!"}
       </h2>
-      <p style={{ color: "#fff", marginBottom: "15px" }}>Time: {timer}s</p>
-      <button className="snake-action-btn" onClick={resetGame}>
-        Play Again
-      </button>
+      <p
+        style={{
+          color: "#fff",
+          marginBottom: "6px",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          justifyContent: "center",
+        }}
+      >
+        <Flame size={18} color="var(--arcade-orange)" />
+        {streak} day streak
+      </p>
+      <p style={{ color: "var(--arcade-text-dim)", fontSize: "0.85rem" }}>
+        Come back tomorrow for a new puzzle.
+      </p>
     </div>
   );
 
-  // --- RENDER SEPARATE LAYOUTS ---
+  const statsHeader = isMobile ? (
+    <div className="arcade-mobile-header mobile-only">
+      <button
+        className="arcade-mobile-back"
+        onClick={() => navigate("/arcade")}
+      >
+        <ArrowLeft size={20} />
+      </button>
+      <div>
+        Time <span>{timer}s</span>
+      </div>
+      <div>
+        Streak <span>{streak}🔥</span>
+      </div>
+      <button
+        className="arcade-mobile-trophy"
+        onClick={() => setIsModalOpen(true)}
+      >
+        Top Streaks
+      </button>
+    </div>
+  ) : null;
+
   if (isMobile) {
     return (
       <div style={{ padding: "0" }}>
-        <div className="arcade-mobile-header mobile-only">
-          <button
-            className="arcade-mobile-back"
-            onClick={() => navigate("/arcade")}
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div>
-            Time <span>{timer}s</span>
-          </div>
-          <div>
-            Best <span>{bestTime ? `${bestTime}s` : "-"}</span>
-          </div>
-          <button
-            className="arcade-mobile-trophy"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Top Scorers
-          </button>
-        </div>
-
-        {/* Strictly Mobile Wrapper: Zero height restrictions, zero clipping */}
+        {statsHeader}
         <div
           style={{
             width: "100%",
@@ -346,7 +401,6 @@ export default function SudokuGame() {
     );
   }
 
-  // Strictly PC Wrapper: Big, classic arcade box
   return (
     <div style={{ padding: "0" }}>
       <div className="snake-wireframe-container">
@@ -371,21 +425,8 @@ export default function SudokuGame() {
               Time <span>{timer}s</span>
             </div>
             <div className="snake-stat-row">
-              Best Time <span>{bestTime ? `${bestTime}s` : "-"}</span>
+              Streak <span>{streak}🔥</span>
             </div>
-          </div>
-          <div
-            className="snake-action-buttons"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-              marginTop: "10px",
-            }}
-          >
-            <button className="snake-action-btn" onClick={resetGame}>
-              <RotateCw size={16} style={{ marginRight: "6px" }} /> New Puzzle
-            </button>
           </div>
         </div>
       </div>

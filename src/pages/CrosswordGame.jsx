@@ -540,6 +540,7 @@ export default function CrosswordGame() {
       style={{
         display: "grid",
         gridTemplateColumns: `repeat(${puzzle.cols}, 1fr)`,
+        gridTemplateRows: `repeat(${puzzle.rows}, 1fr)`,
         width: "100%",
         maxWidth: boardMaxWidth,
         aspectRatio: `${puzzle.cols} / ${puzzle.rows}`,
