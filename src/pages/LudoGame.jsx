@@ -506,7 +506,10 @@ export default function LudoGame() {
         </div>
       </div>
 
-      <div className="snake-wireframe-container">
+      <div
+        className="snake-wireframe-container"
+        style={{ minHeight: "calc(100dvh - 130px)", alignItems: "center" }}
+      >
         <div
           className="snake-wireframe-board"
           style={{
@@ -514,6 +517,7 @@ export default function LudoGame() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             gap: "10px",
             width: "100%",
           }}
