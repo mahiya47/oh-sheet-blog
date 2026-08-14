@@ -505,10 +505,39 @@ export default function LudoGame() {
               : `${NAMES[turn]}'s Turn`}
         </div>
       </div>
+      <div
+        className="mobile-only"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "14px",
+          padding: "6px 0 0",
+          fontSize: "0.72rem",
+          color: "var(--arcade-text-dim)",
+        }}
+      >
+        <span>
+          Room: <strong style={{ color: "#fff" }}>{room}</strong>
+        </span>
+        <span>
+          You:{" "}
+          <strong style={{ color: COLORS[mySeat] }}>{NAMES[mySeat]}</strong>
+        </span>
+        <span>
+          Players:{" "}
+          <strong style={{ color: "var(--arcade-green)" }}>
+            {playerCount}/4
+          </strong>
+        </span>
+      </div>
 
       <div
         className="snake-wireframe-container"
-        style={{ minHeight: "calc(100dvh - 130px)", alignItems: "center" }}
+        style={{
+          minHeight: "calc(100dvh - 160px)",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
         <div
           className="snake-wireframe-board"
