@@ -5,20 +5,28 @@ import api from "../api";
 import { useStore } from "../lib/store.jsx";
 import ScoreModal from "../components/ScoreModal";
 
-const LOGICAL_W = 320;
-const LOGICAL_H = 500;
+// --- SIMULATION SPACE (unchanged physics logic from a normal horizontal
+// runner — "x" is the obstacle-travel axis, "y" is the jump/dodge axis).
+// We only change HOW this gets drawn to the screen. ---
+const SIM_W = 600; // obstacle travel axis (maps to physical height on screen)
+const SIM_H = 220; // jump/dodge axis (maps to physical width on screen)
 
-const GROUND_Y = LOGICAL_H - 60;
+const GROUND_Y = SIM_H - 30; // the "wall" the character rests against
 const GRAVITY = 2600;
 const JUMP_VELOCITY = -820;
-const RUNNER_X = 60;
-const RUNNER_SIZE = 38;
+const RUNNER_SIM_X = 60; // fixed distance-along-track (small = near top of screen)
+const RUNNER_SIZE = 36;
 
-const INITIAL_SPEED = 150;
-const MAX_SPEED = 340;
-const SPEED_RAMP = 5;
+const INITIAL_SPEED = 260;
+const MAX_SPEED = 620;
+const SPEED_RAMP = 8;
 
 const OBSTACLE_TYPES = ["cactus", "rock", "bush", "tree"];
+
+// Physical canvas — the simulation, transposed: SIM_H becomes the physical
+// width (narrow), SIM_W becomes the physical height (tall).
+const PHYS_W = SIM_H;
+const PHYS_H = SIM_W;
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -41,7 +49,6 @@ function drawObstacle(ctx, o) {
       roundRect(ctx, o.x, y, o.w, o.h, 4);
       ctx.fill();
       ctx.stroke();
-      // arms
       const armY = y + o.h * 0.3;
       roundRect(ctx, o.x - 6, armY, 6, o.h * 0.35, 3);
       ctx.fill();
@@ -68,7 +75,6 @@ function drawObstacle(ctx, o) {
       break;
     }
     case "bush": {
-      const y = baseY - o.h;
       ctx.fillStyle = "#388e3c";
       ctx.strokeStyle = "#1b5e20";
       ctx.lineWidth = 2;
@@ -123,14 +129,11 @@ function drawObstacle(ctx, o) {
   }
 }
 
-// Original round, grey, big-eared forest-spirit character (not based on any
-// existing copyrighted design) — plump body, tall rounded ears, whisker dots.
 function drawRunner(ctx, y, legPhase, onGround) {
-  const cx = RUNNER_X + RUNNER_SIZE / 2;
+  const cx = RUNNER_SIM_X + RUNNER_SIZE / 2;
   const cy = y + RUNNER_SIZE / 2 + RUNNER_SIZE * 0.08;
   const r = RUNNER_SIZE / 2;
 
-  // ears (tall, rounded, slightly forward-leaning)
   ctx.fillStyle = "#6b6560";
   ctx.strokeStyle = "#3f3b37";
   ctx.lineWidth = 2;
@@ -158,7 +161,6 @@ function drawRunner(ctx, y, legPhase, onGround) {
   );
   ctx.fill();
   ctx.stroke();
-  // inner ear
   ctx.fillStyle = "#3f3b37";
   ctx.beginPath();
   ctx.ellipse(
@@ -183,7 +185,6 @@ function drawRunner(ctx, y, legPhase, onGround) {
   );
   ctx.fill();
 
-  // plump round body (taller than wide)
   ctx.fillStyle = "#8f8880";
   ctx.strokeStyle = "#3f3b37";
   ctx.lineWidth = 2.2;
@@ -192,13 +193,11 @@ function drawRunner(ctx, y, legPhase, onGround) {
   ctx.fill();
   ctx.stroke();
 
-  // cream belly
   ctx.fillStyle = "#efe6d2";
   ctx.beginPath();
   ctx.ellipse(cx, cy + r * 0.25, r * 0.62, r * 0.72, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // small arched marks on belly
   ctx.strokeStyle = "#c9bda0";
   ctx.lineWidth = 1.4;
   for (let i = -1; i <= 1; i++) {
@@ -207,7 +206,6 @@ function drawRunner(ctx, y, legPhase, onGround) {
     ctx.stroke();
   }
 
-  // whisker dots
   ctx.fillStyle = "#3f3b37";
   [-1, 1].forEach((side) => {
     for (let i = 0; i < 3; i++) {
@@ -223,7 +221,6 @@ function drawRunner(ctx, y, legPhase, onGround) {
     }
   });
 
-  // eyes (bigger, slightly almond)
   ctx.fillStyle = "#fff";
   ctx.beginPath();
   ctx.ellipse(cx - r * 0.32, cy - r * 0.15, 4, 5, 0, 0, Math.PI * 2);
@@ -235,13 +232,11 @@ function drawRunner(ctx, y, legPhase, onGround) {
   ctx.arc(cx + r * 0.32, cy - r * 0.1, 2.6, 0, Math.PI * 2);
   ctx.fill();
 
-  // nose
   ctx.fillStyle = "#3f3b37";
   ctx.beginPath();
   ctx.ellipse(cx, cy + r * 0.1, 2.4, 1.8, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // little feet
   if (onGround) {
     ctx.fillStyle = "#57534e";
     const footY = cy + r * 1.05;
@@ -288,7 +283,7 @@ export default function EndlessRunnerGame() {
   const lastTimeRef = useRef(null);
   const rafRef = useRef(null);
   const nextObstacleAtRef = useRef(0.8);
-  const groundOffsetRef = useRef(0);
+  const trackOffsetRef = useRef(0);
 
   const fetchLeaderboard = useCallback(() => {
     api
@@ -320,8 +315,8 @@ export default function EndlessRunnerGame() {
     const resize = () => {
       if (!wrapperRef.current) return;
       const availW = wrapperRef.current.offsetWidth;
-      const availH = Math.min(window.innerHeight * 0.62, 620);
-      const s = Math.min(availW / LOGICAL_W, availH / LOGICAL_H);
+      const availH = Math.min(window.innerHeight * 0.62, 640);
+      const s = Math.min(availW / PHYS_W, availH / PHYS_H);
       setScale(s > 0 ? s : 1);
     };
     resize();
@@ -335,31 +330,42 @@ export default function EndlessRunnerGame() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_H);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, PHYS_W, PHYS_H);
+
+    const grad = ctx.createLinearGradient(0, 0, 0, PHYS_H);
     grad.addColorStop(0, "#fdf6e3");
     grad.addColorStop(1, "#f4e9c9");
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+    ctx.fillRect(0, 0, PHYS_W, PHYS_H);
 
+    const wallX = GROUND_Y;
     ctx.strokeStyle = "#3a2b1a";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(0, GROUND_Y);
-    ctx.lineTo(LOGICAL_W, GROUND_Y);
+    ctx.moveTo(wallX, 0);
+    ctx.lineTo(wallX, PHYS_H);
     ctx.stroke();
 
     ctx.fillStyle = "#c9b876";
-    const dashW = 18;
+    const dashH = 18;
     const gap = 14;
-    const offset = groundOffsetRef.current % (dashW + gap);
-    for (let x = -offset; x < LOGICAL_W; x += dashW + gap) {
-      ctx.fillRect(x, GROUND_Y + 6, dashW, 3);
+    const offset = trackOffsetRef.current % (dashH + gap);
+    for (let y = -offset; y < PHYS_H; y += dashH + gap) {
+      ctx.fillRect(wallX + 6, y, 3, dashH);
     }
+
+    // Transpose the simulation onto the screen: obstacle-travel axis (x)
+    // becomes vertical, jump axis (y) becomes horizontal.
+    ctx.save();
+    ctx.transform(0, 1, 1, 0, 0, 0);
 
     obstaclesRef.current.forEach((o) => drawObstacle(ctx, o));
 
-    const legPhase = Math.floor(groundOffsetRef.current / 8) % 2;
+    const legPhase = Math.floor(trackOffsetRef.current / 8) % 2;
     drawRunner(ctx, runnerYRef.current, legPhase, onGroundRef.current);
+
+    ctx.restore();
   }, []);
 
   const resetGame = () => {
@@ -373,7 +379,7 @@ export default function EndlessRunnerGame() {
     setScore(0);
     lastTimeRef.current = null;
     nextObstacleAtRef.current = 0.9;
-    groundOffsetRef.current = 0;
+    trackOffsetRef.current = 0;
   };
 
   const endGame = useCallback(
@@ -405,7 +411,7 @@ export default function EndlessRunnerGame() {
         MAX_SPEED,
         INITIAL_SPEED + elapsedRef.current * SPEED_RAMP,
       );
-      groundOffsetRef.current += speedRef.current * dt;
+      trackOffsetRef.current += speedRef.current * dt;
 
       scoreRef.current = Math.floor(elapsedRef.current * 12);
       setScore(scoreRef.current);
@@ -443,17 +449,17 @@ export default function EndlessRunnerGame() {
             w = 26 + Math.random() * 10;
             h = 20 + Math.random() * 14;
             break;
-          default: // cactus
+          default:
             w = 16 + Math.random() * 14;
             h = 24 + Math.random() * 26;
         }
-        obstaclesRef.current.push({ x: LOGICAL_W + 10, w, h, type });
+        obstaclesRef.current.push({ x: SIM_W + 10, w, h, type });
         const baseGap = Math.max(0.65, 1.35 - elapsedRef.current * 0.01);
         nextObstacleAtRef.current = baseGap + Math.random() * 0.5;
       }
 
       const runnerBox = {
-        x: RUNNER_X + 6,
+        x: RUNNER_SIM_X + 6,
         y: runnerYRef.current + 6,
         w: RUNNER_SIZE - 12,
         h: RUNNER_SIZE - 12,
@@ -510,7 +516,7 @@ export default function EndlessRunnerGame() {
 
   useEffect(() => {
     const handleKey = (e) => {
-      if (e.code === "Space" || e.key === "ArrowUp") {
+      if (e.code === "Space" || e.key === "ArrowUp" || e.key === "ArrowLeft") {
         e.preventDefault();
         jump();
       }
@@ -526,8 +532,8 @@ export default function EndlessRunnerGame() {
     };
   }, []);
 
-  const canvasCssW = LOGICAL_W * scale;
-  const canvasCssH = LOGICAL_H * scale;
+  const canvasCssW = PHYS_W * scale;
+  const canvasCssH = PHYS_H * scale;
 
   return (
     <div style={{ padding: "0" }}>
@@ -586,8 +592,8 @@ export default function EndlessRunnerGame() {
           >
             <canvas
               ref={canvasRef}
-              width={LOGICAL_W}
-              height={LOGICAL_H}
+              width={PHYS_W}
+              height={PHYS_H}
               style={{ width: "100%", height: "100%", display: "block" }}
             />
 
@@ -598,10 +604,11 @@ export default function EndlessRunnerGame() {
                   style={{
                     color: "var(--arcade-text-dim)",
                     textAlign: "center",
-                    maxWidth: 220,
+                    maxWidth: 200,
                   }}
                 >
-                  Tap or press Space to hop over trees, bushes, rocks and cacti!
+                  Tap or press Space to dodge sideways as obstacles rise up
+                  toward you!
                 </p>
                 <button
                   className="snake-action-btn"
@@ -685,7 +692,7 @@ export default function EndlessRunnerGame() {
               onClick={jump}
               style={{ backgroundColor: "var(--arcade-green)", color: "#000" }}
             >
-              Jump (or press Space)
+              Dodge (or press Space)
             </button>
           </div>
         </div>
