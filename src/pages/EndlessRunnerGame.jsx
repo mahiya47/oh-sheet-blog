@@ -316,16 +316,37 @@ export default function EndlessRunnerGame() {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
 
+  const [isLandscape, setIsLandscape] = useState(
+    typeof window !== "undefined" && window.innerWidth > window.innerHeight,
+  );
+
   useEffect(() => {
     const resize = () => {
-      if (!wrapperRef.current) return;
-      const availW = wrapperRef.current.offsetWidth;
-      const s = Math.min(availW / LOGICAL_W, 1);
+      const landscape = window.innerWidth > window.innerHeight;
+      setIsLandscape(landscape);
+
+      // Measure against the real viewport (not the wrapper element) so any
+      // inherited max-width from shared page CSS can't shrink the game.
+      const pagePadding = 24;
+      const availW = window.innerWidth - pagePadding;
+      const availH = landscape
+        ? window.innerHeight * 0.85
+        : Math.min(window.innerHeight * 0.4, 260);
+
+      const s = Math.min(
+        availW / LOGICAL_W,
+        availH / LOGICAL_H,
+        landscape ? 2.2 : 1,
+      );
       setScale(s > 0 ? s : 1);
     };
     resize();
     window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
+    window.addEventListener("orientationchange", resize);
+    return () => {
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("orientationchange", resize);
+    };
   }, []);
 
   const draw = useCallback(() => {
@@ -563,8 +584,22 @@ export default function EndlessRunnerGame() {
             padding: "10px",
             aspectRatio: "auto",
             width: "100%",
+            maxWidth: "none",
           }}
         >
+          {!isLandscape && (
+            <p
+              className="mobile-only"
+              style={{
+                color: "var(--arcade-text-dim)",
+                fontSize: "0.75rem",
+                marginBottom: "8px",
+                textAlign: "center",
+              }}
+            >
+              🔄 Turn your phone sideways for a bigger, full-screen view
+            </p>
+          )}
           <div
             onPointerDown={(e) => {
               e.preventDefault();
