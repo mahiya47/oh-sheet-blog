@@ -321,7 +321,7 @@ export default function EndlessRunnerGame() {
       const availW = wrapperRef.current.offsetWidth;
       const mobile = window.innerWidth <= 768;
       const availH = mobile
-        ? Math.min(window.innerHeight * 0.78, 780)
+        ? Math.min(window.innerHeight - 230, 780)
         : Math.min(window.innerHeight * 0.72, 560);
       const w = mobile ? SIM_H : SIM_W;
       const h = mobile ? SIM_W : SIM_H;
