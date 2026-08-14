@@ -23,11 +23,6 @@ const SPEED_RAMP = 8;
 
 const OBSTACLE_TYPES = ["cactus", "rock", "bush", "tree"];
 
-// Physical canvas — the simulation, transposed: SIM_H becomes the physical
-// width (narrow), SIM_W becomes the physical height (tall).
-const PHYS_W = SIM_H;
-const PHYS_H = SIM_W;
-
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -265,6 +260,14 @@ export default function EndlessRunnerGame() {
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
   const [scale, setScale] = useState(1);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth <= 768 : false,
+  );
+
+  // Desktop: classic landscape strip (obstacles move left, jump = up).
+  // Mobile: rotated portrait (obstacles rise up, jump = sideways).
+  const physW = isMobile ? SIM_H : SIM_W;
+  const physH = isMobile ? SIM_W : SIM_H;
 
   const [gameState, setGameState] = useState("waiting");
   const [score, setScore] = useState(0);
@@ -313,10 +316,13 @@ export default function EndlessRunnerGame() {
 
   useEffect(() => {
     const resize = () => {
+      setIsMobile(window.innerWidth <= 768);
       if (!wrapperRef.current) return;
       const availW = wrapperRef.current.offsetWidth;
       const availH = Math.min(window.innerHeight * 0.62, 640);
-      const s = Math.min(availW / PHYS_W, availH / PHYS_H);
+      const w = window.innerWidth <= 768 ? SIM_H : SIM_W;
+      const h = window.innerWidth <= 768 ? SIM_W : SIM_H;
+      const s = Math.min(availW / w, availH / h);
       setScale(s > 0 ? s : 1);
     };
     resize();
@@ -331,42 +337,64 @@ export default function EndlessRunnerGame() {
     if (!ctx) return;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, PHYS_W, PHYS_H);
+    ctx.clearRect(0, 0, physW, physH);
 
-    const grad = ctx.createLinearGradient(0, 0, 0, PHYS_H);
+    const grad = ctx.createLinearGradient(0, 0, 0, physH);
     grad.addColorStop(0, "#fdf6e3");
     grad.addColorStop(1, "#f4e9c9");
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, PHYS_W, PHYS_H);
+    ctx.fillRect(0, 0, physW, physH);
 
-    const wallX = GROUND_Y;
-    ctx.strokeStyle = "#3a2b1a";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(wallX, 0);
-    ctx.lineTo(wallX, PHYS_H);
-    ctx.stroke();
+    if (isMobile) {
+      // Wall on the side, dash texture scrolling vertically
+      const wallX = GROUND_Y;
+      ctx.strokeStyle = "#3a2b1a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(wallX, 0);
+      ctx.lineTo(wallX, physH);
+      ctx.stroke();
 
-    ctx.fillStyle = "#c9b876";
-    const dashH = 18;
-    const gap = 14;
-    const offset = trackOffsetRef.current % (dashH + gap);
-    for (let y = -offset; y < PHYS_H; y += dashH + gap) {
-      ctx.fillRect(wallX + 6, y, 3, dashH);
+      ctx.fillStyle = "#c9b876";
+      const dashH = 18;
+      const gap = 14;
+      const offset = trackOffsetRef.current % (dashH + gap);
+      for (let y = -offset; y < physH; y += dashH + gap) {
+        ctx.fillRect(wallX + 6, y, 3, dashH);
+      }
+
+      // Transpose the simulation onto the screen: obstacle-travel axis (x)
+      // becomes vertical, jump axis (y) becomes horizontal.
+      ctx.save();
+      ctx.transform(0, 1, 1, 0, 0, 0);
+      obstaclesRef.current.forEach((o) => drawObstacle(ctx, o));
+      const legPhase = Math.floor(trackOffsetRef.current / 8) % 2;
+      drawRunner(ctx, runnerYRef.current, legPhase, onGroundRef.current);
+      ctx.restore();
+    } else {
+      // Classic horizontal ground line, dash texture scrolling left
+      ctx.strokeStyle = "#3a2b1a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, GROUND_Y);
+      ctx.lineTo(physW, GROUND_Y);
+      ctx.stroke();
+
+      ctx.fillStyle = "#c9b876";
+      const dashW = 18;
+      const gap = 14;
+      const offset = trackOffsetRef.current % (dashW + gap);
+      for (let x = -offset; x < physW; x += dashW + gap) {
+        ctx.fillRect(x, GROUND_Y + 6, dashW, 3);
+      }
+
+      // No transform needed — simulation space already matches physical
+      // space directly (obstacles/runner drawn using their normal x,y).
+      obstaclesRef.current.forEach((o) => drawObstacle(ctx, o));
+      const legPhase = Math.floor(trackOffsetRef.current / 8) % 2;
+      drawRunner(ctx, runnerYRef.current, legPhase, onGroundRef.current);
     }
-
-    // Transpose the simulation onto the screen: obstacle-travel axis (x)
-    // becomes vertical, jump axis (y) becomes horizontal.
-    ctx.save();
-    ctx.transform(0, 1, 1, 0, 0, 0);
-
-    obstaclesRef.current.forEach((o) => drawObstacle(ctx, o));
-
-    const legPhase = Math.floor(trackOffsetRef.current / 8) % 2;
-    drawRunner(ctx, runnerYRef.current, legPhase, onGroundRef.current);
-
-    ctx.restore();
-  }, []);
+  }, [isMobile, physW, physH]);
 
   const resetGame = () => {
     runnerYRef.current = GROUND_Y - RUNNER_SIZE;
@@ -532,8 +560,8 @@ export default function EndlessRunnerGame() {
     };
   }, []);
 
-  const canvasCssW = PHYS_W * scale;
-  const canvasCssH = PHYS_H * scale;
+  const canvasCssW = physW * scale;
+  const canvasCssH = physH * scale;
 
   return (
     <div style={{ padding: "0" }}>
@@ -592,8 +620,8 @@ export default function EndlessRunnerGame() {
           >
             <canvas
               ref={canvasRef}
-              width={PHYS_W}
-              height={PHYS_H}
+              width={physW}
+              height={physH}
               style={{ width: "100%", height: "100%", display: "block" }}
             />
 
@@ -607,8 +635,9 @@ export default function EndlessRunnerGame() {
                     maxWidth: 200,
                   }}
                 >
-                  Tap or press Space to dodge sideways as obstacles rise up
-                  toward you!
+                  {isMobile
+                    ? "Tap or press Space to dodge sideways as obstacles rise up toward you!"
+                    : "Tap or press Space to jump over trees, bushes, rocks and cacti!"}
                 </p>
                 <button
                   className="snake-action-btn"
@@ -692,7 +721,7 @@ export default function EndlessRunnerGame() {
               onClick={jump}
               style={{ backgroundColor: "var(--arcade-green)", color: "#000" }}
             >
-              Dodge (or press Space)
+              Jump (or press Space)
             </button>
           </div>
         </div>
