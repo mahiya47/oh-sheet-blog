@@ -70,7 +70,6 @@ export default function LudoGame() {
       setTurn(0);
       setWinner(null);
     });
-
     socket.on(
       "ludo_roll_result",
       ({ seat, roll, noMove, nextTurn, tokens }) => {

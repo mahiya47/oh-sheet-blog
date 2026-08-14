@@ -518,7 +518,6 @@ export default function SnakeAndLadderGame() {
               </button>
             </div>
           )}
-
           {lastRoll && (
             <p style={{ color: "var(--arcade-text-dim)", fontSize: "0.85rem" }}>
               {PLAYER_NAMES[lastRoll.seat]} rolled a {lastRoll.roll}
