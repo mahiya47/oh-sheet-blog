@@ -143,7 +143,6 @@ export default function ArcadeHub() {
       type: "Single Player",
       description:
         "Jump and duck through obstacles as the game speeds up. Survive as long as you can.",
-      comingSoon: true,
     },
     {
       title: "Picture Slide",

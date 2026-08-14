@@ -37,6 +37,7 @@ import RPSGame from "./pages/RpsGame.jsx";
 import CrosswordGame from "./pages/CrosswordGame";
 import SnakeAndLadderGame from "./pages/SnakeAndLadderGame.jsx";
 import LudoGame from "./pages/LudoGame.jsx";
+import EndlessRunnerGame from "./pages/EndlessRunnerGame.jsx";
 
 export default function App() {
   return (
@@ -85,6 +86,7 @@ export default function App() {
             <Route path="/arcade/tictactoe" element={<TicTacToeGame />} />
             <Route path="/arcade/rps" element={<RPSGame />} />
             <Route path="/arcade/crossword" element={<CrosswordGame />} />
+            <Route path="/arcade/runner" element={<EndlessRunnerGame />} />
             <Route
               path="/arcade/snakeandladder"
               element={<SnakeAndLadderGame />}
