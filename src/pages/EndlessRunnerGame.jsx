@@ -8,8 +8,8 @@ import ScoreModal from "../components/ScoreModal";
 // --- SIMULATION SPACE (unchanged physics logic from a normal horizontal
 // runner — "x" is the obstacle-travel axis, "y" is the jump/dodge axis).
 // We only change HOW this gets drawn to the screen. ---
-const SIM_W = 600; // obstacle travel axis (maps to physical height on screen)
-const SIM_H = 260; // jump/dodge axis (maps to physical width on screen)
+const SIM_W = 570; // obstacle travel axis (maps to physical height on screen)
+const SIM_H = 300; // jump/dodge axis (maps to physical width on screen)
 
 const GROUND_Y = SIM_H - 30; // the "wall" the character rests against
 const GRAVITY = 2600;
