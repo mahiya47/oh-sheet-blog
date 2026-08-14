@@ -12,11 +12,13 @@ const GROUND_Y = LOGICAL_H - 30;
 const GRAVITY = 2600;
 const JUMP_VELOCITY = -820;
 const RUNNER_X = 60;
-const RUNNER_SIZE = 34;
+const RUNNER_SIZE = 38;
 
 const INITIAL_SPEED = 260;
 const MAX_SPEED = 620;
 const SPEED_RAMP = 8;
+
+const OBSTACLE_TYPES = ["cactus", "rock", "bush", "tree"];
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -26,6 +28,239 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
+}
+
+function drawObstacle(ctx, o) {
+  const baseY = GROUND_Y;
+  switch (o.type) {
+    case "cactus": {
+      const y = baseY - o.h;
+      ctx.fillStyle = "#2e7d32";
+      ctx.strokeStyle = "#1b5e20";
+      ctx.lineWidth = 2;
+      roundRect(ctx, o.x, y, o.w, o.h, 4);
+      ctx.fill();
+      ctx.stroke();
+      // arms
+      const armY = y + o.h * 0.3;
+      roundRect(ctx, o.x - 6, armY, 6, o.h * 0.35, 3);
+      ctx.fill();
+      ctx.stroke();
+      roundRect(ctx, o.x + o.w, armY + o.h * 0.15, 6, o.h * 0.35, 3);
+      ctx.fill();
+      ctx.stroke();
+      break;
+    }
+    case "rock": {
+      const y = baseY - o.h;
+      ctx.fillStyle = "#8d8d8d";
+      ctx.strokeStyle = "#5c5c5c";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(o.x, baseY);
+      ctx.lineTo(o.x + o.w * 0.15, y + o.h * 0.3);
+      ctx.lineTo(o.x + o.w * 0.5, y);
+      ctx.lineTo(o.x + o.w * 0.85, y + o.h * 0.25);
+      ctx.lineTo(o.x + o.w, baseY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+    }
+    case "bush": {
+      const y = baseY - o.h;
+      ctx.fillStyle = "#388e3c";
+      ctx.strokeStyle = "#1b5e20";
+      ctx.lineWidth = 2;
+      const r1 = o.h * 0.5;
+      [0.25, 0.55, 0.85].forEach((frac, i) => {
+        const cx = o.x + o.w * frac;
+        const cy = baseY - r1 * (i === 1 ? 1.15 : 0.9);
+        ctx.beginPath();
+        ctx.arc(cx, cy, r1 * (i === 1 ? 1.05 : 0.85), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      });
+      break;
+    }
+    case "tree": {
+      const trunkW = o.w * 0.22;
+      const trunkH = o.h * 0.35;
+      ctx.fillStyle = "#6d4c25";
+      ctx.strokeStyle = "#4a3319";
+      ctx.lineWidth = 2;
+      roundRect(
+        ctx,
+        o.x + (o.w - trunkW) / 2,
+        baseY - trunkH,
+        trunkW,
+        trunkH,
+        2,
+      );
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#2e7d32";
+      const topY = baseY - trunkH;
+      ctx.beginPath();
+      ctx.moveTo(o.x + o.w / 2, topY - o.h);
+      ctx.lineTo(o.x, topY - o.h * 0.35);
+      ctx.lineTo(o.x + o.w, topY - o.h * 0.35);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(o.x + o.w / 2, topY - o.h * 0.6);
+      ctx.lineTo(o.x + o.w * 0.05, topY);
+      ctx.lineTo(o.x + o.w * 0.95, topY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+// Original round, grey, big-eared forest-spirit character (not based on any
+// existing copyrighted design) — plump body, tall rounded ears, whisker dots.
+function drawRunner(ctx, y, legPhase, onGround) {
+  const cx = RUNNER_X + RUNNER_SIZE / 2;
+  const cy = y + RUNNER_SIZE / 2 + RUNNER_SIZE * 0.08;
+  const r = RUNNER_SIZE / 2;
+
+  // ears (tall, rounded, slightly forward-leaning)
+  ctx.fillStyle = "#6b6560";
+  ctx.strokeStyle = "#3f3b37";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(
+    cx - r * 0.5,
+    cy - r * 1.05,
+    r * 0.3,
+    r * 0.5,
+    -0.15,
+    0,
+    Math.PI * 2,
+  );
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(
+    cx + r * 0.5,
+    cy - r * 1.05,
+    r * 0.3,
+    r * 0.5,
+    0.15,
+    0,
+    Math.PI * 2,
+  );
+  ctx.fill();
+  ctx.stroke();
+  // inner ear
+  ctx.fillStyle = "#3f3b37";
+  ctx.beginPath();
+  ctx.ellipse(
+    cx - r * 0.5,
+    cy - r * 1.0,
+    r * 0.14,
+    r * 0.28,
+    -0.15,
+    0,
+    Math.PI * 2,
+  );
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(
+    cx + r * 0.5,
+    cy - r * 1.0,
+    r * 0.14,
+    r * 0.28,
+    0.15,
+    0,
+    Math.PI * 2,
+  );
+  ctx.fill();
+
+  // plump round body (taller than wide)
+  ctx.fillStyle = "#8f8880";
+  ctx.strokeStyle = "#3f3b37";
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, r * 1.05, r * 1.15, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // cream belly
+  ctx.fillStyle = "#efe6d2";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + r * 0.25, r * 0.62, r * 0.72, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // small arched marks on belly
+  ctx.strokeStyle = "#c9bda0";
+  ctx.lineWidth = 1.4;
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath();
+    ctx.arc(cx + i * r * 0.32, cy + r * 0.55, r * 0.14, Math.PI, 0);
+    ctx.stroke();
+  }
+
+  // whisker dots
+  ctx.fillStyle = "#3f3b37";
+  [-1, 1].forEach((side) => {
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.arc(
+        cx + side * r * (0.55 + i * 0.08),
+        cy - r * 0.05 + i * r * 0.06,
+        1,
+        0,
+        Math.PI * 2,
+      );
+      ctx.fill();
+    }
+  });
+
+  // eyes (bigger, slightly almond)
+  ctx.fillStyle = "#fff";
+  ctx.beginPath();
+  ctx.ellipse(cx - r * 0.32, cy - r * 0.15, 4, 5, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx + r * 0.32, cy - r * 0.15, 4, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#2b2b2b";
+  ctx.beginPath();
+  ctx.arc(cx - r * 0.32, cy - r * 0.1, 2.6, 0, Math.PI * 2);
+  ctx.arc(cx + r * 0.32, cy - r * 0.1, 2.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // nose
+  ctx.fillStyle = "#3f3b37";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + r * 0.1, 2.4, 1.8, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // little feet
+  if (onGround) {
+    ctx.fillStyle = "#57534e";
+    const footY = cy + r * 1.05;
+    if (legPhase === 0) {
+      ctx.beginPath();
+      ctx.ellipse(cx - r * 0.4, footY, 6, 3.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(cx + r * 0.35, footY + 2, 6, 3.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.ellipse(cx - r * 0.35, footY + 2, 6, 3.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(cx + r * 0.4, footY, 6, 3.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
 }
 
 export default function EndlessRunnerGame() {
@@ -120,53 +355,10 @@ export default function EndlessRunnerGame() {
       ctx.fillRect(x, GROUND_Y + 6, dashW, 3);
     }
 
-    obstaclesRef.current.forEach((o) => {
-      ctx.fillStyle = "#2e7d32";
-      ctx.strokeStyle = "#1b5e20";
-      ctx.lineWidth = 2;
-      const y = GROUND_Y - o.h;
-      roundRect(ctx, o.x, y, o.w, o.h, 4);
-      ctx.fill();
-      ctx.stroke();
-    });
+    obstaclesRef.current.forEach((o) => drawObstacle(ctx, o));
 
-    const y = runnerYRef.current;
-    ctx.fillStyle = "#4caf50";
-    ctx.strokeStyle = "#2e7d32";
-    ctx.lineWidth = 2.5;
-    roundRect(ctx, RUNNER_X, y, RUNNER_SIZE, RUNNER_SIZE, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "#000";
-    ctx.beginPath();
-    ctx.arc(
-      RUNNER_X + RUNNER_SIZE * 0.68,
-      y + RUNNER_SIZE * 0.32,
-      2.6,
-      0,
-      Math.PI * 2,
-    );
-    ctx.fill();
-
-    if (onGroundRef.current) {
-      const legPhase = Math.floor(groundOffsetRef.current / 8) % 2;
-      ctx.strokeStyle = "#2e7d32";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      if (legPhase === 0) {
-        ctx.moveTo(RUNNER_X + 8, y + RUNNER_SIZE);
-        ctx.lineTo(RUNNER_X + 4, y + RUNNER_SIZE + 6);
-        ctx.moveTo(RUNNER_X + RUNNER_SIZE - 8, y + RUNNER_SIZE);
-        ctx.lineTo(RUNNER_X + RUNNER_SIZE - 4, y + RUNNER_SIZE + 4);
-      } else {
-        ctx.moveTo(RUNNER_X + 8, y + RUNNER_SIZE);
-        ctx.lineTo(RUNNER_X + 4, y + RUNNER_SIZE + 4);
-        ctx.moveTo(RUNNER_X + RUNNER_SIZE - 8, y + RUNNER_SIZE);
-        ctx.lineTo(RUNNER_X + RUNNER_SIZE - 4, y + RUNNER_SIZE + 6);
-      }
-      ctx.stroke();
-    }
+    const legPhase = Math.floor(groundOffsetRef.current / 8) % 2;
+    drawRunner(ctx, runnerYRef.current, legPhase, onGroundRef.current);
   }, []);
 
   const resetGame = () => {
@@ -230,22 +422,40 @@ export default function EndlessRunnerGame() {
 
       const obstacles = obstaclesRef.current;
       obstacles.forEach((o) => (o.x -= speedRef.current * dt));
-      obstaclesRef.current = obstacles.filter((o) => o.x > -o.w - 5);
+      obstaclesRef.current = obstacles.filter((o) => o.x > -o.w - 10);
 
       nextObstacleAtRef.current -= dt;
       if (nextObstacleAtRef.current <= 0) {
-        const h = 24 + Math.random() * 26;
-        const w = 16 + Math.random() * 14;
-        obstaclesRef.current.push({ x: LOGICAL_W + 10, w, h });
+        const type =
+          OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)];
+        let w, h;
+        switch (type) {
+          case "tree":
+            w = 34;
+            h = 60 + Math.random() * 20;
+            break;
+          case "bush":
+            w = 40;
+            h = 22 + Math.random() * 8;
+            break;
+          case "rock":
+            w = 26 + Math.random() * 10;
+            h = 20 + Math.random() * 14;
+            break;
+          default: // cactus
+            w = 16 + Math.random() * 14;
+            h = 24 + Math.random() * 26;
+        }
+        obstaclesRef.current.push({ x: LOGICAL_W + 10, w, h, type });
         const baseGap = Math.max(0.65, 1.35 - elapsedRef.current * 0.01);
         nextObstacleAtRef.current = baseGap + Math.random() * 0.5;
       }
 
       const runnerBox = {
-        x: RUNNER_X + 4,
-        y: runnerYRef.current + 4,
-        w: RUNNER_SIZE - 8,
-        h: RUNNER_SIZE - 8,
+        x: RUNNER_X + 6,
+        y: runnerYRef.current + 6,
+        w: RUNNER_SIZE - 12,
+        h: RUNNER_SIZE - 12,
       };
       let collided = false;
       for (const o of obstaclesRef.current) {
@@ -390,8 +600,7 @@ export default function EndlessRunnerGame() {
                     maxWidth: 220,
                   }}
                 >
-                  Tap or press Space to jump over the cacti. Speed increases
-                  over time!
+                  Tap or press Space to hop over trees, bushes, rocks and cacti!
                 </p>
                 <button
                   className="snake-action-btn"
