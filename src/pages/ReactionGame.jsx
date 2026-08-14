@@ -5,12 +5,19 @@ import api from "../api";
 import { useStore } from "../lib/store.jsx";
 import ScoreModal from "../components/ScoreModal";
 
+const TOTAL_ROUNDS = 3;
+const BETWEEN_ROUND_DELAY = 900; // ms pause showing this round's time before the next starts
+
 export default function ReactionGame() {
   const navigate = useNavigate();
   const { currentUser } = useStore();
 
-  const [gameState, setGameState] = useState("waiting"); // waiting, ready, clicked, result
-  const [reactionTime, setReactionTime] = useState(null);
+  // waiting, ready, clicked, roundResult, finished
+  const [gameState, setGameState] = useState("waiting");
+  const [round, setRound] = useState(0); // 1-indexed while playing
+  const [roundTimes, setRoundTimes] = useState([]);
+  const [lastRoundTime, setLastRoundTime] = useState(null);
+  const [averageTime, setAverageTime] = useState(null);
   const [bestTime, setBestTime] = useState(null);
 
   const [leaderboard, setLeaderboard] = useState([]);
@@ -18,14 +25,13 @@ export default function ReactionGame() {
 
   const timeoutRef = useRef(null);
   const startTimeRef = useRef(0);
+  const roundTimesRef = useRef([]);
 
-  // --- FETCH LEADERBOARD & PERSONAL BEST ---
   const fetchLeaderboardAndBest = useCallback(() => {
     api
       .get("/arcade/reaction/leaderboard")
       .then((res) => {
         if (res.data) {
-          // Reaction time scores are lowest = best (ascending sort)
           const sortedData = res.data.sort((a, b) => a.score - b.score);
           setLeaderboard(sortedData);
 
@@ -51,55 +57,84 @@ export default function ReactionGame() {
     return () => clearTimeout(timeoutRef.current);
   }, [fetchLeaderboardAndBest]);
 
-  const startGame = () => {
+  const armRound = () => {
     setGameState("ready");
-    setReactionTime(null);
     const delay = Math.floor(Math.random() * 3000) + 2000;
-
     timeoutRef.current = setTimeout(() => {
       setGameState("clicked");
       startTimeRef.current = Date.now();
     }, delay);
   };
 
+  const startSequence = () => {
+    roundTimesRef.current = [];
+    setRoundTimes([]);
+    setAverageTime(null);
+    setLastRoundTime(null);
+    setRound(1);
+    armRound();
+  };
+
+  const finishSequence = async (times) => {
+    const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+    setAverageTime(avg);
+    setGameState("finished");
+
+    if (!bestTime || avg < bestTime) {
+      setBestTime(avg);
+    }
+    try {
+      await api.post("/arcade/reaction/score", { score: avg });
+      fetchLeaderboardAndBest();
+    } catch (err) {
+      console.error("Failed to save reaction score:", err);
+    }
+  };
+
   const handleClick = async () => {
-    if (gameState === "waiting" || gameState === "result") {
-      startGame();
+    if (gameState === "waiting" || gameState === "finished") {
+      startSequence();
     } else if (gameState === "ready") {
       clearTimeout(timeoutRef.current);
+      alert("Too early! Wait for green. Restarting all 3 rounds.");
       setGameState("waiting");
-      alert("Too early! Wait for green.");
+      setRound(0);
+      roundTimesRef.current = [];
+      setRoundTimes([]);
     } else if (gameState === "clicked") {
-      const endTime = Date.now();
-      const timeTaken = endTime - startTimeRef.current;
-      setReactionTime(timeTaken);
-      setGameState("result");
+      const timeTaken = Date.now() - startTimeRef.current;
+      const updatedTimes = [...roundTimesRef.current, timeTaken];
+      roundTimesRef.current = updatedTimes;
+      setRoundTimes(updatedTimes);
+      setLastRoundTime(timeTaken);
 
-      if (!bestTime || timeTaken < bestTime) {
-        setBestTime(timeTaken);
-        try {
-          await api.post("/arcade/reaction/score", { score: timeTaken });
-          fetchLeaderboardAndBest();
-        } catch (err) {
-          console.error("Failed to save reaction score:", err);
-        }
+      if (round < TOTAL_ROUNDS) {
+        setGameState("roundResult");
+        timeoutRef.current = setTimeout(() => {
+          setRound((r) => r + 1);
+          armRound();
+        }, BETWEEN_ROUND_DELAY);
+      } else {
+        finishSequence(updatedTimes);
       }
     }
   };
 
-  // --- F1 LIGHT RIG STYLES ---
   const getLightStyles = () => {
-    let color = "#222222"; // Off (Dim Grey)
+    let color = "#222222";
     let glow = "inset 0 5px 10px rgba(0,0,0,0.8)";
 
     if (gameState === "ready") {
-      color = "#f44336"; // Red
+      color = "#f44336";
       glow =
         "0 0 25px rgba(244, 67, 54, 0.8), inset 0 0 10px rgba(255,255,255,0.4)";
     } else if (gameState === "clicked") {
-      color = "#4caf50"; // Green
+      color = "#4caf50";
       glow =
         "0 0 25px rgba(76, 175, 80, 0.8), inset 0 0 10px rgba(255,255,255,0.4)";
+    } else if (gameState === "roundResult") {
+      color = "#4caf50";
+      glow = "inset 0 5px 10px rgba(0,0,0,0.8)";
     }
 
     return { color, glow };
@@ -107,9 +142,19 @@ export default function ReactionGame() {
 
   const { color, glow } = getLightStyles();
 
+  const roundLabel =
+    gameState === "waiting"
+      ? "Press the button to Start"
+      : gameState === "ready"
+        ? `Round ${round} of ${TOTAL_ROUNDS} — Wait for Green...`
+        : gameState === "clicked"
+          ? `Round ${round} of ${TOTAL_ROUNDS} — TAP NOW!`
+          : gameState === "roundResult"
+            ? `Round ${round}: ${lastRoundTime} ms`
+            : null;
+
   return (
     <div style={{ padding: "0" }}>
-      {/* MOBILE HEADER (Hidden on Desktop) */}
       <div className="arcade-mobile-header mobile-only">
         <button
           className="arcade-mobile-back"
@@ -118,10 +163,10 @@ export default function ReactionGame() {
           <ArrowLeft size={20} />
         </button>
         <div>
-          State <span>{gameState.toUpperCase()}</span>
+          Round <span>{round || "-"}/3</span>
         </div>
         <div>
-          Best <span>{bestTime ? `${bestTime}ms` : "-"}</span>
+          Best Avg <span>{bestTime ? `${bestTime}ms` : "-"}</span>
         </div>
         <button
           className="arcade-mobile-trophy"
@@ -132,7 +177,6 @@ export default function ReactionGame() {
       </div>
 
       <div className="snake-wireframe-container">
-        {/* LEFT/MAIN: Reaction Click Area */}
         <div
           className="snake-wireframe-board"
           style={{
@@ -145,12 +189,11 @@ export default function ReactionGame() {
             textAlign: "center",
             padding: "40px 20px",
             gap: "30px",
-            aspectRatio: "auto", // Overrides the square box to make it wider
-            minHeight: "450px", // Gives it a nice vertical stretch
-            width: "100%", // Stretches it fully
+            aspectRatio: "auto",
+            minHeight: "450px",
+            width: "100%",
           }}
         >
-          {/* --- THE F1 LIGHT RIG --- */}
           <div
             style={{
               display: "flex",
@@ -178,44 +221,62 @@ export default function ReactionGame() {
             ))}
           </div>
 
-          {/* --- INSTRUCTIONS / RESULTS --- */}
           <div
             style={{
-              height: "60px",
+              minHeight: "60px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
+              gap: "4px",
             }}
           >
-            {gameState === "waiting" && (
-              <h2 style={{ color: "var(--arcade-text-dim)", margin: 0 }}>
-                Press the button to Start
+            {roundLabel && gameState !== "finished" && (
+              <h2
+                style={{
+                  color:
+                    gameState === "ready"
+                      ? "#fff"
+                      : gameState === "roundResult"
+                        ? "var(--arcade-green)"
+                        : "var(--arcade-text-dim)",
+                  margin: 0,
+                  fontSize: gameState === "waiting" ? "1.2rem" : "1.5rem",
+                }}
+              >
+                {roundLabel}
               </h2>
             )}
-            {gameState === "ready" && (
-              <h2 style={{ color: "#fff", margin: 0 }}>Wait for Green...</h2>
-            )}
-            {gameState === "result" && (
+
+            {gameState === "finished" && (
               <>
                 <h2
                   style={{
                     color: "var(--arcade-green)",
-                    fontSize: "2.5rem",
+                    fontSize: "2.2rem",
                     margin: 0,
                   }}
                 >
-                  {reactionTime} ms
+                  Avg: {averageTime} ms
                 </h2>
+                <p
+                  style={{
+                    color: "var(--arcade-text-dim)",
+                    fontSize: "0.85rem",
+                    margin: "4px 0 0",
+                  }}
+                >
+                  {roundTimes.map((t, i) => `R${i + 1}: ${t}ms`).join("  •  ")}
+                </p>
               </>
             )}
           </div>
 
-          {/* --- NEW HUGE ACTION BUTTON --- */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleClick();
             }}
+            disabled={gameState === "roundResult"}
             style={{
               marginTop: "10px",
               padding: "20px 40px",
@@ -232,7 +293,8 @@ export default function ReactionGame() {
               color: gameState === "clicked" ? "#000" : "#fff",
               border: `4px solid ${gameState === "clicked" ? "var(--arcade-green)" : "var(--arcade-border)"}`,
               borderRadius: "16px",
-              cursor: "pointer",
+              cursor: gameState === "roundResult" ? "default" : "pointer",
+              opacity: gameState === "roundResult" ? 0.6 : 1,
               boxShadow:
                 gameState === "clicked"
                   ? "0 0 40px rgba(76, 175, 80, 0.6)"
@@ -240,30 +302,29 @@ export default function ReactionGame() {
               transition: "all 0.1s ease",
             }}
           >
-            {gameState === "waiting" && "Start Engine"}
+            {gameState === "waiting" && "Start Engine (3 Rounds)"}
             {gameState === "ready" && "Wait..."}
             {gameState === "clicked" && "TAP NOW!"}
-            {gameState === "result" && "Try Again"}
+            {gameState === "roundResult" && "Next round starting..."}
+            {gameState === "finished" && "Run Again"}
           </button>
         </div>
 
-        {/* RIGHT/MIDDLE: Stats & Controls (Desktop) */}
         <div className="snake-wireframe-controls desktop-only">
           <div className="snake-wireframe-stats">
             <div className="snake-stat-row">
-              Status <span>{gameState.toUpperCase()}</span>
+              Round <span>{round || "-"}/3</span>
             </div>
             <div className="snake-stat-row">
-              Result <span>{reactionTime ? `${reactionTime}ms` : "-"}</span>
+              This Run <span>{averageTime ? `${averageTime}ms` : "-"}</span>
             </div>
             <div className="snake-stat-row">
-              Best <span>{bestTime ? `${bestTime}ms` : "-"}</span>
+              Best Avg <span>{bestTime ? `${bestTime}ms` : "-"}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Top Scorers Modal */}
       <ScoreModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
