@@ -675,7 +675,10 @@ export default function CrosswordGame() {
           const open = isOpen(puzzle, r, c);
           if (!open) {
             return (
-              <div key={`${r}-${c}`} style={{ backgroundColor: "#000" }} />
+              <div
+                key={`${r}-${c}`}
+                style={{ backgroundColor: "#000", minWidth: 0, minHeight: 0 }}
+              />
             );
           }
           const isSelected = selected.r === r && selected.c === c;
@@ -707,6 +710,9 @@ export default function CrosswordGame() {
                 textTransform: "uppercase",
                 cursor: "pointer",
                 padding: 0,
+                minWidth: 0,
+                minHeight: 0,
+                overflow: "hidden",
               }}
             >
               {cellNum && (
