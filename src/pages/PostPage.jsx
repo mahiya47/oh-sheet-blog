@@ -619,6 +619,23 @@ export default function PostPage() {
             </div>
           )}
 
+          {post.videoUrl && !editing && (
+            <div className="sheet-media" style={{ position: "relative" }}>
+              <video
+                src={post.videoUrl}
+                controls
+                playsInline
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  maxHeight: 640,
+                  display: "block",
+                  backgroundColor: "#000",
+                }}
+              />
+            </div>
+          )}
+
           {post.repostOf && !editing && (
             <div
               onClick={() => navigate(`/post/${post.repostOf.id}`)}
@@ -672,6 +689,21 @@ export default function PostPage() {
                     }}
                   />
                 </div>
+              )}
+              {post.repostOf.videoUrl && (
+                <video
+                  src={post.repostOf.videoUrl}
+                  controls
+                  playsInline
+                  style={{
+                    width: "100%",
+                    maxHeight: 320,
+                    marginTop: 8,
+                    borderRadius: "var(--radius)",
+                    backgroundColor: "#000",
+                    display: "block",
+                  }}
+                />
               )}
             </div>
           )}

@@ -1,11 +1,12 @@
 import { useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, ImagePlus, Crop as CropIcon } from "lucide-react";
+import { X, ImagePlus, VideoIcon, Crop as CropIcon } from "lucide-react";
 import Cropper from "react-easy-crop";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 
 const MAX = 500;
+const MAX_VIDEO_MB = 20; // keep base64 overhead reasonable against the server's body limit
 
 // Mobile-friendly portrait ratio — matches how images render in the feed card
 const CROP_ASPECT = 4 / 5;
@@ -68,10 +69,12 @@ export default function CreatePostPage() {
   const toast = useToast();
   const navigate = useNavigate();
   const fileRef = useRef(null);
+  const videoFileRef = useRef(null);
   const [content, setContent] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState([]);
   const [imageUrl, setImageUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
 
   // Crop modal state
   const [cropSrc, setCropSrc] = useState(null); // raw uploaded image, pre-crop
@@ -80,7 +83,7 @@ export default function CreatePostPage() {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const over = content.length > MAX;
-  const empty = content.trim().length === 0 && !imageUrl;
+  const empty = content.trim().length === 0 && !imageUrl && !videoUrl;
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase();
@@ -104,6 +107,7 @@ export default function CreatePostPage() {
     if (!file) return;
     try {
       const dataUrl = await readFileAsDataUrl(file);
+      setVideoUrl(""); // image and video are mutually exclusive
       setCropSrc(dataUrl);
       setCrop({ x: 0, y: 0 });
       setZoom(1);
@@ -111,6 +115,34 @@ export default function CreatePostPage() {
       toast("Couldn't load that image.", "danger");
     }
     e.target.value = ""; // allow picking the same file again later
+  };
+
+  const onPickVideo = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      toast("Please pick a video file.", "danger");
+      e.target.value = "";
+      return;
+    }
+    const sizeMB = file.size / (1024 * 1024);
+    if (sizeMB > MAX_VIDEO_MB) {
+      toast(`Video too large — keep it under ${MAX_VIDEO_MB}MB.`, "danger");
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setImageUrl(""); // image and video are mutually exclusive
+      setCropSrc(null);
+      setVideoUrl(dataUrl);
+      toast("Video added.", "accent");
+    } catch {
+      toast("Couldn't load that video.", "danger");
+    }
+    e.target.value = "";
   };
 
   const onCropComplete = useCallback((_, pixels) => {
@@ -148,7 +180,7 @@ export default function CreatePostPage() {
         `Too long — trim ${content.length - MAX} characters.`,
         "danger",
       );
-    const id = await createPost(content, tags, imageUrl);
+    const id = await createPost(content, tags, imageUrl, null, videoUrl);
     if (id) {
       toast("Sheet posted!", "accent");
       navigate("/feed");
@@ -268,14 +300,62 @@ export default function CreatePostPage() {
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={() => fileRef.current?.click()}
-            style={{ alignSelf: "flex-start" }}
-          >
-            <ImagePlus size={16} /> Add image
-          </button>
+          !videoUrl && (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => fileRef.current?.click()}
+              style={{ alignSelf: "flex-start" }}
+            >
+              <ImagePlus size={16} /> Add image
+            </button>
+          )
+        )}
+      </div>
+
+      <div className="field">
+        <label>Video (optional, max {MAX_VIDEO_MB}MB)</label>
+        <input
+          ref={videoFileRef}
+          type="file"
+          accept="video/*"
+          hidden
+          onChange={onPickVideo}
+        />
+        {videoUrl ? (
+          <div style={{ position: "relative", display: "inline-block" }}>
+            <video
+              src={videoUrl}
+              controls
+              style={{
+                maxWidth: "100%",
+                maxHeight: 400,
+                borderRadius: "var(--radius)",
+                border: "2px solid var(--border)",
+                display: "block",
+              }}
+            />
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setVideoUrl("")}
+              style={{ position: "absolute", top: 8, right: 8 }}
+              aria-label="Remove video"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
+          !imageUrl && (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => videoFileRef.current?.click()}
+              style={{ alignSelf: "flex-start" }}
+            >
+              <VideoIcon size={16} /> Add video
+            </button>
+          )
         )}
       </div>
 

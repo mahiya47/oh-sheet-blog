@@ -460,6 +460,23 @@ export default function SheetCard({ post }) {
           </div>
         )}
 
+        {post.videoUrl && !editing && (
+          <div className="sheet-media" style={{ position: "relative" }}>
+            <video
+              src={post.videoUrl}
+              controls
+              playsInline
+              style={{
+                width: "100%",
+                height: "auto",
+                maxHeight: 560,
+                display: "block",
+                backgroundColor: "#000",
+              }}
+            />
+          </div>
+        )}
+
         {post.repostOf && !editing && (
           <div
             onClick={(e) => {
@@ -525,6 +542,22 @@ export default function SheetCard({ post }) {
                   }}
                 />
               </div>
+            )}
+
+            {post.repostOf.videoUrl && (
+              <video
+                src={post.repostOf.videoUrl}
+                controls
+                playsInline
+                style={{
+                  width: "100%",
+                  maxHeight: 300,
+                  marginTop: 8,
+                  borderRadius: "var(--radius)",
+                  backgroundColor: "#000",
+                  display: "block",
+                }}
+              />
             )}
           </div>
         )}

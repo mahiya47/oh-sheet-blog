@@ -260,6 +260,7 @@ export function StoreProvider({ children }) {
     tags = [],
     imageUrl = "",
     repostOfId = null,
+    videoUrl = "",
   ) => {
     try {
       const res = await api.post("/posts", {
@@ -267,6 +268,7 @@ export function StoreProvider({ children }) {
         content,
         tags,
         imageUrl,
+        videoUrl,
         repostOfId,
       });
       setPosts((prev) => [normalizePost(res.data), ...prev]);
