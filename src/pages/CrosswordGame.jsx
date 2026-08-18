@@ -57,6 +57,106 @@ const WORD_BANK = [
   { word: "MAGIC", clue: "Supernatural power" },
   { word: "NIGHT", clue: "Opposite of day" },
   { word: "LIGHT", clue: "Opposite of dark" },
+  { word: "BANANA", clue: "Yellow curved fruit" },
+  { word: "MANGO", clue: "Sweet tropical fruit" },
+  { word: "GRAPE", clue: "Small fruit that grows in bunches" },
+  { word: "CHERRY", clue: "Small red stone fruit" },
+  { word: "PEACH", clue: "Fuzzy orange-pink fruit" },
+  { word: "POTATO", clue: "Starchy underground vegetable" },
+  { word: "TOMATO", clue: "Red fruit often used as a vegetable" },
+  { word: "CARROT", clue: "Orange root vegetable" },
+  { word: "ONION", clue: "Layered vegetable that makes you cry" },
+  { word: "GARLIC", clue: "Pungent bulb used in cooking" },
+  { word: "BUTTER", clue: "Dairy spread made from cream" },
+  { word: "CHEESE", clue: "Dairy product made from milk" },
+  { word: "YOGURT", clue: "Creamy fermented dairy food" },
+  { word: "NOODLE", clue: "Long thin strip of pasta" },
+  { word: "BURGER", clue: "Sandwich with a meat patty" },
+  { word: "SALAD", clue: "Mixed dish of raw vegetables" },
+  { word: "SOUP", clue: "Warm liquid dish" },
+  { word: "CAKE", clue: "Sweet baked dessert" },
+  { word: "COOKIE", clue: "Small sweet baked treat" },
+  { word: "VANILLA", clue: "Common dessert flavoring" },
+  { word: "PEPPER", clue: "Spicy seasoning" },
+  { word: "SUGAR", clue: "Sweet crystalline substance" },
+  { word: "ELEPHANT", clue: "Large mammal with a trunk" },
+  { word: "GIRAFFE", clue: "Tallest land animal" },
+  { word: "DOLPHIN", clue: "Intelligent marine mammal" },
+  { word: "PENGUIN", clue: "Flightless Antarctic bird" },
+  { word: "RABBIT", clue: "Long-eared hopping animal" },
+  { word: "TURTLE", clue: "Slow reptile with a shell" },
+  { word: "SPIDER", clue: "Eight-legged creature" },
+  { word: "EAGLE", clue: "Bird of prey with sharp talons" },
+  { word: "WOLF", clue: "Wild howling canine" },
+  { word: "ZEBRA", clue: "Striped African animal" },
+  { word: "MONKEY", clue: "Tree-climbing primate" },
+  { word: "PANDA", clue: "Black and white bear" },
+  { word: "KOALA", clue: "Australian tree-dwelling marsupial" },
+  { word: "CAMEL", clue: "Desert animal with humps" },
+  { word: "DEER", clue: "Antlered forest animal" },
+  { word: "GOOSE", clue: "Large web-footed bird" },
+  { word: "DUCK", clue: "Small web-footed waterbird" },
+  { word: "SWAN", clue: "Elegant white water bird" },
+  { word: "OWL", clue: "Nocturnal bird of prey" },
+  { word: "HAWK", clue: "Sharp-eyed bird of prey" },
+  { word: "LION", clue: "King of the jungle" },
+  { word: "LEOPARD", clue: "Spotted big cat" },
+  { word: "CHEETAH", clue: "Fastest land animal" },
+  { word: "GORILLA", clue: "Large great ape" },
+  { word: "KANGAROO", clue: "Hopping Australian marsupial" },
+  { word: "OCTOPUS", clue: "Eight-armed sea creature" },
+  { word: "LOBSTER", clue: "Clawed sea crustacean" },
+  { word: "CRAB", clue: "Sideways-walking crustacean" },
+  { word: "COMPUTER", clue: "Electronic device for processing data" },
+  { word: "KEYBOARD", clue: "Typing input device" },
+  { word: "MONITOR", clue: "Computer screen" },
+  { word: "PRINTER", clue: "Device that puts ink on paper" },
+  { word: "CAMERA", clue: "Device for taking photos" },
+  { word: "RADIO", clue: "Device for broadcasting sound" },
+  { word: "SPEAKER", clue: "Device that plays audio" },
+  { word: "WALLET", clue: "Small case for money and cards" },
+  { word: "UMBRELLA", clue: "Rain protection device" },
+  { word: "BACKPACK", clue: "Bag worn on the shoulders" },
+  { word: "SUITCASE", clue: "Case for packing clothes" },
+  { word: "BLANKET", clue: "Warm bed covering" },
+  { word: "PILLOW", clue: "Soft cushion for your head" },
+  { word: "MIRROR", clue: "Reflective glass surface" },
+  { word: "LADDER", clue: "Climbing tool with rungs" },
+  { word: "HAMMER", clue: "Tool for driving nails" },
+  { word: "WRENCH", clue: "Tool for turning bolts" },
+  { word: "SCISSORS", clue: "Cutting tool with two blades" },
+  { word: "NEEDLE", clue: "Thin sewing tool" },
+  { word: "THREAD", clue: "Thin strand used in sewing" },
+  { word: "BUTTON", clue: "Small fastener on clothing" },
+  { word: "ZIPPER", clue: "Sliding fastener" },
+  { word: "MOUNTAIN", clue: "Very tall landform" },
+  { word: "VALLEY", clue: "Low land between hills" },
+  { word: "FOREST", clue: "Large area of trees" },
+  { word: "MEADOW", clue: "Grassy open field" },
+  { word: "GLACIER", clue: "Slow-moving mass of ice" },
+  { word: "CANYON", clue: "Deep narrow valley" },
+  { word: "PRAIRIE", clue: "Wide grassy plain" },
+  { word: "SWAMP", clue: "Wet marshy land" },
+  { word: "BEACH", clue: "Sandy shore by the sea" },
+  { word: "HARBOR", clue: "Sheltered dock for ships" },
+  { word: "LAGOON", clue: "Shallow body of water" },
+  { word: "STREAM", clue: "Small flowing river" },
+  { word: "PEBBLE", clue: "Small smooth stone" },
+  { word: "HOSPITAL", clue: "Place where the sick are treated" },
+  { word: "SCHOOL", clue: "Place where children learn" },
+  { word: "CHURCH", clue: "Place of worship" },
+  { word: "STADIUM", clue: "Large sports arena" },
+  { word: "THEATER", clue: "Place for watching plays" },
+  { word: "MUSEUM", clue: "Place displaying artifacts" },
+  { word: "FACTORY", clue: "Place where goods are made" },
+  { word: "OFFICE", clue: "Place of business work" },
+  { word: "BAKERY", clue: "Shop that sells baked goods" },
+  { word: "DOCTOR", clue: "Medical professional" },
+  { word: "TEACHER", clue: "Person who educates students" },
+  { word: "FARMER", clue: "Person who grows crops" },
+  { word: "DENTIST", clue: "Doctor for teeth" },
+  { word: "LAWYER", clue: "Legal professional" },
+  { word: "PLUMBER", clue: "Fixes pipes and leaks" },
 ];
 
 const MAX_WORDS = 12;
@@ -104,7 +204,24 @@ function placeWords(pool, rng) {
       const r = dir === "D" ? row + i : row;
       const c = dir === "A" ? col + i : col;
       const key = `${r},${c}`;
-      if (cellMap.has(key) && cellMap.get(key) !== word[i]) return false;
+      const occupied = cellMap.has(key);
+
+      if (occupied) {
+        // This must be a genuine intersection — letter must match.
+        if (cellMap.get(key) !== word[i]) return false;
+      } else {
+        // Not an intersection: the cells beside this letter (perpendicular
+        // to the word's direction) must be empty. Otherwise this new
+        // letter would sit directly next to an unrelated existing word,
+        // creating an accidental, unregistered "fake" word fragment.
+        if (dir === "A") {
+          if (cellMap.has(`${r - 1},${c}`)) return false;
+          if (cellMap.has(`${r + 1},${c}`)) return false;
+        } else {
+          if (cellMap.has(`${r},${c - 1}`)) return false;
+          if (cellMap.has(`${r},${c + 1}`)) return false;
+        }
+      }
     }
     const beforeR = dir === "D" ? row - 1 : row;
     const beforeC = dir === "A" ? col - 1 : col;
