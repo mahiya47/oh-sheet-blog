@@ -102,7 +102,7 @@ export default function ChatPage() {
           null,
       );
       loadThread(dmUserId);
-      pollRef.current = setInterval(() => loadThread(dmUserId), 8000);
+      pollRef.current = setInterval(() => loadThread(dmUserId), 3000);
     }
 
     return () => clearInterval(pollRef.current);
@@ -110,9 +110,24 @@ export default function ChatPage() {
 
   useEffect(() => {
     loadSidebar();
-    sidePollRef.current = setInterval(loadSidebar, 8000);
+    sidePollRef.current = setInterval(loadSidebar, 3000);
     return () => clearInterval(sidePollRef.current);
   }, []);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        loadSidebar();
+        if (dmUserId) loadThread(dmUserId);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleVisibility);
+    };
+  }, [dmUserId]);
 
   useEffect(() => {
     document.body.classList.add("chat-page-active");
