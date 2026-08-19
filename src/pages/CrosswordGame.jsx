@@ -951,7 +951,9 @@ export default function CrosswordGame() {
       : "";
   };
 
-  const boardMaxWidth = isMobile ? 400 : 480;
+  const CELL_SIZE = isMobile ? 30 : 34;
+  const boardMaxWidth = isMobile ? 330 : 380; // narrower — vertical/portrait feel
+  const boardMaxHeight = isMobile ? 480 : 560; // taller
 
   const hiddenInput = (
     <input
@@ -1011,22 +1013,30 @@ export default function CrosswordGame() {
   const crosswordGrid = (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${puzzle.cols}, 1fr)`,
-        gridTemplateRows: `repeat(${puzzle.rows}, 1fr)`,
         width: "100%",
         maxWidth: boardMaxWidth,
-        aspectRatio: `${puzzle.cols} / ${puzzle.rows}`,
-        backgroundColor: "#000",
+        maxHeight: boardMaxHeight,
+        margin: "0 auto",
+        overflow: "auto",
         border: "3px solid #000",
-        gap: "1px",
-        userSelect: "none",
-        boxSizing: "border-box",
-        overflow: "hidden",
+        borderRadius: "4px",
         opacity: gameState === "playing" ? 1 : 0.55,
         pointerEvents: gameState === "playing" ? "auto" : "none",
       }}
     >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${puzzle.cols}, ${CELL_SIZE}px)`,
+          gridTemplateRows: `repeat(${puzzle.rows}, ${CELL_SIZE}px)`,
+          width: puzzle.cols * CELL_SIZE,
+          height: puzzle.rows * CELL_SIZE,
+          backgroundColor: "#000",
+          gap: "1px",
+          userSelect: "none",
+          boxSizing: "border-box",
+        }}
+      >
       {grid.map((row, r) =>
         row.map((letter, c) => {
           const open = isOpen(puzzle, r, c);
@@ -1091,6 +1101,7 @@ export default function CrosswordGame() {
           );
         }),
       )}
+      </div>
     </div>
   );
 
@@ -1177,7 +1188,29 @@ export default function CrosswordGame() {
 
   return (
     <div style={{ padding: "0" }}>
-      <div className="snake-wireframe-container">
+      <div
+        className="desktop-only"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "12px",
+          marginBottom: "16px",
+        }}
+      >
+        <div className="snake-stat-box">
+          Time <span>{timer}s</span>
+        </div>
+        <div className="snake-stat-box">
+          Streak <span>{streak}🔥</span>
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
         <div
           className="snake-wireframe-board"
           style={{
@@ -1186,6 +1219,8 @@ export default function CrosswordGame() {
             flexDirection: "column",
             alignItems: "center",
             position: "relative",
+            width: "100%",
+            maxWidth: boardMaxWidth + 40,
           }}
         >
           {hiddenInput}
@@ -1193,17 +1228,8 @@ export default function CrosswordGame() {
           {crosswordGrid}
           {winOverlay}
         </div>
-        <div className="snake-wireframe-controls desktop-only">
-          <div className="snake-wireframe-stats">
-            <div className="snake-stat-row">
-              Time <span>{timer}s</span>
-            </div>
-            <div className="snake-stat-row">
-              Streak <span>{streak}🔥</span>
-            </div>
-          </div>
-        </div>
       </div>
+
       <ScoreModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
