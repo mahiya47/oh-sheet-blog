@@ -390,11 +390,13 @@ export default function PostPage() {
               : "none",
           }}
         >
-          <Link to={`/profile/${author.id}`} className="sheet-author">
+          <div className="sheet-author">
             <Avatar user={author} size={44} />
             <span className="names">
               <span className="display">
-                {author.displayName}
+                <Link to={`/profile/${author.id}`} style={{ color: "inherit" }}>
+                  {author.displayName}
+                </Link>
                 {author.emailVerified && (
                   <VerifiedBadge
                     size={14}
@@ -429,6 +431,7 @@ export default function PostPage() {
                   <span
                     className="tagged-with"
                     style={{
+                      textTransform: "none",
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 4,
@@ -481,11 +484,18 @@ export default function PostPage() {
                       createPortal(
                         <>
                           <div
-                            onClick={() => setTaggedDropdownOpen(false)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setTaggedDropdownOpen(false);
+                            }}
                             style={{ position: "fixed", inset: 0, zIndex: 998 }}
                           />
                           <div
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
                             style={{
                               position: "absolute",
                               top: taggedDropdownPos.top,
@@ -499,7 +509,7 @@ export default function PostPage() {
                               boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
                             }}
                           >
-                            {post.taggedUsers.map((u) => (
+                            {post.taggedUsers.slice(1).map((u) => (
                               <div
                                 key={u.id}
                                 style={{
@@ -514,7 +524,12 @@ export default function PostPage() {
                               >
                                 <Link
                                   to={`/profile/${u.id}`}
-                                  onClick={() => setTaggedDropdownOpen(false)}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setTaggedDropdownOpen(false);
+                                    navigate(`/profile/${u.id}`);
+                                  }}
                                   style={{
                                     fontSize: "0.85rem",
                                     fontWeight: 600,
@@ -556,7 +571,7 @@ export default function PostPage() {
                 @{author.username} · {timeAgo(post.createdAt)}
               </span>
             </span>
-          </Link>
+          </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {!mine && !post.isFollowedByMe && !justFollowed && (

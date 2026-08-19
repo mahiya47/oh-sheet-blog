@@ -209,19 +209,20 @@ export default function SheetCard({ post }) {
             : "none",
         }}
       >
-        <Link
-          to={`/profile/${post.author?.id}`}
-          className="sheet-author"
-          onClick={stop}
-        >
+        <div className="sheet-author" style={{ cursor: "pointer" }}>
           <Avatar user={post.author} size={40} />
           <span className="names">
             <span className="display">
-              {/* FIXED: Now falls back to name properly */}
-              {post.author?.displayName ||
-                post.author?.name ||
-                post.author?.username ||
-                "User"}
+              <Link
+                to={`/profile/${post.author?.id}`}
+                onClick={(e) => e.stopPropagation()}
+                style={{ color: "inherit" }}
+              >
+                {post.author?.displayName ||
+                  post.author?.name ||
+                  post.author?.username ||
+                  "User"}
+              </Link>
               {post.author?.emailVerified && (
                 <VerifiedBadge
                   size={14}
@@ -258,6 +259,7 @@ export default function SheetCard({ post }) {
                 <span
                   className="tagged-with"
                   style={{
+                    textTransform: "none",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 4,
@@ -271,7 +273,7 @@ export default function SheetCard({ post }) {
                   with{" "}
                   <Link
                     to={`/profile/${post.taggedUsers[0].id}`}
-                    onClick={stop}
+                    onClick={(e) => e.stopPropagation()}
                     style={{ color: "var(--accent)", fontWeight: 600 }}
                   >
                     @{post.taggedUsers[0].username}
@@ -310,11 +312,18 @@ export default function SheetCard({ post }) {
                     createPortal(
                       <>
                         <div
-                          onClick={() => setTaggedDropdownOpen(false)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setTaggedDropdownOpen(false);
+                          }}
                           style={{ position: "fixed", inset: 0, zIndex: 998 }}
                         />
                         <div
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
                           style={{
                             position: "absolute",
                             top: taggedDropdownPos.top,
@@ -328,7 +337,7 @@ export default function SheetCard({ post }) {
                             boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
                           }}
                         >
-                          {post.taggedUsers.map((u) => (
+                          {post.taggedUsers.slice(1).map((u) => (
                             <div
                               key={u.id}
                               style={{
@@ -343,7 +352,12 @@ export default function SheetCard({ post }) {
                             >
                               <Link
                                 to={`/profile/${u.id}`}
-                                onClick={() => setTaggedDropdownOpen(false)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setTaggedDropdownOpen(false);
+                                  navigate(`/profile/${u.id}`);
+                                }}
                                 style={{
                                   fontSize: "0.85rem",
                                   fontWeight: 600,
@@ -385,7 +399,7 @@ export default function SheetCard({ post }) {
               @{post.author?.username} · {timeAgo(post.createdAt)}
             </span>
           </span>
-        </Link>
+        </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {!mine && !post.isFollowedByMe && !justFollowed && (
