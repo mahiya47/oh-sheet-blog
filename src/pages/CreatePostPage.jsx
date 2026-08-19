@@ -1,9 +1,16 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, ImagePlus, VideoIcon, Crop as CropIcon } from "lucide-react";
+import {
+  X,
+  ImagePlus,
+  VideoIcon,
+  Crop as CropIcon,
+  UserPlus,
+} from "lucide-react";
 import Cropper from "react-easy-crop";
 import { useStore } from "../lib/store.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import api from "../api.js";
 
 const MAX = 500;
 const MAX_VIDEO_MB = 20; // keep base64 overhead reasonable against the server's body limit
@@ -75,6 +82,10 @@ export default function CreatePostPage() {
   const [tags, setTags] = useState([]);
   const [imageUrl, setImageUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
+  const [taggedUsers, setTaggedUsers] = useState([]); // [{id, name, username, avatarUrl, emailVerified}]
+  const [tagSearch, setTagSearch] = useState("");
+  const [tagResults, setTagResults] = useState([]);
+  const [tagSearching, setTagSearching] = useState(false);
 
   // Crop modal state
   const [cropSrc, setCropSrc] = useState(null); // raw uploaded image, pre-crop
@@ -101,6 +112,42 @@ export default function CreatePostPage() {
   };
 
   const removeTag = (t) => setTags(tags.filter((x) => x !== t));
+
+  // Debounced search for the "tag people" picker, reuses the existing
+  // /users/search endpoint (the same one your search bar uses).
+  useEffect(() => {
+    const q = tagSearch.trim();
+    if (q.length < 2) {
+      setTagResults([]);
+      return;
+    }
+    setTagSearching(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await api.get(`/users/search?q=${encodeURIComponent(q)}`);
+        const already = new Set(taggedUsers.map((u) => u.id));
+        setTagResults((res.data.users || []).filter((u) => !already.has(u.id)));
+      } catch {
+        setTagResults([]);
+      }
+      setTagSearching(false);
+    }, 350);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tagSearch]);
+
+  const addTaggedUser = (user) => {
+    if (taggedUsers.length >= 10) {
+      toast("You can tag up to 10 people.", "danger");
+      return;
+    }
+    setTaggedUsers((prev) => [...prev, user]);
+    setTagSearch("");
+    setTagResults([]);
+  };
+
+  const removeTaggedUser = (id) =>
+    setTaggedUsers((prev) => prev.filter((u) => u.id !== id));
 
   const onPickImage = async (e) => {
     const file = e.target.files?.[0];
@@ -180,7 +227,14 @@ export default function CreatePostPage() {
         `Too long — trim ${content.length - MAX} characters.`,
         "danger",
       );
-    const id = await createPost(content, tags, imageUrl, null, videoUrl);
+    const id = await createPost(
+      content,
+      tags,
+      imageUrl,
+      null,
+      videoUrl,
+      taggedUsers.map((u) => u.id),
+    );
     if (id) {
       toast("Sheet posted!", "accent");
       navigate("/feed");
@@ -357,6 +411,152 @@ export default function CreatePostPage() {
             </button>
           )
         )}
+      </div>
+
+      <div className="field">
+        <label>Tag people (optional, up to 10)</label>
+        {taggedUsers.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              marginBottom: 8,
+            }}
+          >
+            {taggedUsers.map((u) => (
+              <span
+                key={u.id}
+                className="tag"
+                style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+              >
+                @{u.username}
+                <button
+                  type="button"
+                  onClick={() => removeTaggedUser(u.id)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "inherit",
+                    cursor: "pointer",
+                    padding: 0,
+                    display: "inline-flex",
+                  }}
+                  aria-label={`Remove ${u.username}`}
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        <div style={{ position: "relative" }}>
+          <input
+            type="text"
+            value={tagSearch}
+            onChange={(e) => setTagSearch(e.target.value)}
+            placeholder="Search a username to tag…"
+          />
+          {tagSearch.trim().length >= 2 && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                zIndex: 20,
+                background: "var(--surface, #111)",
+                border: "2px solid var(--border, #333)",
+                borderRadius: "var(--radius)",
+                marginTop: 4,
+                maxHeight: 220,
+                overflowY: "auto",
+              }}
+            >
+              {tagSearching ? (
+                <div
+                  style={{
+                    padding: 12,
+                    fontSize: "0.85rem",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  Searching…
+                </div>
+              ) : tagResults.length === 0 ? (
+                <div
+                  style={{
+                    padding: 12,
+                    fontSize: "0.85rem",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  No matches.
+                </div>
+              ) : (
+                tagResults.map((u) => (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => addTaggedUser(u)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      width: "100%",
+                      padding: "8px 12px",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      color: "inherit",
+                    }}
+                  >
+                    {u.avatarUrl ? (
+                      <img
+                        src={u.avatarUrl}
+                        alt=""
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          background: "var(--border-soft, #333)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <UserPlus size={14} />
+                      </div>
+                    )}
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>
+                        {u.name || u.username}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--text-muted)",
+                        }}
+                      >
+                        @{u.username}
+                      </span>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="editor-foot">

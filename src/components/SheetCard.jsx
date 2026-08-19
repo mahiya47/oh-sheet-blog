@@ -34,6 +34,7 @@ const DOUBLE_TAP_DELAY = 350;
 export default function SheetCard({ post }) {
   const {
     currentUser,
+    untagMeFromPost,
     toggleLike,
     createPost,
     deletePost,
@@ -62,6 +63,7 @@ export default function SheetCard({ post }) {
   const mine = currentUser && post.author?.id === currentUser.id;
   const stop = (e) => e.stopPropagation();
   const [justFollowed, setJustFollowed] = useState(false);
+  const [taggedDropdownOpen, setTaggedDropdownOpen] = useState(false);
   const open = () => navigate(`/post/${post.id}`);
   const onKey = (e) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -251,6 +253,112 @@ export default function SheetCard({ post }) {
                 </span>
               )}
             </span>
+            {post.taggedUsers && post.taggedUsers.length > 0 && (
+              <span
+                className="tagged-with"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: "0.78rem",
+                  color: "var(--text-muted)",
+                  position: "relative",
+                }}
+              >
+                with{" "}
+                <Link
+                  to={`/profile/${post.taggedUsers[0].id}`}
+                  onClick={stop}
+                  style={{ color: "var(--accent)", fontWeight: 600 }}
+                >
+                  @{post.taggedUsers[0].username}
+                </Link>
+                {post.taggedUsers.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      stop(e);
+                      setTaggedDropdownOpen((v) => !v);
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "var(--text-muted)",
+                      cursor: "pointer",
+                      padding: 0,
+                      display: "inline-flex",
+                      alignItems: "center",
+                    }}
+                    aria-label="Show all tagged people"
+                  >
+                    and {post.taggedUsers.length - 1} other
+                    {post.taggedUsers.length - 1 > 1 ? "s" : ""} ▾
+                  </button>
+                )}
+                {taggedDropdownOpen && (
+                  <div
+                    onClick={stop}
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      marginTop: 4,
+                      minWidth: 180,
+                      background: "var(--surface, #111)",
+                      border: "2px solid var(--border, #333)",
+                      borderRadius: "var(--radius)",
+                      zIndex: 30,
+                      overflow: "hidden",
+                    }}
+                  >
+                    {post.taggedUsers.map((u) => (
+                      <div
+                        key={u.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          padding: "8px 10px",
+                          borderBottom: "1px solid var(--border-soft, #2a2a2a)",
+                        }}
+                      >
+                        <Link
+                          to={`/profile/${u.id}`}
+                          onClick={stop}
+                          style={{
+                            fontSize: "0.8rem",
+                            fontWeight: 600,
+                            color: "inherit",
+                          }}
+                        >
+                          @{u.username}
+                        </Link>
+                        {currentUser?.id === u.id && (
+                          <button
+                            type="button"
+                            onClick={async (e) => {
+                              stop(e);
+                              await untagMeFromPost(post.id);
+                              setTaggedDropdownOpen(false);
+                            }}
+                            style={{
+                              fontSize: "0.7rem",
+                              color: "var(--danger, #ff5252)",
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Remove me
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </span>
+            )}
             <span className="handle">
               @{post.author?.username} · {timeAgo(post.createdAt)}
             </span>

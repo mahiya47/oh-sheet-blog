@@ -261,6 +261,7 @@ export function StoreProvider({ children }) {
     imageUrl = "",
     repostOfId = null,
     videoUrl = "",
+    taggedUserIds = [],
   ) => {
     try {
       const res = await api.post("/posts", {
@@ -270,12 +271,35 @@ export function StoreProvider({ children }) {
         imageUrl,
         videoUrl,
         repostOfId,
+        taggedUserIds,
       });
       setPosts((prev) => [normalizePost(res.data), ...prev]);
       return res.data.id;
     } catch (err) {
       console.error(err);
       return null;
+    }
+  };
+
+  const untagMeFromPost = async (postId) => {
+    try {
+      await api.delete(`/posts/${postId}/untag`);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? {
+                ...p,
+                taggedUsers: (p.taggedUsers || []).filter(
+                  (u) => u.id !== currentUser?.id,
+                ),
+              }
+            : p,
+        ),
+      );
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
     }
   };
 
@@ -1009,7 +1033,12 @@ export function StoreProvider({ children }) {
 
   // ---- Stubs ---------------------------------------------------------------
 
-  const getUserPosts = (userId) => posts.filter((p) => p.author?.id === userId);
+  const getUserPosts = (userId) =>
+    posts.filter(
+      (p) =>
+        p.author?.id === userId ||
+        (p.taggedUsers || []).some((u) => u.id === userId),
+    );
   const getFollowCounts = () => ({ following: 0, followers: 0 });
   const isFollowing = () => false;
   const resetDemo = () => {};
@@ -1045,6 +1074,7 @@ export function StoreProvider({ children }) {
         getFollowingList,
         updateProfile,
         getUserPosts,
+        untagMeFromPost,
         resendVerification,
         getFollowingFeed,
         getProfile,

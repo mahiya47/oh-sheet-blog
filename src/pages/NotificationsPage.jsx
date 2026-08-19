@@ -22,6 +22,7 @@ const ICON = {
   comment: MessageCircle,
   follow: UserPlus,
   reply: MessageCircle,
+  tagged: UserPlus,
   verified: BadgeCheck,
   reactivated: RefreshCcw,
 };
@@ -30,6 +31,7 @@ const TEXT = {
   comment: "commented on your sheet",
   follow: "started following you",
   reply: "replied to your comment",
+  tagged: "tagged you in a post",
   verified: "🎉 You're verified! Enjoy your blue tick.",
   reactivated: "👋 Welcome back! Your account has been reactivated.",
 };
@@ -89,7 +91,8 @@ export default function NotificationsPage() {
                 ? "/settings"
                 : (n.type === "like" ||
                       n.type === "comment" ||
-                      n.type === "reply") &&
+                      n.type === "reply" ||
+                      n.type === "tagged") &&
                     n.postId
                   ? `/post/${n.postId}`
                   : `/profile/${n.actor?.id}`;
