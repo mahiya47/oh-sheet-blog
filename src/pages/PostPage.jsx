@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -63,6 +64,7 @@ export default function PostPage() {
   const [justFollowed, setJustFollowed] = useState(false);
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const [taggedDropdownOpen, setTaggedDropdownOpen] = useState(false);
+  const [taggedDropdownPos, setTaggedDropdownPos] = useState(null);
   const menuRef = useRef(null);
   const commentBoxRef = useRef(null);
   const touchStartPosRef = useRef({ x: 0, y: 0 });
@@ -451,6 +453,11 @@ export default function PostPage() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setTaggedDropdownPos({
+                            top: rect.bottom + window.scrollY + 4,
+                            left: rect.left + window.scrollX,
+                          });
                           setTaggedDropdownOpen((v) => !v);
                         }}
                         style={{
@@ -469,73 +476,79 @@ export default function PostPage() {
                         {post.taggedUsers.length - 1 > 1 ? "s" : ""} ▾
                       </button>
                     )}
-                    {taggedDropdownOpen && (
-                      <div
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                        style={{
-                          position: "absolute",
-                          top: "100%",
-                          left: 0,
-                          marginTop: 4,
-                          minWidth: 180,
-                          background: "var(--surface, #111)",
-                          border: "2px solid var(--border, #333)",
-                          borderRadius: "var(--radius)",
-                          zIndex: 30,
-                          overflow: "hidden",
-                        }}
-                      >
-                        {post.taggedUsers.map((u) => (
+                    {taggedDropdownOpen &&
+                      taggedDropdownPos &&
+                      createPortal(
+                        <>
                           <div
-                            key={u.id}
+                            onClick={() => setTaggedDropdownOpen(false)}
+                            style={{ position: "fixed", inset: 0, zIndex: 998 }}
+                          />
+                          <div
+                            onClick={(e) => e.stopPropagation()}
                             style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              gap: 8,
-                              padding: "8px 10px",
-                              borderBottom:
-                                "1px solid var(--border-soft, #2a2a2a)",
+                              position: "absolute",
+                              top: taggedDropdownPos.top,
+                              left: taggedDropdownPos.left,
+                              minWidth: 180,
+                              background: "var(--surface, #111)",
+                              border: "2px solid var(--border, #333)",
+                              borderRadius: "var(--radius)",
+                              zIndex: 999,
+                              overflow: "hidden",
+                              boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
                             }}
                           >
-                            <Link
-                              to={`/profile/${u.id}`}
-                              onClick={stop}
-                              style={{
-                                fontSize: "0.85rem",
-                                fontWeight: 600,
-                                color: "inherit",
-                              }}
-                            >
-                              @{u.username}
-                            </Link>
-                            {currentUser?.id === u.id && (
-                              <button
-                                type="button"
-                                onClick={async (e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  await untagMeFromPost(post.id);
-                                  setTaggedDropdownOpen(false);
-                                }}
+                            {post.taggedUsers.map((u) => (
+                              <div
+                                key={u.id}
                                 style={{
-                                  fontSize: "0.75rem",
-                                  color: "var(--danger, #ff5252)",
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  gap: 8,
+                                  padding: "8px 10px",
+                                  borderBottom:
+                                    "1px solid var(--border-soft, #2a2a2a)",
                                 }}
                               >
-                                Remove me
-                              </button>
-                            )}
+                                <Link
+                                  to={`/profile/${u.id}`}
+                                  onClick={() => setTaggedDropdownOpen(false)}
+                                  style={{
+                                    fontSize: "0.85rem",
+                                    fontWeight: 600,
+                                    color: "inherit",
+                                  }}
+                                >
+                                  @{u.username}
+                                </Link>
+                                {currentUser?.id === u.id && (
+                                  <button
+                                    type="button"
+                                    onClick={async (e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      await untagMeFromPost(post.id);
+                                      setTaggedDropdownOpen(false);
+                                    }}
+                                    style={{
+                                      fontSize: "0.75rem",
+                                      color: "var(--danger, #ff5252)",
+                                      background: "none",
+                                      border: "none",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    Remove me
+                                  </button>
+                                )}
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        </>,
+                        document.body,
+                      )}
                   </span>
                 )}
               </span>
