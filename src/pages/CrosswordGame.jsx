@@ -951,9 +951,9 @@ export default function CrosswordGame() {
       : "";
   };
 
-  const CELL_SIZE = isMobile ? 30 : 34;
-  const boardMaxWidth = isMobile ? 330 : 380; // narrower — vertical/portrait feel
-  const boardMaxHeight = isMobile ? 480 : 560; // taller
+  const CELL_SIZE = isMobile ? 34 : 42;
+  const boardMaxWidth = isMobile ? 380 : 620;
+  const boardMaxHeight = isMobile ? 560 : 680;
 
   const hiddenInput = (
     <input
@@ -1018,8 +1018,9 @@ export default function CrosswordGame() {
         maxHeight: boardMaxHeight,
         margin: "0 auto",
         overflow: "auto",
-        border: "3px solid #000",
+        border: "2px solid #222",
         borderRadius: "4px",
+        backgroundColor: "#fff",
         opacity: gameState === "playing" ? 1 : 0.55,
         pointerEvents: gameState === "playing" ? "auto" : "none",
       }}
@@ -1031,76 +1032,83 @@ export default function CrosswordGame() {
           gridTemplateRows: `repeat(${puzzle.rows}, ${CELL_SIZE}px)`,
           width: puzzle.cols * CELL_SIZE,
           height: puzzle.rows * CELL_SIZE,
-          backgroundColor: "#000",
-          gap: "1px",
+          backgroundColor: "#fff",
           userSelect: "none",
           boxSizing: "border-box",
         }}
       >
-      {grid.map((row, r) =>
-        row.map((letter, c) => {
-          const open = isOpen(puzzle, r, c);
-          if (!open) {
+        {grid.map((row, r) =>
+          row.map((letter, c) => {
+            const open = isOpen(puzzle, r, c);
+            if (!open) {
+              return (
+                <div
+                  key={`${r}-${c}`}
+                  style={{
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #1a1a1a",
+                    minWidth: 0,
+                    minHeight: 0,
+                  }}
+                />
+              );
+            }
+            const isSelected = selected.r === r && selected.c === c;
+            const isWordHighlight =
+              direction === "across"
+                ? selected.r === r && sameAcrossWord(puzzle, r, c, selected.c)
+                : selected.c === c && sameDownWord(puzzle, r, c, selected.r);
+            const cellNum = puzzle.numbers[`${r},${c}`];
+            const displayLetter =
+              gameState === "playing" ? letter : puzzle.solution[r][c];
+
             return (
               <div
                 key={`${r}-${c}`}
-                style={{ backgroundColor: "#000", minWidth: 0, minHeight: 0 }}
-              />
+                onClick={() => handleCellClick(r, c)}
+                style={{
+                  position: "relative",
+                  backgroundColor: isSelected
+                    ? "#ffeb3b"
+                    : isWordHighlight
+                      ? "#fff9c4"
+                      : "#fff",
+                  border: "1px solid #b0b0b0",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: isMobile ? "clamp(1rem, 4.5vw, 1.6rem)" : "1.9rem",
+                  fontWeight: "bold",
+                  color: "#000",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  padding: 0,
+                  minWidth: 0,
+                  minHeight: 0,
+                  overflow: "hidden",
+                  boxSizing: "border-box",
+                }}
+              >
+                {cellNum && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "1px",
+                      left: "3px",
+                      fontSize: "0.55rem",
+                      fontWeight: "600",
+                      lineHeight: 1,
+                      color: "#1a4fb4",
+                    }}
+                  >
+                    {cellNum}
+                  </span>
+                )}
+                {displayLetter || ""}
+              </div>
             );
-          }
-          const isSelected = selected.r === r && selected.c === c;
-          const isWordHighlight =
-            direction === "across"
-              ? selected.r === r && sameAcrossWord(puzzle, r, c, selected.c)
-              : selected.c === c && sameDownWord(puzzle, r, c, selected.r);
-          const cellNum = puzzle.numbers[`${r},${c}`];
-          const displayLetter =
-            gameState === "playing" ? letter : puzzle.solution[r][c];
-
-          return (
-            <div
-              key={`${r}-${c}`}
-              onClick={() => handleCellClick(r, c)}
-              style={{
-                position: "relative",
-                backgroundColor: isSelected
-                  ? "#ffeb3b"
-                  : isWordHighlight
-                    ? "#fff9c4"
-                    : "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: isMobile ? "clamp(1rem, 4.5vw, 1.6rem)" : "1.9rem",
-                fontWeight: "bold",
-                color: "#000",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                padding: 0,
-                minWidth: 0,
-                minHeight: 0,
-                overflow: "hidden",
-              }}
-            >
-              {cellNum && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "1px",
-                    left: "3px",
-                    fontSize: "0.55rem",
-                    fontWeight: "normal",
-                    lineHeight: 1,
-                  }}
-                >
-                  {cellNum}
-                </span>
-              )}
-              {displayLetter || ""}
-            </div>
-          );
-        }),
-      )}
+          }),
+        )}
       </div>
     </div>
   );
