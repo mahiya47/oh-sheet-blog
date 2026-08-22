@@ -95,6 +95,12 @@ export default function ProfilePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
 
+  // Real database fetch for this profile's posts — replaces the old
+  // client-side filter over whatever happened to already be loaded in
+  // the main feed, which was hiding older posts that had been paginated
+  // out (they were never actually deleted, just invisible on the profile).
+  const [userPosts, setUserPosts] = useState([]);
+
   const [pins, setPins] = useState([]);
   const [pinsLoading, setPinsLoading] = useState(false);
   const [pinsError, setPinsError] = useState(null);
@@ -127,6 +133,11 @@ export default function ProfilePage() {
       setLoading(false);
     });
   }, [targetId, currentUser?.id, getProfile, getFollowInfo, getBlockStatus]);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    getUserPosts(profile.id).then(setUserPosts);
+  }, [profile?.id, getUserPosts]);
 
   useEffect(() => {
     if (tab === "saved" && isMe && savedPosts.length === 0) {
@@ -208,7 +219,6 @@ export default function ProfilePage() {
     );
   }
 
-  const userPosts = getUserPosts(profile.id);
   const photoPosts = userPosts.filter((p) => p.imageUrl);
   const following = counts.isFollowing;
   const isCreatorProfile = profile.id === CREATOR_ID;

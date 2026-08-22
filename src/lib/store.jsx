@@ -1033,12 +1033,17 @@ export function StoreProvider({ children }) {
 
   // ---- Stubs ---------------------------------------------------------------
 
-  const getUserPosts = (userId) =>
-    posts.filter(
-      (p) =>
-        p.author?.id === userId ||
-        (p.taggedUsers || []).some((u) => u.id === userId),
-    );
+  // Real database fetch for a specific user's posts (authored + tagged),
+  // instead of filtering whatever happens to already be loaded in `posts`.
+  const getUserPosts = async (userId) => {
+    try {
+      const res = await api.get(`/posts/user/${userId}`);
+      return res.data.map(normalizePost);
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
   const getFollowCounts = () => ({ following: 0, followers: 0 });
   const isFollowing = () => false;
   const resetDemo = () => {};
